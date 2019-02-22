@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/dtc_background"
+    tools:context="com.tehike.client.dtc.multiple.app.project.ui.DtcDutyMainActivity">
+
+
+    <!--顶部状态布局-->
+    <FrameLayout
+        android:id="@+id/header_layout_relativelayout"
+        android:layout_width="fill_parent"
+        android:layout_height="32dp"
+        android:background="@mipmap/title_bg"
+        android:orientation="horizontal">
+        <!--状态的父布局-->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--显示中心的连接状态-->
+            <TextView
+                android:id="@+id/current_server_center_status_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="15dp"
+                android:includeFontPadding="false"
+                android:text="中心状态:连接正常"
+                android:textColor="@color/colorText"
+                android:textSize="9sp" />
+
+            <!--显示网络的连接状态-->
+            <TextView
+                android:id="@+id/current_connected_status_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@+id/current_server_center_status_layout"
+                android:includeFontPadding="false"
+                android:text="网络状态:已断开"
+                android:textColor="@color/red"
+                android:textSize="9sp" />
+
+            <!--显示当前的哨位名称-->
+            <TextView
+                android:id="@+id/current_user_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_marginLeft="8dp"
+                android:layout_toRightOf="@+id/current_connected_status_layout"
+                android:includeFontPadding="false"
+                android:text="哨位名称:中科腾海"
+                android:textColor="@color/colorText"
+                android:textSize="9sp" />
+
+            <!--显示当前的时间-->
+            <TextView
+                android:id="@+id/current_time_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@+id/current_date_layout"
+                android:includeFontPadding="false"
+                android:text="00:00:00"
+                android:textColor="@color/colorText"
+                android:textSize="12sp" />
+
+            <!--显示当前日期-->
+            <TextView
+                android:id="@+id/current_date_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="10dp"
+                android:includeFontPadding="false"
+                android:text="2018年12月21号"
+                android:textColor="@color/colorText"
+                android:textSize="12sp" />
+
+
+        </RelativeLayout>
+
+        <!--用于显示国徽和支队名的父页面-->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="23dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/img_police" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
+                    android:text="执勤一中队"
+                    android:textColor="#31e1f8"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/display_cpu_tv_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:includeFontPadding="false"
+                    android:text="1233"
+                    android:textColor="@color/red"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </FrameLayout>
+
+
+    <!--中间滑动-->
+    <LinearLayout
+        android:id="@+id/main_layout_linearlayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/footer_layout_linearlayout"
+        android:layout_below="@+id/header_layout_relativelayout"
+        android:layout_marginBottom="2dp"
+        android:layout_marginTop="2dp"
+        android:orientation="vertical">
+        <!--自定义的滑动页面-->
+        <com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide
+            android:id="@+id/main_viewpager_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/view_split_line_layout"
+            android:layout_below="@+id/top_layout"></com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide>
+    </LinearLayout>
+
+    <!--底部按键-->
+    <LinearLayout
+        android:id="@+id/footer_layout_linearlayout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="3dp"
+        android:layout_marginTop="2dp"
+        android:background="@mipmap/menu_icon_bg"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent">
+            <!--左边显示区域-->
+            <RelativeLayout
+                android:id="@+id/left_info_layout"
+                android:layout_width="140dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:gravity="center">
+
+                <!--领班员-->
+                <TextView
+                    android:id="@+id/leader_tv_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="6dp"
+                    android:ems="1"
+                    android:text="领班员"
+                    android:textColor="@color/colorText"
+                    android:textSize="9sp" />
+
+                <ImageView
+                    android:id="@+id/leader_image_layout"
+                    android:layout_width="34dp"
+                    android:layout_height="54dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="4dp"
+                    android:layout_toRightOf="@+id/leader_tv_layout"
+                    android:background="@mipmap/duty_user_icon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="4dp"
+                    android:layout_toRightOf="@+id/leader_image_layout"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="姓名:hello world!"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="军衔:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="职务:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="背景:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+            <!--底部按键的显示区域-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="72dp"
+                android:layout_marginRight="72dp"
+                android:layout_toLeftOf="@+id/right_info_layout"
+                android:layout_toRightOf="@+id/left_info_layout">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:orientation="horizontal">
+
+                    <RadioGroup
+                        android:id="@+id/bottom_radio_group_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/bottom_intercom_radio_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_intercom_btn_bg"
+                            android:button="@null"
+                            android:checked="true"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+                        <RadioButton
+                            android:id="@+id/bottom_networkbroadcast_radio_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_radio_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/bottom_video_monitor_radio_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_video_monitor_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+
+                        <RadioButton
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_srceen_control_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/bottom_alarm_radio_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_alarm_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_alarm_map_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/bottom_box_radio_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_box_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_service_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/history_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_record_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <RadioButton
+                            android:id="@+id/system_set_btn_layout"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bottom_system_set_btn_bg"
+                            android:button="@null"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                    </RadioGroup>
+
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+            <!--右边显示区域-->
+            <RelativeLayout
+                android:id="@+id/right_info_layout"
+                android:layout_width="140dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:gravity="center">
+                <!--领班员-->
+                <TextView
+                    android:id="@+id/dutyer_tv_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="6dp"
+                    android:ems="1"
+                    android:text="执勤人员"
+                    android:textColor="@color/colorText"
+                    android:textSize="9sp" />
+
+                <ImageView
+                    android:id="@+id/dutyer_image_layout"
+                    android:layout_width="34dp"
+                    android:layout_height="54dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="4dp"
+                    android:layout_toRightOf="@+id/dutyer_tv_layout"
+                    android:background="@mipmap/duty_user_icon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="4dp"
+                    android:layout_toRightOf="@+id/dutyer_image_layout"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="姓名:hello world!"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="军衔:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="职务:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="背景:中科腾海"
+                        android:textColor="@color/colorText"
+                        android:textSize="9sp" />
+                </LinearLayout>
+
+
+            </RelativeLayout>
+        </RelativeLayout>
+    </LinearLayout>
+
+</RelativeLayout>

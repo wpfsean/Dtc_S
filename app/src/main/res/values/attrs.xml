@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="customTextView">
+        <attr name="customtextSize" format="dimension"/>
+        <attr name="customtextColor" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="imageText">
+        <attr name="image" format="integer" />
+        <attr name="pressImage" format="integer" />
+        <attr name="text" format="integer" />
+        <attr name="textColor" format="integer" />
+        <attr name="pressTextColor" format="integer" />
+        <attr name="textTop" format="integer" />
+    </declare-styleable>
+</resources>

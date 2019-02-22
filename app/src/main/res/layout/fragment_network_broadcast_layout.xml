@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!--显示所有广播成员的父布局-->
+        <RelativeLayout
+            android:id="@+id/display_all_broadcast_item_parent_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <!--左部分-->
+            <LinearLayout
+                android:id="@+id/network_broadcast_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!--对讲列表（文字显示）-->
+                    <TextView
+                        android:id="@+id/tv_intercom_call_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="集群对讲"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+                    <!--Sip组数据-->
+                    <ListView
+                        android:id="@+id/network_broadcast_group_item_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tv_intercom_call_layout"
+                        android:layout_marginBottom="7dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:dividerHeight="5dp"
+                        android:scrollbars="none"></ListView>
+
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!--中间部分-->
+            <LinearLayout
+                android:id="@+id/network_broadcast_all_item_parent_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_toLeftOf="@+id/network_broadcast_right_layout"
+                android:layout_toRightOf="@+id/network_broadcast_left_layout"
+                android:background="@mipmap/dtc_middle_bg"
+                android:visibility="visible">
+
+                <GridView
+                    android:id="@+id/network_broadcast_item_gridview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:gravity="center"
+                    android:horizontalSpacing="5dp"
+                    android:numColumns="5"
+                    android:scrollbars="none"
+                    android:verticalSpacing="5dp"></GridView>
+
+            </LinearLayout>
+
+            <!--右部分-->
+            <LinearLayout
+                android:id="@+id/network_broadcast_right_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:visibility="visible">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!--功能按钮-->
+                    <TextView
+                        android:id="@+id/custom_screen_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="@string/str_resource_function_list"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+                    <!--多人广播-->
+                    <Button
+                        android:id="@+id/network_broadcast_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/custom_screen_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="多人广播"
+                        android:textColor="@color/white" />
+                    <!--多人监听-->
+                    <Button
+                        android:id="@+id/network_monitor_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/network_broadcast_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="多人监听"
+                        android:textColor="@color/white" />
+                    <!--多人会议-->
+                    <Button
+                        android:id="@+id/network_meetting_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/network_monitor_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="多人会议"
+                        android:textColor="@color/white" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!--显示正在广播的成员的父布局-->
+        <RelativeLayout
+            android:id="@+id/display_all_broadcasting_item_parent_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <!--音量按键的布局-->
+            <RelativeLayout
+                android:id="@+id/broadcast_voice_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <!--对讲呼叫-->
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="3dp"
+                    android:gravity="center"
+                    android:text="网络广播"
+                    android:textColor="#ffe034"
+                    android:textSize="12sp" />
+
+                <!--音量增减布局-->
+                <FrameLayout
+                    android:layout_width="83dp"
+                    android:layout_height="281dp"
+                    android:layout_above="@+id/call_voice_volume_layout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginBottom="4dp"
+                    android:background="@mipmap/intercom_call_img_bg_volume">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <com.tehike.client.dtc.multiple.app.project.ui.views.VerticalSeekBar
+                            android:id="@+id/webcast_external_sound_layout"
+                            android:layout_width="18dp"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="31dp"
+                            android:layout_marginTop="5dp"
+                            android:max="100"
+                            android:progress="30"
+                            android:progressDrawable="@drawable/seekbar_bg"
+                            android:splitTrack="false"
+                            android:thumb="@mipmap/intercom_call_sliders" />
+
+                    </RelativeLayout>
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/call_voice_volume_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/webcast_mute_btn_layout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginRight="7dp"
+                    android:text="通话音量"
+                    android:textColor="@color/colorText"
+                    android:textSize="12sp" />
+
+                <!--静音按钮-->
+                <RadioButton
+                    android:id="@+id/webcast_mute_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginRight="7dp"
+                    android:background="@drawable/btn_mute_checked_bg"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="静音"
+                    android:textColor="@color/white" />
+
+            </RelativeLayout>
+
+            <!--中间正在广播的页面-->
+            <RelativeLayout
+                android:id="@+id/network_broadcasting_item_parent_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_toLeftOf="@+id/broadcast_function_right_layout"
+                android:layout_toRightOf="@+id/broadcast_voice_left_layout"
+                android:background="@mipmap/dtc_middle_bg"
+               >
+
+                <!--提示当前正在广播的文字布局-->
+                <TextView
+                    android:id="@+id/display_current_broadcast_infor_tv_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="50dp"
+                    android:includeFontPadding="false"
+                    android:text="当前网络广播正在通话中"
+                    android:textColor="#31e1f8"
+                    android:textSize="18sp" />
+
+                <!--显示正在广播时成员的父布局-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="71dp"
+                    android:layout_marginLeft="65dp"
+                    android:layout_marginRight="65dp"
+                    android:layout_marginTop="87dp"
+                    android:background="@mipmap/network_broadcast_bg_voice1"
+                    android:orientation="vertical">
+
+                    <!--显示广播时间的布局-->
+                    <TextView
+                        android:id="@+id/display_current_broadcast_time_tv_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:includeFontPadding="false"
+                        android:text="00:00:00"
+                        android:textColor="#dcbb05"
+                        android:textSize="22sp" />
+
+                    <!--显示正在广播成员的gridview布局-->
+                    <GridView
+                        android:id="@+id/broadcasting_gridview_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="5dp"
+                        android:gravity="center"
+                        android:horizontalSpacing="5dp"
+                        android:numColumns="6"
+                        android:scrollbars="none"
+                        android:verticalSpacing="5dp"></GridView>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/broadcast_function_right_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:visibility="visible">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!--功能按钮-->
+                    <TextView
+                        android:id="@+id/broadcasting_tv_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="@string/str_resource_function_list"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+                    <!--关闭振铃-->
+                    <Button
+                        android:id="@+id/close_broadcast_ring_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/broadcasting_tv_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="关闭振铃"
+                        android:textColor="@color/white" />
+
+                    <!--录音-->
+                    <Button
+                        android:id="@+id/broadcast_recording_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/close_broadcast_ring_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="录音"
+                        android:textColor="@color/white" />
+
+                    <!--暂停广播-->
+                    <Button
+                        android:id="@+id/pause_broadcast_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/broadcast_recording_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="暂停广播"
+                        android:textColor="@color/white" />
+
+                    <!--切断通话-->
+                    <Button
+                        android:id="@+id/kickoff_braodcast_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/pause_broadcast_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="切断通话"
+                        android:textColor="@color/white"
+                        android:visibility="visible" />
+
+
+                    <Button
+                        android:id="@+id/stop_braodcast_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/intercom_call_reject_bg"
+                        android:gravity="center"
+                        android:text="停止广播"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginBottom="14dp"
+                        android:textColor="@color/white"
+                        android:visibility="visible" />
+
+
+
+
+                </RelativeLayout>
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

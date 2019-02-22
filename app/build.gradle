@@ -1,0 +1,69 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "com.tehike.client.dtc.multiple.app.project"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            useProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            //jni库的调用会到资源文件夹下libs里面找so文件
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    //
+    configurations.all {
+        resolutionStrategy.force 'com.android.support:support-annotations:27.1.1'
+    }
+    //加载lib下的文件
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+    //签名时生成apk名
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { //这里修改apk文件
+            outputFileName = "Dtc${releaseTime()}_v${variant.versionName}.apk"
+        }
+    }
+}
+//生成apk名时间
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd HH-mm-ss")
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    compile(name: 'liblinphone-android-sdk', ext: 'aar')
+    compile project(':SerialPortLibrary')
+    implementation files('libs/ZY-Interface.jar')
+    compile 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    compile 'com.google.code.gson:gson:2.6.2'
+    compile project(':nodemediaclient')
+    compile 'com.android.support:recyclerview-v7:26.1.0'
+    implementation files('libs/SQLiteStudioRemote.jar')
+}

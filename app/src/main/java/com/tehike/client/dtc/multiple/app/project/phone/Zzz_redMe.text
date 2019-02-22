@@ -1,0 +1,16 @@
+MST快速开发：
+
+
+project
+        ------services
+               -------RemoteVoiceService 启动tcp用于被动的接收远程喊话、远程警告、远程鸣枪
+               -------BatteryAndWifiService 监听电量和信号强度
+               -------BatteryAndWifiCallback 电量和信号的回调
+               -------ServiceUtils  service的操作工具类
+
+        -------cmscallbacks
+               -------LoginCMSThread 用于登录功能
+               -------TimingRequestCmsDataService 通过对线程定时的执行任务，达到每隔多长时间请求一次数据并解析rtsp
+
+        -------entity
+               -------VideoBen  cms数据对应的实体类

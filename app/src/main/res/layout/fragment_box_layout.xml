@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <!--左部分功能列表布局-->
+        <LinearLayout
+            android:id="@+id/dtc_box_left_layout"
+            android:layout_width="124dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:background="@mipmap/dtc_list_bg"
+            android:orientation="vertical">
+
+            <!--功能列表-->
+            <TextView
+                android:id="@+id/tv_intercom_call_layout"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:text="弹箱列表"
+                android:textColor="#ffe034"
+                android:textSize="12sp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/video_group_bg">
+
+                <ListView
+                    android:id="@+id/box_group_listview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_below="@+id/source_tv_layout"
+                    android:layout_marginBottom="1dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:dividerHeight="5dp"
+                    android:layout_marginTop="10dp"
+                    android:divider="@null" />
+
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+        <!--中间部分-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_toLeftOf="@+id/dtc_box_right_layout"
+            android:layout_toRightOf="@+id/dtc_box_left_layout"
+            android:background="@mipmap/dtc_middle_bg"
+            android:orientation="horizontal">
+
+            <!--弹箱展示-->
+            <GridView
+                android:id="@+id/box_item_gridview_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:gravity="center"
+                android:horizontalSpacing="5dp"
+                android:numColumns="5"
+                android:scrollbars="none"
+                android:verticalSpacing="5dp"
+                android:visibility="visible"></GridView>
+
+            <!--弹箱视频预览-->
+            <FrameLayout
+                android:id="@+id/play_box_video_parent_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="1dp"
+                android:background="@color/red"
+                android:padding="1dp"
+                android:visibility="gone">
+
+                <cn.nodemedia.NodePlayerView
+                    android:id="@+id/box_video_preview_view_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/display_box_item_video_info_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="4dp"
+                        android:includeFontPadding="false"
+                        android:text="一号弹箱视频源"
+                        android:textColor="@color/red"
+                        android:textSize="10sp"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/box_video_loading_icon_layout"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerInParent="true"
+                        android:src="@drawable/ic_loading"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/box_video_loading_tv_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/box_video_loading_icon_layout"
+                        android:layout_centerHorizontal="true"
+                        android:text="正在加载..."
+                        android:textColor="@color/red"
+                        android:visibility="invisible" />
+
+                </RelativeLayout>
+
+
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <!--右部分功能按键-->
+        <LinearLayout
+            android:id="@+id/dtc_box_right_layout"
+            android:layout_width="124dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="5dp"
+            android:background="@mipmap/dtc_list_bg"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:text="功能按键"
+                android:textColor="#ffe034"
+                android:textSize="12sp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp">
+
+                <Button
+                    android:id="@+id/offline_preview_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/btn_pressed_select_bg"
+                    android:text="离线预览"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/quick_open_box_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/offline_preview_btn_layout"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/btn_pressed_select_bg"
+                    android:text="一键开启"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/close_preview_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/quick_open_box_btn_layout"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_pressed_select_bg"
+                    android:text="关闭预览"
+                    android:textColor="@color/white"
+                    android:visibility="gone" />
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</LinearLayout>

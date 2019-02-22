@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/box_sip_group_parent_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/sip_list_group_item_selected_bg"
+    android:orientation="vertical">
+
+
+    <!--弹箱管理-->
+    <TextView
+        android:id="@+id/box_group_item_name_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="28dp"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="9sp" />
+
+</RelativeLayout>

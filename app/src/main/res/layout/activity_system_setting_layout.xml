@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/dtc_landing_set_bg">
+        <!--Ip框-->
+        <EditText
+            android:id="@+id/system_ip_set_btn_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="54dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+        <!--掩码框-->
+        <EditText
+            android:id="@+id/system_netmask_set_btn_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="84dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+        <!--网关框-->
+        <EditText
+            android:id="@+id/system_getway_set_btn_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="114dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+        <!--Dns框-->
+        <EditText
+            android:id="@+id/system_dns_set_btn_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="144dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHighlight="@color/colorText"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+        <!--中心Ip框-->
+        <EditText
+            android:id="@+id/system_serverip_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="290dp"
+            android:layout_marginTop="54dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHighlight="@color/colorText"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+
+        <!--系统声音-->
+        <EditText
+            android:id="@+id/system_voice_layout"
+            android:layout_width="120dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="290dp"
+            android:layout_marginTop="82dp"
+            android:background="@mipmap/dtc_landing_bg"
+            android:paddingLeft="2dp"
+            android:textColorHint="@color/colorText"
+            android:textSize="12sp" />
+
+        <!--确认按键-->
+        <Button
+            android:id="@+id/system_set_save_btn_layout"
+            android:layout_width="58dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="260dp"
+            android:layout_marginTop="176dp"
+            android:background="@drawable/system_setting_save_btn_bg" />
+
+        <!--重置按键-->
+        <Button
+            android:id="@+id/system_set_cancel_btn_layout"
+            android:layout_width="58dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="14dp"
+            android:layout_marginTop="176dp"
+            android:layout_toRightOf="@+id/system_set_save_btn_layout"
+            android:background="@drawable/system_setting_reset_btn_bg" />
+    </RelativeLayout>
+
+
+    <EditText
+        android:id="@+id/system_call_voice_layout"
+        android:layout_width="120dp"
+        android:layout_height="20dp"
+        android:layout_marginLeft="290dp"
+        android:layout_marginTop="114dp"
+        android:background="@mipmap/dtc_landing_bg"
+        android:paddingLeft="2dp"
+        android:textColorHint="@color/colorText"
+        android:textSize="12sp" />
+
+
+    <EditText
+        android:id="@+id/system_ring_voice_layout"
+        android:layout_width="120dp"
+        android:layout_height="20dp"
+        android:layout_marginLeft="290dp"
+        android:layout_marginTop="144dp"
+        android:background="@mipmap/dtc_landing_bg"
+        android:paddingLeft="2dp"
+        android:textColorHint="@color/colorText"
+        android:textSize="12sp" />
+
+</FrameLayout>

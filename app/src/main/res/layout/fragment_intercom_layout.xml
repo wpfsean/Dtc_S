@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!--显示sip状态的总布局-->
+        <RelativeLayout
+            android:id="@+id/sip_status_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="visible">
+            <!--左部分-->
+            <LinearLayout
+                android:id="@+id/sipstatus_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!--资源分组（文字显示）-->
+                    <TextView
+                        android:id="@+id/tv_intercom_call_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="资源分组"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+                    <!--Sip组数据-->
+                    <ListView
+                        android:id="@+id/intercom_group_item_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tv_intercom_call_layout"
+                        android:layout_marginBottom="7dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:dividerHeight="5dp"
+                        android:scrollbars="none"></ListView>
+
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!--中间部分-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_toLeftOf="@+id/sipstatus_right_layout"
+                android:layout_toRightOf="@+id/sipstatus_left_layout"
+                android:background="@mipmap/dtc_middle_bg">
+
+                <GridView
+                    android:id="@+id/sipitem_gridview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:gravity="center"
+                    android:horizontalSpacing="5dp"
+                    android:numColumns="5"
+                    android:scrollbars="none"
+                    android:verticalSpacing="5dp"></GridView>
+
+            </LinearLayout>
+
+            <!--右部分-->
+            <LinearLayout
+                android:id="@+id/sipstatus_right_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:visibility="visible">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/custom_screen_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="功能按钮"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+                    <Button
+                        android:id="@+id/intercom_voice_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/custom_screen_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="语音对讲"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/intercom_video_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/intercom_voice_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="可视对讲"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/monitor_video_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/intercom_video_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="可视监听"
+                        android:textColor="@color/white" />
+
+
+                    <Button
+                        android:id="@+id/call_demolition_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/monitor_video_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="通话强拆"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/call_intrusion_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/call_demolition_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="通话强插"
+                        android:textColor="@color/white" />
+
+
+                    <Button
+                        android:id="@+id/network_braocast_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/call_intrusion_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="网络广播"
+                        android:textColor="@color/white" />
+
+
+                    <Button
+                        android:id="@+id/remote_warring_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/network_braocast_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="远程警告"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/remote_speak_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/remote_warring_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="远程喊话"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/remote_gunshot_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/remote_speak_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="远程鸣枪"
+                        android:textColor="@color/white" />
+
+                </RelativeLayout>
+
+
+            </LinearLayout>
+        </RelativeLayout>
+
+
+        <!--显示打电话-->
+        <RelativeLayout
+            android:id="@+id/phone_status_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+            <!--左部分-->
+            <RelativeLayout
+                android:id="@+id/phone_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <!--对讲呼叫-->
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="3dp"
+                    android:gravity="center"
+                    android:text="对讲呼叫"
+                    android:textColor="#ffe034"
+                    android:textSize="12sp" />
+
+                <!--音量增减布局-->
+                <FrameLayout
+                    android:layout_width="83dp"
+                    android:layout_height="281dp"
+                    android:layout_above="@+id/call_voice_volume_layout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginBottom="4dp"
+                    android:background="@mipmap/intercom_call_img_bg_volume">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <com.tehike.client.dtc.multiple.app.project.ui.views.VerticalSeekBar
+                            android:id="@+id/verticalseekbar_external_sound_layout"
+                            android:layout_width="18dp"
+                            android:layout_height="match_parent"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="31dp"
+                            android:layout_marginTop="5dp"
+                            android:max="100"
+                            android:progress="30"
+                            android:progressDrawable="@drawable/seekbar_bg"
+                            android:splitTrack="false"
+                            android:thumb="@mipmap/intercom_call_sliders" />
+
+                    </RelativeLayout>
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/call_voice_volume_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/mute_btn_layout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginRight="7dp"
+                    android:text="通话音量"
+                    android:textColor="@color/colorText"
+                    android:textSize="12sp" />
+
+                <!--静音按钮-->
+                <RadioButton
+                    android:id="@+id/mute_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginRight="7dp"
+                    android:background="@drawable/btn_mute_checked_bg"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="静音"
+                    android:textColor="@color/white" />
+
+            </RelativeLayout>
+
+
+            <FrameLayout
+                android:id="@+id/call_ui_parent_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@+id/phone_right_layout"
+                android:layout_toRightOf="@+id/phone_left_layout"
+                android:background="@mipmap/dtc_middle_bg">
+                <!--中间部分-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!--显示来电信息-->
+                    <TextView
+                        android:id="@+id/current_call_number_info_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="30dp"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:visibility="visible" />
+
+                    <LinearLayout
+                        android:id="@+id/phone_parent_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="74dp"
+                        android:layout_marginLeft="23dp"
+                        android:layout_marginRight="23dp"
+                        android:layout_marginTop="20dp"
+                        android:background="@mipmap/intercom_call_img_bg_voice1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:visibility="visible">
+
+                            <!--远端视频源父而已-->
+                            <FrameLayout
+                                android:id="@+id/remote_video_parent_layout"
+                                android:layout_width="468dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginBottom="1dp"
+                                android:layout_marginLeft="2dp"
+                                android:layout_marginRight="10dp"
+                                android:layout_marginTop="33dp"
+                                android:visibility="invisible">
+
+                                <!--远端对方的视频源-->
+                                <cn.nodemedia.NodePlayerView
+                                    android:id="@+id/remote_video_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent" />
+
+                                <RelativeLayout
+                                    android:id="@+id/remote_display_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent">
+                                    <!--进度条-->
+                                    <ProgressBar
+                                        android:id="@+id/remote_prbar_layout"
+                                        android:layout_width="30dp"
+                                        android:layout_height="30dp"
+                                        android:layout_centerInParent="true"
+                                        android:src="@drawable/ic_loading" />
+                                    <!--加载提示-->
+                                    <TextView
+                                        android:id="@+id/remote_display_tv_layout"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_below="@+id/remote_prbar_layout"
+                                        android:layout_centerHorizontal="true"
+                                        android:text="正在加载..."
+                                        android:textColor="@color/white" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:textColor="#ff0000"
+                                        android:layout_margin="4dp"
+                                        android:text="对方视频源"/>
+
+                                </RelativeLayout>
+                            </FrameLayout>
+
+                            <!--右侧信息总布局-->
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_marginTop="18dp"
+                                android:visibility="visible">
+                                <!--自已的视频源-->
+                                <FrameLayout
+                                    android:id="@+id/native_video_parent_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="92dp"
+                                    android:layout_marginRight="2dp"
+                                    android:layout_marginTop="15dp"
+                                    android:visibility="invisible">
+
+                                    <cn.nodemedia.NodePlayerView
+                                        android:id="@+id/native_video_layout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
+
+                                    <RelativeLayout
+                                        android:id="@+id/native_display_layout"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent">
+                                        <!--进度条-->
+                                        <ProgressBar
+                                            android:id="@+id/native_prbar_layout"
+                                            android:layout_width="30dp"
+                                            android:layout_height="30dp"
+                                            android:layout_centerInParent="true"
+                                            android:src="@drawable/ic_loading" />
+                                        <!--加载提示-->
+                                        <TextView
+                                            android:id="@+id/native_display_tv_layout"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_below="@+id/native_prbar_layout"
+                                            android:layout_centerHorizontal="true"
+                                            android:text="正在加载..."
+                                            android:textColor="@color/white" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:textColor="#ff0000"
+                                            android:layout_margin="2dp"
+                                            android:text="本机视频源"/>
+                                    </RelativeLayout>
+
+                                </FrameLayout>
+
+                                <!--显示通话时间的布局-->
+                                <LinearLayout
+                                    android:id="@+id/display_phone_time_linearlayout_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="55dp"
+                                    android:layout_below="@+id/native_video_parent_layout"
+                                    android:layout_marginTop="6dp"
+                                    android:orientation="horizontal">
+                                    <!--通话时间显示-->
+                                    <TextView
+                                        android:id="@+id/display_phone_time_tv_layout"
+                                        android:layout_width="fill_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:ellipsize="end"
+                                        android:gravity="center"
+                                        android:singleLine="true"
+                                        android:text="00:00"
+                                        android:textColor="#d9d919"
+                                        android:textSize="22sp" />
+                                </LinearLayout>
+
+                                <!--显示信息的布局-->
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_below="@+id/display_phone_time_linearlayout_layout"
+                                    android:layout_marginTop="16dp"
+                                    android:gravity="center">
+
+                                    <!--领班员-->
+                                    <TextView
+                                        android:id="@+id/leader_tv_layout"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_centerVertical="true"
+                                        android:layout_marginLeft="6dp"
+                                        android:ems="1"
+                                        android:text="当前通话人员"
+                                        android:textColor="#ffda0b"
+                                        android:textSize="12sp" />
+
+                                    <ImageView
+                                        android:id="@+id/leader_image_layout"
+                                        android:layout_width="50dp"
+                                        android:layout_height="78dp"
+                                        android:layout_centerVertical="true"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_toRightOf="@+id/leader_tv_layout"
+                                        android:background="@mipmap/dtc_img_photo" />
+
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_centerVertical="true"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_toRightOf="@+id/leader_image_layout"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="wrap_content"
+                                            android:text="姓名:尼古拉斯.赵四"
+                                            android:textColor="@color/colorText"
+                                            android:textSize="9sp" />
+
+                                        <TextView
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:text="军衔:列兵"
+                                            android:textColor="@color/colorText"
+                                            android:textSize="9sp" />
+
+                                        <TextView
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:text="职务:环卫"
+                                            android:textColor="@color/colorText"
+                                            android:textSize="9sp" />
+
+                                        <TextView
+                                            android:layout_width="fill_parent"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginTop="6dp"
+                                            android:text="背景:艺术家"
+                                            android:textColor="@color/colorText"
+                                            android:textSize="9sp" />
+                                    </LinearLayout>
+
+
+                                </RelativeLayout>
+
+
+                            </RelativeLayout>
+
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <!--右部分-->
+            <LinearLayout
+                android:id="@+id/phone_right_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!--语音对讲-->
+                    <TextView
+                        android:id="@+id/phone_function_list_tv_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="语音对讲"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+                    <!--关闭振铃-->
+                    <Button
+                        android:id="@+id/turn_off_ring_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/phone_function_list_tv_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="26dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="关闭振铃"
+                        android:textColor="@color/white" />
+
+                    <!--录音-->
+                    <RadioButton
+                        android:id="@+id/call_recording_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/turn_off_ring_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/btn_mute_checked_bg"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:text="录音"
+                        android:textColor="@color/white" />
+
+                    <!--音量减-->
+                    <Button
+                        android:id="@+id/voice_lose_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/call_recording_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="新通话"
+                        android:textColor="@color/white" />
+
+                    <!--录音-->
+                    <Button
+                        android:id="@+id/voice_recording_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/voice_lose_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="会议"
+                        android:textColor="@color/white" />
+
+                    <!--新通话-->
+                    <Button
+                        android:id="@+id/new_call_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/voice_recording_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="前转"
+                        android:textColor="@color/white" />
+
+                    <!--会议-->
+                    <Button
+                        android:id="@+id/meeting_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@+id/new_call_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="语音警告"
+                        android:textColor="@color/white" />
+
+                    <!--切换通话1-->
+                    <Button
+                        android:id="@+id/swap_call1_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:layout_above="@+id/swap_call2_btn_layout"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="切换通话1"
+                        android:visibility="gone"
+                        android:textColor="@color/white" />
+
+                    <!--切换通话2-->
+                    <Button
+                        android:id="@+id/swap_call2_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:layout_above="@+id/sip_hangup_btn_layout"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:text="切换通话2"
+                        android:visibility="gone"
+                        android:textColor="@color/white" />
+
+                    <!--挂断-->
+                    <Button
+                        android:id="@+id/sip_hangup_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_above="@+id/accept_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:text="挂断电话"
+                        android:background="@drawable/intercom_call_reject_bg"
+                        android:textColor="@color/white" />
+
+                    <!--接听-->
+                    <Button
+                        android:id="@+id/accept_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="7dp"
+                        android:background="@drawable/intercom_call_answer_bg"
+                        android:text="接听通话1"
+                        android:textColor="@color/white" />
+
+                </RelativeLayout>
+
+
+            </LinearLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

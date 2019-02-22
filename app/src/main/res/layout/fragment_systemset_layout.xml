@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="visible">
+            <!--左部分-->
+            <LinearLayout
+                android:id="@+id/system_set_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:orientation="vertical">
+                .
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="3dp"
+                    android:gravity="center"
+                    android:text="@string/str_resource_function_list"
+                    android:textColor="#ffe034"
+                    android:textSize="12sp" />
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <Button
+                        android:id="@+id/native_infor_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/custom_screen_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="18dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="终端信息"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/alarm_set_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/native_infor_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="报警设置"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/alltime_set_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/alarm_set_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="时长设置"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/screent_set_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/alltime_set_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="屏幕设置"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/ringing_set_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/screent_set_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="铃声设置"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/all_set_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/ringing_set_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="高级设置"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/login_out_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="32dp"
+                        android:layout_below="@+id/all_set_btn_layout"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_pressed_select_bg"
+                        android:gravity="center"
+                        android:text="退出登录"
+                        android:textColor="@color/white" />
+
+
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <!--中间部分-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:background="@mipmap/dtc_middle_bg"
+                android:layout_toLeftOf="@+id/system_set_right_layout"
+                android:layout_toRightOf="@+id/system_set_left_layout">
+
+
+
+
+
+            </LinearLayout>
+
+            <!--右部分-->
+            <LinearLayout
+                android:id="@+id/system_set_right_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:visibility="visible">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:text="@string/str_resource_function_list"
+                        android:textColor="#ffe034"
+                        android:textSize="12sp" />
+
+
+                </RelativeLayout>
+
+
+            </LinearLayout>
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</FrameLayout>

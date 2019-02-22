@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/broadcast_item_parent_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--正在广播列表的子item的布局-->
+
+    <RelativeLayout
+        android:layout_margin="1dp"
+        android:id="@+id/broadcast_parent_layout"
+        android:layout_width="88dp"
+        android:layout_height="45dp"
+        android:background="@mipmap/radio_bg_offline">
+
+        <!--正在广播时的成员的头像-->
+        <ImageView
+            android:id="@+id/broadcast_item_imageview_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="7dp"
+            android:src="@mipmap/radio_icon_sentry_online" />
+
+        <!--正在广播成员的名称-->
+        <TextView
+            android:id="@+id/broadcast_item_tv_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="12dp"
+            android:layout_toRightOf="@+id/broadcast_item_imageview_layout"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:text="A楼道A哨位"
+            android:textColor="@color/white"
+            android:textSize="9sp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

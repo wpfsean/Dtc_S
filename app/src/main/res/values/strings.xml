@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Dtc</string>
+    <string name="error_configuration">打开串口失败:参数错误!</string>
+    <string name="error_security">打开串口失败:没有串口读/写权限!</string>
+    <string name="error_unknown">打开串口失败:未知错误!</string>
+    <string name="login_str_resources">登录</string>
+    <string name="str_resource_intercom_call">对讲呼叫</string>
+    <string name="str_resource_function_list">功能列表</string>
+    <string name="str_resource_no_data">无数据！</string>
+    <string name="str_resource_no_network">无网络</string>
+    <string name="str_resource_no_support">暂不支持</string>
+    <string name="str_resource_no_connected">无法连接!</string>
+    
+    <string name="reconnect">重新连接</string>
+    <string name="notconnect">无法连接</string>
+    <string name="str_sysinfo_empty">SysInfo接口返回的数据为空!</string>
+    <string name="str_network_error">网络异常,请检查网络！</string>
+    <string name="str_set_server_ip">设置服务器地址！</string>
+    <string name="str_server_illegal">服务器ip不合法!</string>
+    <string name="str_login_fail">登录失败</string>
+    <string name="str_login_cancel">取消登录</string>
+    <string name="str_not_get_server_ip">登录未获取本机Ip!</string>
+    <string name="str_no_network">网络异常</string>
+
+</resources>

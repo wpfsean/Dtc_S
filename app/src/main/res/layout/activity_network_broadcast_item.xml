@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sipstatus_main_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+
+    <!--帧布局-->
+    <FrameLayout
+        android:id="@+id/item_layout"
+        android:layout_width="132dp"
+        android:layout_height="69dp"
+        android:background="@mipmap/intercom_call_img_bg_offline_normal">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/device_type_layout"
+                android:layout_width="132dp"
+                android:layout_height="20dp"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/sip_status_icon_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="17dp"
+                android:layout_marginTop="31dp"
+                android:background="@mipmap/intercom_call_icon_offline" />
+
+            <TextView
+                android:id="@+id/item_name"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="30dp"
+                android:layout_toRightOf="@+id/sip_status_icon_layout"
+                android:ellipsize="none"
+                android:maxLines="2"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:singleLine="false"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+            <ImageView
+                android:id="@+id/check_box"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="center_vertical"
+                android:gravity="center"
+                android:src="@mipmap/ic_uncheck"
+                android:visibility="gone" />
+        </RelativeLayout>
+
+
+    </FrameLayout>
+
+</LinearLayout>

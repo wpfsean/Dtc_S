@@ -1,0 +1,8 @@
+用于Onvif解析
+1、先通过GetService获取MediaUrl和PtzUrl
+2、通过MediaUrl获取Tokens
+3、通过Token及MediaUrl获取Rtsp
+
+
+注意：可能会出现鉴权问题
+若通过GetService请求到不MediaUrl时就能GetCapabilities请求MediaUrl
