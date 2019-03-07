@@ -5,12 +5,23 @@ import java.io.Serializable;
 /**
  * 描述：接收报警类型的数据对象的封装
  * ===============================
+ *
  * @author wpfse wpfsean@126.com
- * @Create at:2018/12/25 11:33
  * @version V1.0
+ * @Create at:2018/12/25 11:33
  */
 
 public class AlarmVideoSource implements Serializable {
+
+    private String time;
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 
     //报警发送者
     private String senderIp;
@@ -60,7 +71,8 @@ public class AlarmVideoSource implements Serializable {
     @Override
     public String toString() {
         return "AlarmVideoSource{" +
-                "senderIp='" + senderIp + '\'' +
+                "time='" + time + '\'' +
+                ", senderIp='" + senderIp + '\'' +
                 ", faceVideoId='" + faceVideoId + '\'' +
                 ", faceVideoName='" + faceVideoName + '\'' +
                 ", alarmType='" + alarmType + '\'' +

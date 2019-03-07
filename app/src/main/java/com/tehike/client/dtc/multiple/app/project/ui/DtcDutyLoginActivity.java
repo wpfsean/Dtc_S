@@ -224,11 +224,6 @@ public class DtcDutyLoginActivity extends BaseActivity {
     HttpURLConnection con = null;
 
     /**
-     * 声音管理类
-     */
-    AudioManager mAudioManager;
-
-    /**
      * 需要申请的权限
      * 定位
      * 读取设备信息
@@ -484,10 +479,6 @@ public class DtcDutyLoginActivity extends BaseActivity {
         final EditText editSystemGetway = view.findViewById(R.id.system_getway_set_btn_layout);
         final EditText editSystemNetmask = view.findViewById(R.id.system_netmask_set_btn_layout);
         final EditText editSystemDns = view.findViewById(R.id.system_dns_set_btn_layout);
-
-        final EditText editSystemVoice = view.findViewById(R.id.system_voice_layout);
-        final EditText editSystemCallVoice = view.findViewById(R.id.system_call_voice_layout);
-        final EditText editSystemRingVoice = view.findViewById(R.id.system_ring_voice_layout);
         //兩個中心服務設置框
         final EditText editSystemServerIp = view.findViewById(R.id.system_serverip_layout);
         //從本地取出serverIp
@@ -557,45 +548,12 @@ public class DtcDutyLoginActivity extends BaseActivity {
             dns = App.getSystemManager().ZYgetWifiDns1();
         }
         editSystemDns.setHint(dns);
-        //设置声音
-        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        int systemValues = mAudioManager.getStreamVolume(AudioManager.STREAM_SYSTEM);
-        int systemCallValues = mAudioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-        int systemRingValues = mAudioManager.getStreamVolume(AudioManager.STREAM_RING);
-        editSystemVoice.setHint("系统音量:" + systemValues + "");
-        editSystemCallVoice.setHint("通话音量:" + systemCallValues + "");
-        editSystemRingVoice.setHint("响铃音量:" + systemRingValues + "");
+
 
         //保存按钮点击事件
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //获取输入框的声音值
-
-//                String strSystemVoiceValue = editSystemVoice.getText().toString().trim();
-//                String strSystemCallValue = editSystemCallVoice.getText().toString().trim();
-//                String strSystemRingValue = editSystemRingVoice.getText().toString().trim();
-//                if (!TextUtils.isEmpty(strSystemVoiceValue) && Pattern.compile("[0-9]").matcher(strSystemVoiceValue).matches()) {
-//                    systemVoiceValue = Integer.parseInt(strSystemVoiceValue);
-//                    if (systemVoiceValue != 0) {
-//                        if (mAudioManager != null)
-//                            mAudioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, systemVoiceValue, 0);
-//                    }
-//                }
-//                if (!TextUtils.isEmpty(strSystemCallValue)) {
-//                    systemCallValue = Integer.parseInt(strSystemCallValue);
-//                    if (systemCallValue != 0) {
-//                        if (mAudioManager != null)
-//                            mAudioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, systemCallValue, 0);
-//                    }
-//                }
-//                if (!TextUtils.isEmpty(strSystemRingValue) && Pattern.compile("[0-9]").matcher(strSystemVoiceValue).matches()) {
-//                    systemRingValue = Integer.parseInt(strSystemRingValue);
-//                    if (systemRingValue != 0) {
-//                        if (mAudioManager != null)
-//                            mAudioManager.setStreamVolume(AudioManager.STREAM_RING, systemRingValue, 0);
-//                    }
-//                }
                 //判斷Ip輸入框是否為空
                 String edIp = editSystemIp.getText().toString().trim();
                 if (TextUtils.isEmpty(edIp)) {

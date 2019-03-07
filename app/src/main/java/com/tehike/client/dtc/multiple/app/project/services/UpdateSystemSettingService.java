@@ -46,8 +46,6 @@ public class UpdateSystemSettingService extends Service {
 
     @Override
     public void onDestroy() {
-        if (handler != null)
-            handler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
 
@@ -62,8 +60,6 @@ public class UpdateSystemSettingService extends Service {
         //隐藏系统的导航栏
         hideSystembar();
 
-        //修改系统时间
-        updateSystemTime();
     }
 
     /**
@@ -109,131 +105,5 @@ public class UpdateSystemSettingService extends Service {
                 Logutil.e("设置导航栏状态失败");
             }
         }
-
     }
-
-    /**
-     * 修改系统时间
-     */
-    private void updateSystemTime() {
-        new Thread(new RequestServerTimeThread()).start();
-    }
-
-    /**
-     * 请求服务器上的时间
-     */
-    class RequestServerTimeThread extends Thread {
-        @Override
-        public void run() {
-            try {
-                String getServerTimeUrl = AppConfig.SERVER_TIME;
-                HttpURLConnection connection = (HttpURLConnection) new URL(getServerTimeUrl).openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(4000);
-                connection.setReadTimeout(4000);
-                connection.connect();
-                if (connection.getResponseCode() == 200) {
-                    InputStream inputStream = connection.getInputStream();
-                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    String line = "";
-                    StringBuilder builder = new StringBuilder();
-                    while ((line = bufferedReader.readLine()) != null) {
-                        builder.append(line);
-                    }
-
-                    bufferedReader.close();
-                    inputStreamReader.close();
-                    inputStream.close();
-
-                    String serverTimeResult = builder.toString();
-                    Message message = new Message();
-                    message.what = 1;
-                    message.obj = serverTimeResult;
-                    handler.sendMessage(message);
-
-
-                }
-                connection.disconnect();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Logutil.e("获取服务器信息失败" + e.getMessage()+"--->>RequestServerTimeThread");
-            }
-        }
-    }
-
-    /**
-     * 获取系统的时间（分割成数组）
-     */
-    private String[] getSystemTime() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd|HH:mm");
-        Date date = new Date();
-        String format = dateFormat.format(date);
-        String[] splits = format.split("\\|");
-        return splits;
-    }
-
-    /**
-     * 设置系统时间
-     *
-     * @param reuslt
-     */
-    private void setTime(String reuslt) {
-        String[] system_times = getSystemTime();
-        //系统的时分
-        String[] hour_minute = system_times[1].split(":");
-        //系统时
-        final int systemHour = Integer.parseInt(hour_minute[0]);
-        //系统分
-        final int systenMinute = Integer.parseInt(hour_minute[1]);
-        //解析服务器时间
-        try {
-            JSONObject jsonObject = new JSONObject(reuslt);
-            String serverDate = jsonObject.getString("date");
-            String serverTime = jsonObject.getString("time");
-            //先判断日期
-            if (system_times[0].equals(serverDate)) {
-                //限时服务器的时分秒
-                String[] serverD = serverTime.split(":");
-                //服务时
-                int serverhour = Integer.parseInt(serverD[0]);
-                //如果小时相等
-                if (systemHour == serverhour) {
-                    int serverMinute = Integer.parseInt(serverD[1]);
-                    //上下错一分钟
-                    int minServerMinue = serverMinute - 1;
-                    int maxServerMinue = serverMinute + 1;
-                    if (systenMinute > minServerMinue && systenMinute < maxServerMinue) {
-                        Logutil.d("上下错一分钟，不设置");
-                    } else {
-                        int r = App.getSystemManager().ZYsetSysTime(serverDate, serverTime);
-                        Logutil.i("返回信息" + r);
-                    }
-                } else {
-                    int r = App.getSystemManager().ZYsetSysTime(serverDate, serverTime);
-                    Logutil.i("返回信息" + r);
-                }
-            } else {
-                int r = App.getSystemManager().ZYsetSysTime(serverDate, serverTime);
-                Logutil.i("返回信息" + r);
-            }
-
-        } catch (Exception e) {
-        }
-    }
-
-    /**
-     * handler处理子线程发送的消息
-     */
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 1:
-                    String reuslt = (String) msg.obj;
-                    setTime(reuslt);
-                    break;
-            }
-        }
-    };
 }

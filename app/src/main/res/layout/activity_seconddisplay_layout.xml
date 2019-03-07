@@ -288,58 +288,121 @@
                     android:id="@+id/right_function_parent_layout"
                     android:layout_width="150dp"
                     android:layout_height="match_parent"
-                    android:layout_alignParentRight="true"
-                    android:background="@mipmap/dtc_map_bg_list">
+                    android:layout_alignParentRight="true">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="@mipmap/dtc_event_list_bg"
                         android:orientation="vertical">
 
-                        <!--报警信息父布局-->
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="28dp"
-                            android:orientation="horizontal">
-                            <!--报警信息图标-->
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="32dp"
-                                android:layout_marginTop="6dp"
-                                android:background="@mipmap/dtc_map_icon_alarm" />
-                            <!--报警信息文字提示-->
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="10dp"
-                                android:text="报警信息"
-                                android:textColor="@color/colorYellow"
-                                android:textSize="15sp" />
-                        </LinearLayout>
-
-                        <!--报警信息列表-->
-                        <LinearLayout
-                            android:layout_width="120dp"
-                            android:layout_height="138dp"
-                            android:layout_gravity="center"
-                            android:layout_marginTop="22dp"
-                            android:background="@drawable/video_group_bg"
+                            android:layout_height="190dp"
+                            android:background="@mipmap/dtc_map_bg_event"
                             android:orientation="vertical">
 
-                            <!--显示报警队列ListView-->
-                            <ListView
-                                android:id="@+id/alarm_queue_listview_layout"
+                            <!--报警信息父布局-->
+                            <RelativeLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_below="@+id/source_tv_layout"
-                                android:layout_marginBottom="1dp"
-                                android:layout_marginLeft="1dp"
-                                android:layout_marginRight="1dp"
-                                android:divider="@null" />
+                                android:layout_height="28dp">
+                                <!--报警信息图标-->
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginRight="5dp"
+                                    android:layout_toLeftOf="@+id/dtc_alarm_list_tv_layout"
+                                    android:background="@mipmap/dtc_map_icon_alarm" />
+                                <!--报警信息文字提示-->
+                                <TextView
+                                    android:id="@+id/dtc_alarm_list_tv_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerInParent="true"
+                                    android:text="报警信息"
+                                    android:textColor="@color/colorYellow"
+                                    android:textSize="15sp" />
+                            </RelativeLayout>
 
+                            <!--报警信息列表-->
+                            <LinearLayout
+                                android:layout_width="120dp"
+                                android:layout_height="138dp"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="10dp"
+                                android:orientation="vertical">
+
+                                <!--显示报警队列ListView-->
+                                <ListView
+                                    android:id="@+id/processed_alarm_list_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_below="@+id/source_tv_layout"
+                                    android:layout_marginBottom="1dp"
+                                    android:layout_marginLeft="1dp"
+                                    android:layout_marginRight="1dp"
+                                    android:divider="@null" />
+
+
+                            </LinearLayout>
 
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="190dp"
+                            android:layout_marginTop="22dp"
+                            android:background="@mipmap/dtc_map_bg_event"
+                            android:orientation="vertical">
+
+                            <!--事件信息父布局-->
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="28dp">
+                                <!--事件信息图标-->
+                                <ImageView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginRight="5dp"
+                                    android:layout_toLeftOf="@+id/dtc_event_list_tv_layout"
+                                    android:background="@mipmap/dtc_map_icon_event" />
+                                <!--事件信息文字提示-->
+                                <TextView
+                                    android:id="@+id/dtc_event_list_tv_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerInParent="true"
+                                    android:text="事件信息"
+                                    android:textColor="@color/colorYellow"
+                                    android:textSize="15sp" />
+                            </RelativeLayout>
+
+                            <!--事件信息列表-->
+                            <LinearLayout
+                                android:layout_width="120dp"
+                                android:layout_height="190dp"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="10dp"
+                                android:orientation="vertical">
+
+                                <!--显示报警队列ListView-->
+                                <ListView
+                                    android:id="@+id/event_queue_listview_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_below="@+id/source_tv_layout"
+                                    android:layout_marginBottom="1dp"
+                                    android:layout_marginLeft="1dp"
+                                    android:layout_marginRight="1dp"
+                                    android:divider="@null" />
+
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
                     </LinearLayout>
 
 
@@ -361,246 +424,330 @@
             <!--显示当前报警信息的父布局-->
             <LinearLayout
                 android:id="@+id/display_alarm_parent_layout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="40dp"
-                android:layout_marginLeft="160dp"
-                android:layout_marginRight="160dp"
-                android:layout_marginTop="40dp"
-                android:background="@drawable/video_group_bg"
-                android:orientation="horizontal"
+                android:layout_width="549dp"
+                android:layout_height="400dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginRight="200dp"
+                android:layout_marginTop="38dp"
+                android:background="@mipmap/dtc_alarm1_bg"
+                android:orientation="vertical"
                 android:visibility="gone">
 
-                <FrameLayout
+                <!--当前通话的哨位名-->
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@mipmap/dtc_background">
+                    android:layout_height="60dp">
 
+                    <TextView
+                        android:id="@+id/alarm_handler_sentry_name_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="18dp"
+                        android:gravity="center"
+                        android:textColor="@color/colorText"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/alarm_handler_sentry_time_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/alarm_handler_sentry_name_layout"
+                        android:layout_centerVertical="true"
+                        android:gravity="center"
+                        android:textColor="@color/red" />
+                </RelativeLayout>
+
+                <!--中间部分-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="340dp"
+                    android:orientation="vertical">
+
+                    <!--上部分-->
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_margin="12dp"
+                        android:layout_height="154dp"
                         android:orientation="horizontal">
 
-                        <!--左部分-->
-                        <LinearLayout
+                        <!--第一个区域-->
+                        <RelativeLayout
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:padding="1dp">
 
-                            <!--第一个区域-->
-                            <RelativeLayout
+                            <FrameLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="0dp"
+                                android:layout_height="match_parent"
                                 android:layout_margin="1dp"
-                                android:layout_weight="1"
-                                android:background="@drawable/video_group_bg">
+                                android:visibility="visible">
 
-                                <FrameLayout
+                                <cn.nodemedia.NodePlayerView
+                                    android:id="@+id/alarm_video_view_layout"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="1dp">
+                                    android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
 
-                                    <cn.nodemedia.NodePlayerView
-                                        android:id="@+id/alarm_video_view_layout"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent">
 
-                                    <RelativeLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent">
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_marginTop="4dp"
+                                        android:includeFontPadding="false"
+                                        android:text="报警源视频"
+                                        android:textColor="@color/red"
+                                        android:textSize="10sp" />
 
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginLeft="4dp"
-                                            android:layout_marginTop="4dp"
-                                            android:includeFontPadding="false"
-                                            android:text="报警源视频"
-                                            android:textColor="@color/red"
-                                            android:textSize="10sp" />
+                                    <ImageView
+                                        android:id="@+id/alarm_video_loading_icon_layout"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_centerInParent="true"
+                                        android:src="@drawable/ic_loading"
+                                        android:visibility="visible" />
 
-                                        <ImageView
-                                            android:id="@+id/alarm_video_loading_icon_layout"
-                                            android:layout_width="20dp"
-                                            android:layout_height="20dp"
-                                            android:layout_centerInParent="true"
-                                            android:src="@drawable/ic_loading"
-                                            android:visibility="visible" />
+                                    <TextView
+                                        android:id="@+id/alarm_video_loading_tv_layout"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_below="@+id/alarm_video_loading_icon_layout"
+                                        android:layout_centerHorizontal="true"
+                                        android:text="正在加载..."
+                                        android:textColor="@color/colorText"
+                                        android:visibility="visible" />
 
-                                        <TextView
-                                            android:id="@+id/alarm_video_loading_tv_layout"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_below="@+id/alarm_video_loading_icon_layout"
-                                            android:layout_centerHorizontal="true"
-                                            android:text="正在加载..."
-                                            android:textColor="@color/colorText"
-                                            android:visibility="visible" />
-
-                                    </RelativeLayout>
-                                </FrameLayout>
+                                </RelativeLayout>
+                            </FrameLayout>
 
 
-                            </RelativeLayout>
+                        </RelativeLayout>
 
-                            <!--第三个区域-->
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_margin="1dp"
-                                android:layout_weight="1"
-                                android:background="@drawable/video_group_bg"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:gravity="center"
-                                    android:text="报警队列："
-                                    android:textColor="@color/colorText" />
-
-                                <ListView
-                                    android:id="@+id/alarm_list_parent_layout"
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="2dp"></ListView>
-
-                            </LinearLayout>
-
-                        </LinearLayout>
-
-                        <!--右部分-->
-                        <LinearLayout
+                        <!--第二个区域-->
+                        <RelativeLayout
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:padding="1dp">
 
-                            <!--第二个区域-->
-                            <RelativeLayout
+                            <FrameLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_margin="1dp"
-                                android:layout_weight="1"
-                                android:background="@drawable/video_group_bg">
+                                android:layout_height="match_parent"
+                                android:layout_margin="1dp">
 
-                                <FrameLayout
+                                <cn.nodemedia.NodePlayerView
+                                    android:id="@+id/alarm_call_video_view_layout"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:layout_margin="1dp">
+                                    android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
 
-                                    <cn.nodemedia.NodePlayerView
-                                        android:id="@+id/alarm_call_video_view_layout"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent"></cn.nodemedia.NodePlayerView>
-
-                                    <RelativeLayout
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent">
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent">
 
 
-                                        <TextView
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginLeft="4dp"
-                                            android:layout_marginTop="4dp"
-                                            android:includeFontPadding="false"
-                                            android:text="通话对方视频源"
-                                            android:textColor="@color/red"
-                                            android:textSize="10sp" />
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginLeft="4dp"
+                                        android:layout_marginTop="4dp"
+                                        android:includeFontPadding="false"
+                                        android:text="通话对方视频源"
+                                        android:textColor="@color/red"
+                                        android:textSize="10sp" />
 
-                                        <ImageView
-                                            android:id="@+id/alarm_call_video_loading_icon_layout"
-                                            android:layout_width="20dp"
-                                            android:layout_height="20dp"
-                                            android:layout_centerInParent="true"
-                                            android:src="@drawable/ic_loading"
-                                            android:visibility="gone" />
+                                    <ImageView
+                                        android:id="@+id/alarm_call_video_loading_icon_layout"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_centerInParent="true"
+                                        android:src="@drawable/ic_loading"
+                                        android:visibility="gone" />
 
-                                        <TextView
-                                            android:id="@+id/alarm_call_video_loading_tv_layout"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_below="@+id/alarm_call_video_loading_icon_layout"
-                                            android:layout_centerHorizontal="true"
-                                            android:text="正在加载..."
-                                            android:textColor="@color/red"
-                                            android:visibility="gone" />
-
-
-                                    </RelativeLayout>
-                                </FrameLayout>
-
-                            </RelativeLayout>
-
-                            <!--第四个区域-->
-                            <RelativeLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_margin="1dp"
-                                android:layout_weight="1"
-                                android:background="@drawable/video_group_bg">
-
-                                <TextView
-                                    android:id="@+id/processed_alarm_tv_layout"
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center"
-                                    android:text="已处理的报警"
-                                    android:textColor="@color/colorText" />
-
-                                <ListView
-                                    android:id="@+id/processed_alarm_list_layout"
-                                    android:layout_width="fill_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_below="@+id/processed_alarm_tv_layout">
+                                    <TextView
+                                        android:id="@+id/alarm_call_video_loading_tv_layout"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_below="@+id/alarm_call_video_loading_icon_layout"
+                                        android:layout_centerHorizontal="true"
+                                        android:text="正在加载..."
+                                        android:textColor="@color/red"
+                                        android:visibility="gone" />
 
 
-                                </ListView>
+                                </RelativeLayout>
+                            </FrameLayout>
 
-
-                                <!--<TextView-->
-                                <!--android:layout_width="fill_parent"-->
-                                <!--android:layout_height="wrap_content"-->
-                                <!--android:layout_marginLeft="12dp"-->
-                                <!--android:layout_marginTop="20dp"-->
-                                <!--android:includeFontPadding="false"-->
-                                <!--android:text="处理方案:全城戒备"-->
-                                <!--android:textColor="@color/red"-->
-                                <!--android:textSize="14sp" />-->
-
-                                <Button
-                                    android:id="@+id/handler_alarm_btn"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_alignParentBottom="true"
-                                    android:layout_alignParentRight="true"
-                                    android:text="处理该报警" />
-
-                            </RelativeLayout>
-                        </LinearLayout>
+                        </RelativeLayout>
 
                     </LinearLayout>
 
-                    <!--关闭按键-->
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                    <!--下部分-->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
 
-                        <ImageButton
-                            android:id="@+id/close_alarm_btn"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@mipmap/close" />
-                    </RelativeLayout>
+                        <!--供弹列表父布局-->
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="1dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-                </FrameLayout>
+                            <!--报警队列文字提示-->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerHorizontal="true"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center"
+                                android:text="申请供弹列表"
+                                android:textColor="@color/colorYellow" />
+
+                            <!--申请供弹队列-->
+                            <ListView
+                                android:id="@+id/sentinel_request_queue_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="120dp"
+                                android:layout_above="@+id/ammo_box_btn_parent_layout">
+
+                            </ListView>
+
+                            <!--底部按键父布局-->
+                            <RelativeLayout
+                                android:id="@+id/ammo_box_btn_parent_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="36dp"
+                                android:layout_alignParentBottom="true">
+
+                                <Button
+                                    android:id="@+id/accpet_open_box_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="22dp"
+                                    android:background="@drawable/handler_accept_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="同意供弹"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                                <Button
+                                    android:id="@+id/refuse_open_box_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_toRightOf="@+id/accpet_open_box_btn_layout"
+                                    android:background="@drawable/handler_reject_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="关闭供弹"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                                <Button
+                                    android:id="@+id/accpet_open_all_box_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_toRightOf="@+id/refuse_open_box_btn_layout"
+                                    android:background="@drawable/handler_reject_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="同意全部供弹"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                            </RelativeLayout>
+
+                        </RelativeLayout>
+
+                        <!--供弹列表父布局-->
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_margin="1dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <!--报警队列文字提示-->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerHorizontal="true"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center"
+                                android:text="报警队列列表"
+                                android:textColor="@color/colorYellow" />
+
+                            <!--报警队列-->
+                            <ListView
+                                android:id="@+id/alarm_queue_listview_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="120dp"
+                                android:layout_above="@+id/alarm_btn_parent_layout"></ListView>
+
+                            <!--处理报警按键-->
+                            <RelativeLayout
+                                android:id="@+id/alarm_btn_parent_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="36dp"
+                                android:layout_alignParentBottom="true">
+
+                                <Button
+                                    android:id="@+id/colse_alarm_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="22dp"
+                                    android:background="@drawable/handler_accept_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="关闭报警"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                                <Button
+                                    android:id="@+id/handler_alarm_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_toRightOf="@+id/colse_alarm_btn_layout"
+                                    android:background="@drawable/handler_reject_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="处理报警"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                                <Button
+                                    android:id="@+id/colse_all_alarm_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_toRightOf="@+id/handler_alarm_btn_layout"
+                                    android:background="@drawable/handler_reject_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="关闭全部报警"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                            </RelativeLayout>
+
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
-
 
         </FrameLayout>
 

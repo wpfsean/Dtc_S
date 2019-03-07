@@ -28,6 +28,7 @@ import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
 import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipService;
+import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenBoxRequestService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiverAlarmService;
 import com.tehike.client.dtc.multiple.app.project.services.RemoteVoiceOperatService;
 import com.tehike.client.dtc.multiple.app.project.services.RequestWebApiDataService;
@@ -38,11 +39,14 @@ import com.tehike.client.dtc.multiple.app.project.services.TimingRefreshNetworkS
 import com.tehike.client.dtc.multiple.app.project.services.TimingRequestAlarmTypeService;
 import com.tehike.client.dtc.multiple.app.project.services.TimingSendNativeInfoService;
 import com.tehike.client.dtc.multiple.app.project.services.UpdateSystemSettingService;
+import com.tehike.client.dtc.multiple.app.project.services.UpdateSystemTimeService;
 import com.tehike.client.dtc.multiple.app.project.ui.display.SecondDisplayActivity;
-import com.tehike.client.dtc.multiple.app.project.ui.fragments.AlarmFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.BoxFragment;
+import com.tehike.client.dtc.multiple.app.project.ui.fragments.HistoryRecordFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.IntercomCallFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.NetworkBroadcastFragment;
+import com.tehike.client.dtc.multiple.app.project.ui.fragments.ScreenControlFragment;
+import com.tehike.client.dtc.multiple.app.project.ui.fragments.ServiceMangementFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.VideoMonitorFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.SystemSetFragment;
 import com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide;
@@ -195,8 +199,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void initializeSecondaryScreen() {
-
-        Logutil.d(AppConfig.ARGEE_OVERLAY_PERMISSION + "悬窗状态");
         if (AppConfig.ARGEE_OVERLAY_PERMISSION) {
             if (manager == null)
                 manager = (DisplayManager) App.getApplication().getSystemService(Context.DISPLAY_SERVICE);
@@ -331,9 +333,12 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         if (!ServiceUtil.isServiceRunning(TimingSendNativeInfoService.class)) {
             ServiceUtil.startService(TimingSendNativeInfoService.class);
         }
-
-        if (!ServiceUtil.isServiceRunning(TimingCheckVoiceIsLiveService.class)) {
-            ServiceUtil.startService(TimingCheckVoiceIsLiveService.class);
+        //更新系统时间的服务
+        if (!ServiceUtil.isServiceRunning(UpdateSystemTimeService.class)) {
+            ServiceUtil.startService(UpdateSystemTimeService.class);
+        }
+        if (!ServiceUtil.isServiceRunning(ReceiveOpenBoxRequestService.class)) {
+            ServiceUtil.startService(ReceiveOpenBoxRequestService.class);
         }
     }
 
@@ -470,24 +475,21 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
             case R.id.bottom_video_monitor_radio_btn_layout:
                 CustomViewPagerLayout.setCurrentItem(2);
                 break;
-            case R.id.bottom_alarm_radio_btn_layout:
+            case R.id.bottom_screen_control_radio_btn_layout:
                 CustomViewPagerLayout.setCurrentItem(3);
                 break;
             case R.id.bottom_box_radio_btn_layout:
                 CustomViewPagerLayout.setCurrentItem(4);
                 break;
-            case R.id.system_set_btn_layout:
+            case R.id.bottom_service_mangement_radio_btn_layout:
                 CustomViewPagerLayout.setCurrentItem(5);
                 break;
-//            case R.id.history_btn_layout:
-//                //判断语音播放app是否已安装
-//                boolean b = new File("/data/data/com.tehike.wpfse.xfapp.client.project").exists();
-//                Logutil.i("BBB--->>>" + b);
-//                if (b) {
-//                    Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage("com.tehike.wpfse.xfapp.client.project");
-//                    startActivity(LaunchIntent);
-//                }
-//                break;
+            case R.id.bottom_history_record_radio_btn_layout:
+                CustomViewPagerLayout.setCurrentItem(6);
+                break;
+            case R.id.bottom_systemt_setting_radio_btn_layout:
+                CustomViewPagerLayout.setCurrentItem(7);
+                break;
         }
     }
 
@@ -502,8 +504,10 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         allFragmentList.add(new IntercomCallFragment());
         allFragmentList.add(new NetworkBroadcastFragment());
         allFragmentList.add(new VideoMonitorFragment());
-        allFragmentList.add(new AlarmFragment());
+        allFragmentList.add(new ScreenControlFragment());
         allFragmentList.add(new BoxFragment());
+        allFragmentList.add(new ServiceMangementFragment());
+        allFragmentList.add(new HistoryRecordFragment());
         allFragmentList.add(new SystemSetFragment());
         //适配显示
         final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -544,7 +548,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                 bottomRadioGroupLayout.check(bottomRadioGroupLayout.getChildAt(select).getId());
                 continue;
             } else {
-                // bottomRadioGroupLayout.check(bottomRadioGroupLayout.getChildAt(i).getId());
             }
         }
     }
@@ -570,10 +573,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
 
     @Override
     protected void onRestart() {
@@ -680,13 +679,13 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
             handler.removeCallbacksAndMessages(null);
 
 
-        if (differentDislay.mReceiveAlarmBroadcast != null) {
-            this.unregisterReceiver(differentDislay.mReceiveAlarmBroadcast);
-        }
-
-        if (differentDislay.mVideoSourcesBroadcast != null) {
-            this.unregisterReceiver(differentDislay.mVideoSourcesBroadcast);
-        }
+//        if (differentDislay.mReceiveAlarmBroadcast != null) {
+//            this.unregisterReceiver(differentDislay.mReceiveAlarmBroadcast);
+//        }
+//
+//        if (differentDislay.mVideoSourcesBroadcast != null) {
+//            this.unregisterReceiver(differentDislay.mVideoSourcesBroadcast);
+//        }
 
 
         differentDislay.dismiss();

@@ -9,10 +9,10 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 
 import com.tehike.client.dtc.multiple.app.project.App;
-import com.tehike.client.dtc.multiple.app.project.update.InstallUtils;
-import com.tehike.client.dtc.multiple.app.project.update.UpDateInfo;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.update.AppUtils;
+import com.tehike.client.dtc.multiple.app.project.update.InstallUtils;
+import com.tehike.client.dtc.multiple.app.project.update.UpDateInfo;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
@@ -40,19 +40,23 @@ import java.util.concurrent.TimeUnit;
 
 public class TimingAutoUpdateService extends Service {
 
-    //最新下载apk的路径
+    /**
+     * 最新下载apk的路径
+     */
     String sdPath = "";
 
-    //定时的线程池任务
-    ScheduledExecutorService timingPoolTaskService = null;
+    /**
+     * 定时请求更新的线程池任务
+     */
+    ScheduledExecutorService timingRequestUpdateService = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
         //启动线程池服务让子线程去处理
-        if (timingPoolTaskService == null) {
-            timingPoolTaskService = Executors.newSingleThreadScheduledExecutor();
-            timingPoolTaskService.scheduleWithFixedDelay(new AutoUpdateThread(), 8000, AppConfig.REFRESH_DATA_TIME, TimeUnit.MILLISECONDS);
+        if (timingRequestUpdateService == null) {
+            timingRequestUpdateService = Executors.newSingleThreadScheduledExecutor();
+            timingRequestUpdateService.scheduleWithFixedDelay(new AutomaticUpdateThread(), 8000, AppConfig.REFRESH_DATA_TIME, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -65,8 +69,8 @@ public class TimingAutoUpdateService extends Service {
     @Override
     public void onDestroy() {
         //停止线程任务
-        if (timingPoolTaskService != null && !timingPoolTaskService.isShutdown()) {
-            timingPoolTaskService.shutdown();
+        if (timingRequestUpdateService != null && !timingRequestUpdateService.isShutdown()) {
+            timingRequestUpdateService.shutdown();
         }
         //移除Handler监听
         if (handler != null)
@@ -77,7 +81,7 @@ public class TimingAutoUpdateService extends Service {
     /**
      * 子线程请求更新
      */
-    class AutoUpdateThread extends Thread {
+    class AutomaticUpdateThread extends Thread {
         @Override
         public void run() {
             try {
@@ -110,12 +114,16 @@ public class TimingAutoUpdateService extends Service {
     }
 
     /**
-     * 比较更新
+     * 本地版本和服务器版本比较
      */
     private void updateApk(UpDateInfo mUpDateInfo) {
+        //当前版本
         int currentVersionCode = AppUtils.getVersionCode(App.getApplication());
+        //如果本地版本小于服务器版本就执行更新
         if (mUpDateInfo.getVersion() > currentVersionCode) {
             downloadAPK(mUpDateInfo);
+        }else {
+            Logutil.w("无需更新");
         }
     }
 
@@ -127,26 +135,27 @@ public class TimingAutoUpdateService extends Service {
             @Override
             public void run() {
                 try {
+                    //sd卡上存放新版本apk的路径
                     sdPath = Environment.getExternalStorageDirectory() + "/" + AppConfig.SD_DIR + "/" + AppConfig.SOURCES_DIR;
                     // 下载文件
                     HttpURLConnection conn = (HttpURLConnection) new URL(AppConfig.WEB_HOST+ SysinfoUtils.getSysinfo().getWebresourceServer()+AppConfig.UPDATE_APK_PATH+mUpDateInfo.getName()).openConnection();
                     conn.connect();
                     InputStream is = conn.getInputStream();
-
+                    //判断本地是否存在此apk
                     File apkFile = new File(sdPath, mUpDateInfo.getName());
+                    //若存在就删除
                     if (apkFile.exists()) {
                         apkFile.delete();
                     }
+                    //写入sd卡文件夹内
                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
                     byte[] data = new byte[1024];
                     int count = -1;
                     while ((count = is.read(data, 0, 1024)) != -1)
                         outStream.write(data, 0, count);
-
                     outStream.flush();
                     FileOutputStream fos = new FileOutputStream(apkFile);
                     fos.write(outStream.toByteArray());
-
                     outStream.close();
                     fos.flush();
                     fos.close();
@@ -163,13 +172,10 @@ public class TimingAutoUpdateService extends Service {
         }).start();
     }
 
-
-
     /**
      * 安装此apk文件
      */
     protected void installAPK(String appName) {
-        Logutil.d("安装此app");
         //更新apk所在的路径
         String path = sdPath + "/" + appName;
         File apkFile = new File(path);
@@ -177,37 +183,21 @@ public class TimingAutoUpdateService extends Service {
             Logutil.e("Apk文件不存在");
             return;
         }
-
-        //静默更新
+        Logutil.d("CurrentApkPath--->>>"+sdPath);
+        //执行静默更新
         InstallUtils.install(path);
-
-//        //有界面的更新
-//        if (Build.VERSION.SDK_INT >= 24) {
-//            Uri apkUri = FileProvider.getUriForFile(App.getApplication(), AppUtils.getPackageName(App.getApplication()) + ".fileprovider", apkFile);
-//            Intent install = new Intent(Intent.ACTION_VIEW);
-//            install.addCategory(Intent.CATEGORY_DEFAULT);
-//            install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            install.setDataAndType(apkUri, "application/vnd.android.package-archive");
-//            App.getApplication().startActivity(install);
-//        } else {
-//            Intent intent = new Intent();
-//            intent.setAction(Intent.ACTION_VIEW);
-//            intent.addCategory(Intent.CATEGORY_DEFAULT);
-//            intent.setType("application/vnd.android.package-archive");
-//            intent.setData(Uri.fromFile(apkFile));
-//            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
-//            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            App.getApplication().startActivity(intent);
-//        }
     }
 
+    /**
+     * Handler处理子线程发送的消息
+     */
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
                     String appName = (String) msg.obj;
+                    //安装apk
                     installAPK(appName);
                     break;
             }

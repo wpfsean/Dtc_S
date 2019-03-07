@@ -86,7 +86,7 @@ public class TimingSendNativeInfoService extends Service {
                 }
                 sb.append(key).append("=").append(value).append("%");
             }
-            Logutil.d(sb.toString());
+           // Logutil.d(sb.toString());
             Logutil.d("当前设备名:"+currentDeviceName);
             try {
                 String commitInfoUrl = AppConfig.COMMIT_NATIVE_INFO_PATH + sb.toString();

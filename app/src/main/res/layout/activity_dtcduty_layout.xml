@@ -244,8 +244,8 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="72dp"
-                android:layout_marginRight="72dp"
+                android:layout_marginLeft="100dp"
+                android:layout_marginRight="100dp"
                 android:layout_toLeftOf="@+id/right_info_layout"
                 android:layout_toRightOf="@+id/left_info_layout">
                 <LinearLayout
@@ -292,29 +292,11 @@
 
 
                         <RadioButton
+                            android:id="@+id/bottom_screen_control_radio_btn_layout"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:background="@drawable/bottom_srceen_control_btn_bg"
-                            android:button="@null"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-
-                        <RadioButton
-                            android:id="@+id/bottom_alarm_radio_btn_layout"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@drawable/bottom_alarm_btn_bg"
-                            android:button="@null"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-
-                        <RadioButton
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@drawable/bottom_alarm_map_btn_bg"
                             android:button="@null"
                             android:textColor="@color/white"
                             android:textSize="14sp" />
@@ -330,6 +312,7 @@
                             android:textSize="14sp" />
 
                         <RadioButton
+                            android:id="@+id/bottom_service_mangement_radio_btn_layout"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
@@ -339,7 +322,7 @@
                             android:textSize="14sp" />
 
                         <RadioButton
-                            android:id="@+id/history_btn_layout"
+                            android:id="@+id/bottom_history_record_radio_btn_layout"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
@@ -349,7 +332,7 @@
                             android:textSize="14sp" />
 
                         <RadioButton
-                            android:id="@+id/system_set_btn_layout"
+                            android:id="@+id/bottom_systemt_setting_radio_btn_layout"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"

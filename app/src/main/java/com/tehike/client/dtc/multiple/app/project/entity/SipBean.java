@@ -29,6 +29,41 @@ public class SipBean implements Serializable {
     //sip中的面部视频
     private VideoBean videoBean;
 
+    private VideoBean setryBean;
+
+    private VideoBean ammoBean;
+
+    @Override
+    public String toString() {
+        return "SipBean{" +
+                "deviceType='" + deviceType + '\'' +
+                ", id='" + id + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", name='" + name + '\'' +
+                ", number='" + number + '\'' +
+                ", sentryId='" + sentryId + '\'' +
+                ", videoBean=" + videoBean +
+                ", setryBean=" + setryBean +
+                ", ammoBean=" + ammoBean +
+                '}';
+    }
+
+    public VideoBean getSetryBean() {
+        return setryBean;
+    }
+
+    public void setSetryBean(VideoBean setryBean) {
+        this.setryBean = setryBean;
+    }
+
+    public VideoBean getAmmoBean() {
+        return ammoBean;
+    }
+
+    public void setAmmoBean(VideoBean ammoBean) {
+        this.ammoBean = ammoBean;
+    }
+
     public SipBean() {
     }
 
@@ -99,17 +134,5 @@ public class SipBean implements Serializable {
     }
 
 
-    @Override
-    public String toString() {
-        return "SipBean{" +
-                "deviceType='" + deviceType + '\'' +
-                ", id='" + id + '\'' +
-                ", ipAddress='" + ipAddress + '\'' +
-                ", name='" + name + '\'' +
-                ", number='" + number + '\'' +
-                ", sentryId='" + sentryId + '\'' +
-                ", videoBean=" + videoBean +
-                '}';
-    }
 }
 

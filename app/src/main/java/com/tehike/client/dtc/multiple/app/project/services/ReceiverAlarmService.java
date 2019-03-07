@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 
 /**
  * 描述：接收报警的服务
@@ -39,16 +38,18 @@ import java.util.Arrays;
 public class ReceiverAlarmService extends Service {
 
     /**
-     * Tcp服务线程
+     * 接收报警消息的子线程
      */
-    ReceiverAlarmTcpThread thread = null;
+    ReceivingAlarmThread mReceivingAlarmThread = null;
 
     /**
      * TcpSocketServer
      */
     ServerSocket serverSocket = null;
 
-
+    /**
+     * 此服务是否正在运行标识
+     */
     boolean serviceIsStop = false;
 
     @Nullable
@@ -64,15 +65,17 @@ public class ReceiverAlarmService extends Service {
         serviceIsStop = true;
 
         //启动子线程执行socket服务
-        if (thread == null)
-            thread = new ReceiverAlarmTcpThread();
-        new Thread(thread).start();
+        if (mReceivingAlarmThread == null)
+            mReceivingAlarmThread = new ReceivingAlarmThread();
+        new Thread(mReceivingAlarmThread).start();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        //重置标识
         serviceIsStop = false;
+        //关闭tcpServer服务
         if (serverSocket != null) {
             try {
                 serverSocket.close();
@@ -81,16 +84,15 @@ public class ReceiverAlarmService extends Service {
             }
             serverSocket = null;
         }
+        //移除 Handler监听
         if (handler != null)
             handler.removeCallbacksAndMessages(null);
-        Logutil.i("stop");
     }
-
 
     /**
      * 接收友邻哨报警
      */
-    class ReceiverAlarmTcpThread extends Thread {
+    class ReceivingAlarmThread extends Thread {
         @Override
         public void run() {
             try {
@@ -112,11 +114,6 @@ public class ReceiverAlarmService extends Service {
                             flageByte[i] = header[i];
                         }
                         String flag = new String(flageByte, "gb2312");
-
-                        //ATIF CMsg
-                        Logutil.i("flag-->>>" + flag);
-
-                        Logutil.i("524-->>" + Arrays.toString(header));
 
                         AlarmVideoSource alarmVideoSource = new AlarmVideoSource();
                         //获取报警发送者
@@ -180,24 +177,37 @@ public class ReceiverAlarmService extends Service {
         }
     }
 
-    private void speak(String result) {
-        String content = "";
-        for (int i = 0; i < result.length(); i++) {
-            if (ByteUtil.isChineseChar(result.charAt(i))) {
-                content += result.charAt(i);
-            } else {
-                content += result.charAt(i) + " ";
-            }
+    /**
+     * 处理报警信息
+     */
+    private void handlerAlarm(AlarmVideoSource mAlarmVideoSource) {
+        //Log
+        Logutil.d("alarm-->>" + mAlarmVideoSource.toString());
+        //此记录写入file供别人参考(SD卡)
+        RecordLog.wirteLog(mAlarmVideoSource.toString() + "发生报警");
+        //广播，通知此报警
+        Intent alarmIntent = new Intent();
+        alarmIntent.setAction(AppConfig.ALARM_ACTION);
+        alarmIntent.putExtra("alarm", mAlarmVideoSource);
+        App.getApplication().sendBroadcast(alarmIntent);
+        //判断这个报警是否已处理（参考,需要改）
+        if (TextUtils.isEmpty(mAlarmVideoSource.getFaceVideoId())) {
+            App.startSpeaking("值班室关闭报警");
+        } else {
+            //播报报警
+            String speakSomething = mAlarmVideoSource.getFaceVideoName() + "发生" + mAlarmVideoSource.getAlarmType() + "报警";
+            App.startSpeaking(speakSomething);
+            //报警记录写入数据库，方便记录的历史记录依据
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("time", TimeUtils.getCurrentTime());
+            contentValues.put("senderIp", mAlarmVideoSource.getSenderIp());
+            contentValues.put("faceVideoId", mAlarmVideoSource.getFaceVideoId());
+            contentValues.put("faceVideoName", mAlarmVideoSource.getFaceVideoName());
+            contentValues.put("alarmType", mAlarmVideoSource.getAlarmType());
+            contentValues.put("isHandler", "否");
+            new DbUtils(App.getApplication()).insert(DbHelper.TAB_NAME, contentValues);
         }
-        String broadcastIntent = "com.customs.broadcast";
-        Intent intent1 = new Intent(broadcastIntent);
-        if (TextUtils.isEmpty(content)) {
-            content = result;
-        }
-        intent1.putExtra("str", content);
-        App.getApplication().sendBroadcast(intent1);
     }
-
 
     /**
      * Handler处理子线程发送过来 的数据
@@ -208,40 +218,11 @@ public class ReceiverAlarmService extends Service {
 
             switch (msg.what) {
                 case 1:
-
+                    //接收到的报警消息（封装实体）
                     Bundle bundle = msg.getData();
                     AlarmVideoSource mAlarmVideoSource = (AlarmVideoSource) bundle.getSerializable("AlarmVideoSource");
-                    Logutil.d("alarm-->>" + mAlarmVideoSource.toString());
-
-                    //此记录写入file供别人参考
-                    RecordLog.wirteLog(mAlarmVideoSource.toString() + "发生报警");
-
-                    //广播，通知此报警
-                    Intent alarmIntent = new Intent();
-                    alarmIntent.setAction(AppConfig.ALARM_ACTION);
-                    alarmIntent.putExtra("alarm", mAlarmVideoSource);
-                    App.getApplication().sendBroadcast(alarmIntent);
-
-                    //判断这个报警是否已处理（参考,需要改）
-                    if (TextUtils.isEmpty(mAlarmVideoSource.getFaceVideoId())) {
-                        speak("值班室关闭报警");
-                    } else {
-                        //播报报警
-                        String speakSomething = mAlarmVideoSource.getFaceVideoName() + "发生" + mAlarmVideoSource.getAlarmType() + "报警";
-                        speak(speakSomething);
-
-                        //用来写入数据库，方便记录的历史记录依据
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put("time", TimeUtils.getCurrentTime());
-                        contentValues.put("senderIp",mAlarmVideoSource.getSenderIp());
-                        contentValues.put("faceVideoId",mAlarmVideoSource.getFaceVideoId());
-                        contentValues.put("faceVideoName",mAlarmVideoSource.getFaceVideoName());
-                        contentValues.put("alarmType",mAlarmVideoSource.getAlarmType());
-                        contentValues.put("isHandler","否");
-                        new DbUtils(App.getApplication()).insert(DbHelper.TAB_NAME,contentValues);
-                        Logutil.d("数据库写入成功");
-                    }
-
+                    //处理报警信息
+                    handlerAlarm(mAlarmVideoSource);
                     break;
             }
         }

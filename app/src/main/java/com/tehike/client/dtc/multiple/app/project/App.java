@@ -3,8 +3,16 @@ package com.tehike.client.dtc.multiple.app.project;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.app.ZysjSystemManager;
+import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+
+import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
+import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SpeechUtility;
+import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.util.ResourceUtil;
 import com.tehike.client.dtc.multiple.app.project.execption.Cockroach;
 import com.tehike.client.dtc.multiple.app.project.execption.CrashLog;
 import com.tehike.client.dtc.multiple.app.project.execption.ExceptionHandler;
@@ -15,7 +23,9 @@ import com.tehike.client.dtc.multiple.app.project.services.TimingRefreshNetworkS
 import com.tehike.client.dtc.multiple.app.project.services.UpdateSystemSettingService;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.ServiceUtil;
+import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ToastUtils;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -49,6 +59,9 @@ public class App extends Application {
      */
     int threadCount = -1;
 
+    private static SpeechSynthesizer mTts;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -64,7 +77,114 @@ public class App extends Application {
 
         //启动服务
         startServices();
+
+        //初始化语音播放参数
+        initializeParamater();
     }
+
+    /**
+     * 初始化语音播放参数
+     */
+    private void initializeParamater() {
+        SpeechUtility.createUtility(this, "appid=5c2db3fb");
+        mTts = SpeechSynthesizer.createSynthesizer(this, null);
+        if (mTts == null) {
+            Log.e("TAG", "实例化");
+            return;
+        }
+
+        mTts.setParameter(SpeechConstant.PARAMS, null);
+        mTts.setParameter(SpeechConstant.ENGINE_TYPE, "purextts");
+        //设置发音人资源路径
+        mTts.setParameter(ResourceUtil.TTS_RES_PATH, getResourcePath());
+        //设置发音人
+        mTts.setParameter(SpeechConstant.VOICE_NAME, "yifeng");
+
+
+        mTts.setParameter(SpeechConstant.SPEED, "70");
+        //设置合成音调
+        mTts.setParameter(SpeechConstant.PITCH, "50");
+        //设置合成音量
+        mTts.setParameter(SpeechConstant.VOLUME, "80");
+        //设置播放器音频流类型
+        mTts.setParameter(SpeechConstant.STREAM_TYPE, "3");
+
+        // 设置播放合成音频打断音乐播放，默认为true
+        mTts.setParameter(SpeechConstant.KEY_REQUEST_FOCUS, "true");
+    }
+
+    /**
+     * 加载语音播放时的配置参数
+     */
+    private String getResourcePath() {
+        StringBuffer tempBuffer = new StringBuffer();
+        //合成通用资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/pureXtts_common.jet"));
+        tempBuffer.append(";");
+        //发音人资源
+        tempBuffer.append(ResourceUtil.generateResourcePath(this, ResourceUtil.RESOURCE_TYPE.assets, "tts/" + "yifeng" + ".jet"));
+        return tempBuffer.toString();
+    }
+
+    /**
+     * 返回语音播放对象
+     */
+    public static SpeechSynthesizer getmTts(){
+        return mTts;
+    }
+
+    /**
+     * 语音播放
+     */
+    public static void startSpeaking(String str){
+            String content = "";
+
+            for (int i = 0; i < str.length(); i++) {
+                if (StringUtils.isChineseChar(str.charAt(i))) {
+                    content += str.charAt(i);
+                } else {
+                    content += str.charAt(i) + " ";
+                }
+            }
+
+            mTts.startSpeaking(content, new SynthesizerListener() {
+                @Override
+                public void onSpeakBegin() {
+                    Log.e("TAG", "开始播放");
+                }
+
+                @Override
+                public void onBufferProgress(int i, int i1, int i2, String s) {
+                    Log.e("TAG", "");
+                }
+
+                @Override
+                public void onSpeakPaused() {
+                    Log.e("TAG", "暂停播放");
+                }
+
+                @Override
+                public void onSpeakResumed() {
+                    Log.e("TAG", "继续播放");
+                }
+
+                @Override
+                public void onSpeakProgress(int i, int i1, int i2) {
+                    Log.e("TAG", "");
+                }
+
+                @Override
+                public void onCompleted(SpeechError speechError) {
+                    Log.e("TAG", "播放完成");
+                }
+
+                @Override
+                public void onEvent(int i, int i1, int i2, Bundle bundle) {
+                    Log.e("TAG", "");
+                }
+            });
+    }
+
 
     /**
      * 加载配置信息
@@ -99,6 +219,9 @@ public class App extends Application {
 
     }
 
+    /**
+     * 初始化
+     */
     @SuppressLint("WrongConstant")
     private void init() {
         mContext = this;
@@ -112,6 +235,9 @@ public class App extends Application {
         }
     }
 
+    /**
+     * 启动服务
+     */
     private void startServices() {
         //启动cpu和ram监听
         CpuAndRamUtils.getInstance().init(getApplicationContext(), 5 * 1000L);

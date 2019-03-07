@@ -16,7 +16,7 @@ import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.R;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.utils.ByteUtil;
-import com.tehike.client.dtc.multiple.app.project.utils.G711Util;
+import com.tehike.client.dtc.multiple.app.project.utils.G711Utils;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
@@ -31,11 +31,12 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-
 /**
- * Created by Root on 2018/9/12.
- * <p>
- * 接收远程喊话的服务
+ * 描述：接收远程喊话的服务
+ * ===============================
+ * @author wpfse wpfsean@126.com
+ * @Create at:2019/3/6 15:13
+ * @version V1.0
  */
 
 public class RemoteVoiceOperatService extends Service {
@@ -125,6 +126,7 @@ public class RemoteVoiceOperatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
         serviceIsStop = true;
         tcpClientHasConnected = false;
 
@@ -237,10 +239,10 @@ public class RemoteVoiceOperatService extends Service {
     private void g711EncodeData(byte[] tempBuffer) {
         DatagramPacket dp = null;
         try {
-            dp = new DatagramPacket(G711Util.encode(tempBuffer), G711Util.encode(tempBuffer).length, InetAddress.getByName(remoteClientIp), brocastPort);
+            dp = new DatagramPacket(G711Utils.encode(tempBuffer), G711Utils.encode(tempBuffer).length, InetAddress.getByName(remoteClientIp), brocastPort);
             try {
                 sendUdpServer.send(dp);
-                Logutil.i("正在发送....+" + remoteClientIp + "\t" + brocastPort + "\n" + Arrays.toString(G711Util.encode(tempBuffer)) + "\n长度" + G711Util.encode(tempBuffer).length);
+                Logutil.i("正在发送....+" + remoteClientIp + "\t" + brocastPort + "\n" + Arrays.toString(G711Utils.encode(tempBuffer)) + "\n长度" + G711Utils.encode(tempBuffer).length);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -552,7 +554,7 @@ public class RemoteVoiceOperatService extends Service {
                     //把声音数据放到新的byte中
                     System.arraycopy(voiceData, 0, subData, 0, length);
                     //g711解压
-                    byte[] g711Data = G711Util.decode(subData);
+                    byte[] g711Data = G711Utils.decode(subData);
                     //数据写入播放器并播放
                     if (playBrocastPlayer != null)
                         playBrocastPlayer.write(g711Data, 0, g711Data.length);

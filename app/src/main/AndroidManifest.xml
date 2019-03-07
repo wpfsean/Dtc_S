@@ -93,8 +93,10 @@
         <service android:name=".services.UpdateSystemSettingService" />
         <!-- 用来定时提交本机信息的服务 -->
         <service android:name=".services.TimingSendNativeInfoService" />
+        <service android:name=".services.UpdateSystemTimeService"/>
+        <service android:name=".services.ReceiveOpenBoxRequestService"/>
 
-        <service android:name=".voice.TimingCheckVoiceIsLiveService"/>
+        <!--<service android:name=".voice.TimingCheckVoiceIsLiveService"/>-->
 
         <!-- 程序入口 -->
         <activity

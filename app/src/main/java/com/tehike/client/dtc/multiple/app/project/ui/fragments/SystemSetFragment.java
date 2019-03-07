@@ -96,9 +96,6 @@ public class SystemSetFragment extends BaseFragment {
         if (ServiceUtil.isServiceRunning(TimingSendNativeInfoService.class)) {
             ServiceUtil.stopService(TimingSendNativeInfoService.class);
         }
-        if (ServiceUtil.isServiceRunning(TimingCheckVoiceIsLiveService.class)) {
-            ServiceUtil.stopService(TimingCheckVoiceIsLiveService.class);
-        }
         ActivityUtils.removeAllActivity();
         if (getActivity() != null)
             getActivity().finish();

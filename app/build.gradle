@@ -66,4 +66,5 @@ dependencies {
     compile project(':nodemediaclient')
     compile 'com.android.support:recyclerview-v7:26.1.0'
     implementation files('libs/SQLiteStudioRemote.jar')
+    implementation files('libs/Msc.jar')
 }

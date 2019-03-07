@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
+
 /**
  * 描述：定位服务（针对手机）
  * ===============================
@@ -30,6 +31,7 @@ public class LocationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        //初始化
         initializeLocation();
     }
 
@@ -41,6 +43,7 @@ public class LocationService extends Service {
 
     @Override
     public void onDestroy() {
+        //服务关闭时移除监听
         if (locationManager != null) {
             locationManager.removeUpdates(locationListener);
             locationManager = null;
@@ -53,6 +56,7 @@ public class LocationService extends Service {
      */
     @SuppressLint("MissingPermission")
     private void initializeLocation() {
+        //初始化对象
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         //查看定位是否打开
         boolean isGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);

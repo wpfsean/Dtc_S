@@ -131,19 +131,19 @@ public class SipService extends Service implements LinphoneCoreListener {
         String state = registrationState.toString();
         if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationNone.toString())) {
             sRegistrationCallback.registrationNone();
-            Logutil.i("registrationNone");
+         //   Logutil.i("registrationNone");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationProgress.toString())) {
             //  sRegistrationCallback.registrationProgress();
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationOk.toString())) {
             sRegistrationCallback.registrationOk();
             AppConfig.SIP_STATUS = true;
-            Logutil.i("Ok");
+           // Logutil.i("Ok");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationCleared.toString())) {
             sRegistrationCallback.registrationCleared();
-            Logutil.i("registrationCleared");
+          //  Logutil.i("registrationCleared");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationFailed.toString())) {
             sRegistrationCallback.registrationFailed();
-            Logutil.i("registrationFailed");
+           // Logutil.i("registrationFailed");
             AppConfig.SIP_STATUS = false;
         }
     }

@@ -18,16 +18,17 @@ import com.tehike.client.dtc.multiple.app.project.onvif.ResolveVideoSourceRtsp;
 import com.tehike.client.dtc.multiple.app.project.utils.CryptoUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.GsonUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.HttpBasicRequest;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
+import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,12 +38,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 描述：$desc$
+ * 描述：加载video资源 和sip资源
  * ===============================
  *
- * @author $user$ wpfsean@126.com
+ * @author wpfse wpfsean@126.com
  * @version V1.0
- * @Create at:$date$ $time$
+ * @Create at:2019/3/5 14:39
  */
 
 public class RequestWebApiDataService extends Service {
@@ -73,13 +74,15 @@ public class RequestWebApiDataService extends Service {
     List<SipBean> webapiSipSourceList = new ArrayList<>();
 
     /**
-     * 盛放已解析的sip资源的集合
+     * 记录已关联的Sip资源数量
      */
-    List<SipBean> resolveWebapiSipSouceList = new ArrayList<>();
+    int num = -1;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        //初始化
         initialize();
     }
 
@@ -91,16 +94,17 @@ public class RequestWebApiDataService extends Service {
 
     @Override
     public void onDestroy() {
-
+        //关闭请求video资源的定时服务
         if (videoScheduledExecutorService != null && !videoScheduledExecutorService.isShutdown())
             videoScheduledExecutorService.shutdown();
+        //关闭请求Sip资源的定时服务
         if (sipScheduledExecutorService != null && !sipScheduledExecutorService.isShutdown()) {
             sipScheduledExecutorService.shutdown();
         }
+        //移除Handler监听
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
-
         super.onDestroy();
     }
 
@@ -109,17 +113,15 @@ public class RequestWebApiDataService extends Service {
      */
     private void initialize() {
 
+        //加载所有的Video资源
         initializeWebApiVideoSource();
-
-        initializeWebApiSipSource();
     }
-
 
     /**
      * 根据webapi获取所有的Video资源数据
      */
     private void initializeWebApiVideoSource() {
-
+        //拼加的请求videos资源的Url
         String requestUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._WEBAPI_VIDEO_SOURCE;
         //定时线程池任务去执行
         if (videoScheduledExecutorService == null) {
@@ -127,21 +129,6 @@ public class RequestWebApiDataService extends Service {
             videoScheduledExecutorService.scheduleWithFixedDelay(new RequestWebApiVideoSourceThread(requestUrl), 0L, AppConfig.REFRESH_DATA_TIME, TimeUnit.MILLISECONDS);
         }
     }
-
-    /**
-     * 流转字符串
-     */
-    public String readTxt(InputStream in) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        StringBuffer sb = new StringBuffer();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        reader.close();
-        return sb.toString();
-    }
-
 
     /**
      * 子线程请求webapi的video资源
@@ -171,7 +158,7 @@ public class RequestWebApiDataService extends Service {
                     con.connect();
                     if (con.getResponseCode() == 200) {
                         InputStream in = con.getInputStream();
-                        String result = readTxt(in);
+                        String result = StringUtils.readTxt(in);
                         Message message = new Message();
                         message.what = 1;
                         message.obj = result;
@@ -213,7 +200,7 @@ public class RequestWebApiDataService extends Service {
                     JSONArray jsonArray = jsonObject.getJSONArray("sources");
                     for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject jsonItem = jsonArray.getJSONObject(i);
-                        VideoBean mVideo = new VideoBean(jsonItem.getString("channel"), jsonItem.getString("devicetype"), jsonItem.getString("id"), jsonItem.getString("ipaddress"), jsonItem.getString("location"),jsonItem.getString("name"), jsonItem.getString("password"), jsonItem.getInt("port"), jsonItem.getString("username"), "", "", "", "", "", "");
+                        VideoBean mVideo = new VideoBean(jsonItem.getString("channel"), jsonItem.getString("devicetype"), jsonItem.getString("id"), jsonItem.getString("ipaddress"), jsonItem.getString("name"), jsonItem.getString("location"), jsonItem.getString("password"), jsonItem.getInt("port"), jsonItem.getString("username"), "", "", "", "", "", "");
                         webapiVideoSourceList.add(mVideo);
                     }
                     handler.sendEmptyMessage(3);
@@ -236,6 +223,8 @@ public class RequestWebApiDataService extends Service {
         if (webapiVideoSourceList == null || webapiVideoSourceList.size() == 0) {
             return;
         }
+
+        Logutil.d("webapiVideoSourceList--->>" + webapiVideoSourceList.size());
         //遍历解析
         for (int i = 0; i < webapiVideoSourceList.size(); i++) {
 
@@ -299,23 +288,30 @@ public class RequestWebApiDataService extends Service {
      * 保存video资源到本地
      */
     private void saveVideoSource(Message msg) {
+        //接收对象
         Bundle dbundle = msg.getData();
         VideoBean device = (VideoBean) dbundle.getSerializable("device");
+        //添加集合
         resolveWebapiVideoSouceList.add(device);
-        //通过gson把集合转成字符串
+        //判断是否已全部添加
         if (resolveWebapiVideoSouceList.size() == webapiVideoSourceList.size()) {
+            //通过gson把集合转成字符串
             String str = GsonUtils.GsonToString(resolveWebapiVideoSouceList);
             if (TextUtils.isEmpty(str)) {
                 Logutil.e("Gson转字符串失败");
                 return;
             }
+            //写入文件
             FileUtil.writeFile(CryptoUtil.encodeBASE64(str), AppConfig.SOURCES_VIDEO);
-            Logutil.d("resolveWebapiVideoSouceList" + resolveWebapiVideoSouceList.size());
             Logutil.d("Video数据写入完成");
-            resolveWebapiVideoSouceList.clear();
+
+            //发送广播
             Intent intent = new Intent();
             intent.setAction(AppConfig.RESOLVE_VIDEO_DONE_ACTION);
             App.getApplication().sendBroadcast(intent);
+
+            //再加载Sip资源
+            initializeWebApiSipSource();
         }
     }
 
@@ -324,6 +320,7 @@ public class RequestWebApiDataService extends Service {
      */
     private void initializeWebApiSipSource() {
 
+        //拼加请求Sips资源的Url
         String requestUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._WEBAPI_SIP_SOURCE;
 
         //定时线程池任务去执行
@@ -361,7 +358,7 @@ public class RequestWebApiDataService extends Service {
                     con.connect();
                     if (con.getResponseCode() == 200) {
                         InputStream in = con.getInputStream();
-                        String result = readTxt(in);
+                        String result = StringUtils.readTxt(in);
                         Message message = new Message();
                         message.what = 6;
                         message.obj = result;
@@ -408,15 +405,6 @@ public class RequestWebApiDataService extends Service {
                         sipBean.setName(jsonItem.getString("name"));
                         sipBean.setNumber(jsonItem.getString("number"));
                         sipBean.setSentryId(jsonItem.getInt("sentryId") + "");
-                        //判断是否有面部视频
-                        if (!jsonItem.isNull("videosource")) {
-                            //解析面部视频
-                            JSONObject jsonItemVideo = jsonItem.getJSONObject("videosource");
-                            VideoBean mVideo = new VideoBean(jsonItemVideo.getString("channel"), jsonItemVideo.getString("devicetype"), jsonItemVideo.getString("id"), jsonItemVideo.getString("ipaddress"),jsonItem.getString("location"), jsonItemVideo.getString("name"), jsonItemVideo.getString("password"), jsonItemVideo.getInt("port"), jsonItemVideo.getString("username"), "", "", "", "", "", "");
-                            sipBean.setVideoBean(mVideo);
-                        } else {
-                            sipBean.setVideoBean(null);
-                        }
                         webapiSipSourceList.add(sipBean);
                     }
                     handler.sendEmptyMessage(7);
@@ -427,101 +415,118 @@ public class RequestWebApiDataService extends Service {
         } catch (Exception e) {
             Logutil.e("异常-->>" + e.getMessage());
         }
-
     }
 
     /**
-     * 解析Sip的面部视频的rtsp
+     * 关联sip中的哨位视频，面部视频，和弹箱视频
      */
-    private void resolveSipSourceRtsp() {
-        //判断待解析的集合是否为空
-        if (webapiSipSourceList == null || webapiSipSourceList.size() == 0) {
-            return;
-        }
-        //遍历解析
-        for (int i = 0; i < webapiSipSourceList.size(); i++) {
-            final SipBean sipBean = webapiSipSourceList.get(i);
-            VideoBean videoBean = sipBean.getVideoBean();
-            if (videoBean != null) {
-                String deviceType = videoBean.getDevicetype();
-                String ip = videoBean.getIpaddress();
-                //先判断设备类型和ip是否为空
-                if (!TextUtils.isEmpty(deviceType) && !TextUtils.isEmpty(ip)) {
-                    if (deviceType.toUpperCase().equals("ONVIF")) {
-                        videoBean.setServiceUrl("http://" + videoBean.getIpaddress() + "/onvif/device_service");
-                        ResolveVideoSourceRtsp onvif = new ResolveVideoSourceRtsp(videoBean, new ResolveVideoSourceRtsp.GetRtspCallback() {
-                            @Override
-                            public void getDeviceInfoResult(String rtsp, boolean isSuccess, VideoBean mVideoBean) {
-                                //handler处理解析返回的设备对象
-                                Message message = new Message();
-                                Bundle bundle = new Bundle();
-                                sipBean.setVideoBean(mVideoBean);
-                                bundle.putSerializable("device", sipBean);
-                                message.setData(bundle);
-                                message.what = 8;
-                                handler.sendMessage(message);
-                            }
-                        });
-                        //执行线程
-                        App.getExecutorService().execute(onvif);
-                    } else if (deviceType.toUpperCase().equals("RTSP")) {
-                        //若设备类型是RTSP类型，拼加成rtsp
-                        String mRtsp = "rtsp://" + videoBean.getUsername() + ":" + videoBean.getPassword() + "@" + videoBean.getIpaddress() + "/" + videoBean.getChannel();
-                        //同样用handler处理这个设备对象
-                        Message message = new Message();
-                        Bundle bundle = new Bundle();
-                        videoBean.setRtsp(mRtsp);
-                        sipBean.setVideoBean(videoBean);
-                        bundle.putSerializable("device", sipBean);
-                        message.setData(bundle);
-                        message.what = 8;
-                        handler.sendMessage(message);
-                    } else if (deviceType.toUpperCase().equals("RTMP")) {
-                        //若设备类型是RTSP类型，拼加成rtsp
-                        String mRtsp = videoBean.getChannel();
-                        //同样用handler处理这个设备对象
-                        Message message = new Message();
-                        Bundle bundle = new Bundle();
-                        videoBean.setRtsp(mRtsp);
-                        sipBean.setVideoBean(videoBean);
-                        bundle.putSerializable("device", sipBean);
-                        message.setData(bundle);
-                        message.what = 8;
-                        handler.sendMessage(message);
-                    }
-                }
-            } else {
-                //如果为空说明没面部视频
-                Message message = new Message();
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("device", sipBean);
-                message.setData(bundle);
-                message.what = 8;
-                handler.sendMessage(message);
+    private void handlerSipVideoSoucesData() {
+        if (webapiSipSourceList != null && webapiSipSourceList.size() > 0) {
+            for (int i = 0; i < webapiSipSourceList.size(); i++) {
+                num = i;
+                handlerLinkedData(webapiSipSourceList.get(i));
             }
+        } else {
+            Logutil.w("无数据");
         }
     }
 
     /**
-     * 保存sip资源数据
+     * 处理关联数据
      */
-    private void saveSipSource(Message msg) {
-        Bundle dbundle = msg.getData();
-        SipBean device = (SipBean) dbundle.getSerializable("device");
-        resolveWebapiSipSouceList.add(device);
-        //通过gson把集合转成字符串
-        if (resolveWebapiSipSouceList.size() == webapiSipSourceList.size()) {
-            String str = GsonUtils.GsonToString(resolveWebapiSipSouceList);
+    private void handlerLinkedData(final SipBean sipBean) {
+        HttpBasicRequest httpBasicRequest = new HttpBasicRequest(AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._LINKED_VIDEO + sipBean.getId(), new HttpBasicRequest.GetHttpData() {
+            @Override
+            public void httpData(String result) {
+                //判断关联数据是否存在
+                if (TextUtils.isEmpty(result)) {
+                    Logutil.e("无关联视频数据");
+                    return;
+                }
+                try {
+                    String faceKey = "";
+                    String faceVideoId = "";
+                    String sentryKey = "";
+                    String sentryVideoId = "";
+                    String ammoKey = "";
+                    String ammoVideoId = "";
+                    String key = "";
+
+                    JSONArray jsonArray = new JSONArray(result);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        key = jsonObject.getString("Key");
+                        if (!jsonObject.isNull("Value")) {
+                            JSONObject jsonItem = jsonObject.getJSONObject("Value");
+                            String id = jsonItem.getString("id");
+                            if (key.equals("face")) {
+                                faceKey = key;
+                                faceVideoId = id;
+                                for (VideoBean v : resolveWebapiVideoSouceList) {
+                                    if (v.getId().equals(faceVideoId)) {
+                                        sipBean.setVideoBean(v);
+                                    }
+                                }
+                            }
+                            if (key.equals("sentry")) {
+                                sentryKey = key;
+                                sentryVideoId = id;
+                                for (VideoBean v : resolveWebapiVideoSouceList) {
+                                    if (v.getId().equals(sentryVideoId)) {
+                                        sipBean.setSetryBean(v);
+                                    }
+                                }
+                            }
+                            if (key.equals("ammo")) {
+                                ammoKey = key;
+                                ammoVideoId = id;
+                                for (VideoBean v : resolveWebapiVideoSouceList) {
+                                    if (v.getId().equals(sentryVideoId)) {
+                                        sipBean.setAmmoBean(v);
+                                    }
+                                }
+                            }
+                        } else {
+                            if (key.equals("face")) {
+                                faceKey = key;
+                                faceVideoId = "";
+                            }
+                            if (key.equals("sentry")) {
+                                sentryKey = key;
+                                sentryVideoId = "";
+                            }
+                            if (key.equals("ammo")) {
+                                ammoKey = key;
+                                ammoVideoId = "";
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    Logutil.e("解析关联视频数据error-->>" + ex.getMessage());
+                }
+            }
+        });
+        new Thread(httpBasicRequest).start();
+
+        if (num == webapiSipSourceList.size() - 1) {
+
+            String str = GsonUtils.GsonToString(webapiSipSourceList);
+            //判断是否转换成功
             if (TextUtils.isEmpty(str)) {
                 Logutil.e("Gson转字符串失败");
                 return;
             }
-            Logutil.d("resolveWebapiSipSouceList" + resolveWebapiSipSouceList.size());
+            //把字符串写入本地File(注意，若加密，用gson转换后，sip中的VideoBean是null,只能后期再多测试一下)
             FileUtil.writeFile(CryptoUtil.encodeBASE64(str), AppConfig.SOURCES_SIP);
-            Logutil.d("Sip数据写入完成");
-            resolveWebapiSipSouceList.clear();
 
+            Logutil.d("Sip数据写入完成");
+            //日志记录sip缓存完成
+            WriteLogToFile.info("Sip资源数据缓存完成" + TimeUtils.getCurrentTime());
+            webapiSipSourceList.clear();
+            resolveWebapiVideoSouceList.clear();
+            //发送广播广播Sip缓存完成
             App.getApplication().sendBroadcast(new Intent("SipDone"));
+
         }
     }
 
@@ -556,15 +561,13 @@ public class RequestWebApiDataService extends Service {
                     handlerSipSouces(sipSourceResult);
                     break;
                 case 7:
-                    //解析sip数据
-                    resolveSipSourceRtsp();
+                    handlerSipVideoSoucesData();
                     break;
-                case 8:
-                    saveSipSource(msg);
-                    break;
+
             }
         }
     };
+
 }
 
 

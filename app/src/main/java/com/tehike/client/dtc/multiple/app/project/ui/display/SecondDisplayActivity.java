@@ -8,19 +8,16 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.text.Html;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -30,12 +27,11 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -44,28 +40,39 @@ import com.tehike.client.dtc.multiple.app.project.R;
 import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
 import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.AlarmVideoSource;
+import com.tehike.client.dtc.multiple.app.project.entity.EventSources;
+import com.tehike.client.dtc.multiple.app.project.entity.OpenBoxParamater;
+import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SipGroupInfoBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SipGroupItemInfoBean;
 import com.tehike.client.dtc.multiple.app.project.entity.VideoBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
-import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
+import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
+import com.tehike.client.dtc.multiple.app.project.phone.PhoneCallback;
+import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
+import com.tehike.client.dtc.multiple.app.project.phone.SipService;
+import com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide;
 import com.tehike.client.dtc.multiple.app.project.utils.CryptoUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.GsonUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.HttpBasicRequest;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
-import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ToastUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.linphone.core.LinphoneCall;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
@@ -73,12 +80,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cn.nodemedia.NodePlayer;
 import cn.nodemedia.NodePlayerDelegate;
 import cn.nodemedia.NodePlayerView;
 
 /**
- * 描述： 副屏
+ * 描述： 副屏页面
  * ===============================
  *
  * @author wpfse wpfsean@126.com
@@ -87,159 +97,128 @@ import cn.nodemedia.NodePlayerView;
  */
 
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-public class SecondDisplayActivity extends Presentation implements View.OnClickListener {
+public class SecondDisplayActivity extends Presentation {
 
-
-    /**
-     * 屏保的父布局
-     */
-    RelativeLayout screenSaveraParentLayout;
-
-    /**
-     * 副屏的父布局
-     */
-    RelativeLayout secondaryScreenParentLayout;
 
     /**
      * 地图背景布局(用于显示地图)
      */
+    @BindView(R.id.backgroup_map_view_layout)
     ImageView backGrooupMapLayou;
 
     /**
-     * 根布局
+     * 已处理的报警队列
      */
-    RelativeLayout parentLayout;
+    @BindView(R.id.processed_alarm_list_layout)
+    ListView processedAlarmList;
 
     /**
-     * 显示报警点哨兵位置的图片
+     * 展示事件信息的ListView
      */
-    ImageView sentinelPointLayout;
-
-    /**
-     * 左侧功能区的父布局
-     */
-    RelativeLayout leftFunctionParentLayout;
-
-    /**
-     * 右侧功能区的父布局
-     */
-    RelativeLayout rightFunctionParentLayout;
-
-    /**
-     * 左侧显示隐藏的按键
-     */
-    ImageButton leftHideBtn;
-
-    /**
-     * 左侧显示隐藏的按键
-     */
-    ImageButton rightHideBtn;
-
-    /**
-     * 侧边的根布局
-     */
-    RelativeLayout sideParentLayout;
-
-    /**
-     * 显示当前报警信息的父布局
-     */
-    LinearLayout alarmParentLayout;
-
-    /**
-     * 处理报警的按键
-     */
-    Button handlerAlarmBtn;
-
-    /**
-     * 视频加载动画的View
-     */
-    ImageView loadingView;
-
-    /**
-     * 视频加载提示的View
-     */
-    TextView loadingTv;
+    @BindView(R.id.event_queue_listview_layout)
+    ListView eventListViewLayout;
 
     /**
      * 哨位分组布局
      */
+    @BindView(R.id.sentinel_group_listview_layout)
     ListView sentinelListViewLayout;
 
     /**
      * 哨位资源分组布局
      */
+    @BindView(R.id.sentinel_resources_group_listview_layout)
     ListView sentinelResourcesListViewLayout;
 
+    /**
+     * 显示报警点哨兵位置的图片
+     */
+    @BindView(R.id.police_sentinel_image_layout)
+    ImageView sentinelPointLayout;
 
     /**
-     * 左侧功能布局是否隐藏的标识
+     * 根布局
      */
-    boolean leftParentLayotHide = false;
+    @BindView(R.id.sh_police_image_relative)
+    RelativeLayout parentLayout;
 
     /**
-     * 右侧功能布局是否隐藏的标识
+     * 左侧功能区的父布局
      */
-    boolean rightParentLayotHide = false;
+    @BindView(R.id.left_function_parent_layout)
+    RelativeLayout leftFunctionParentLayout;
 
     /**
-     * 关闭报警按键的父布局
+     * 右侧功能区的父布局
      */
-    ImageButton closeAlarmParentLayout;
+    @BindView(R.id.right_function_parent_layout)
+    RelativeLayout rightFunctionParentLayout;
+
+    /**
+     * 左侧显示隐藏的按键
+     */
+    @BindView(R.id.left_hide_btn_layout)
+    ImageButton leftHideBtn;
+
+    /**
+     * 左侧显示隐藏的按键
+     */
+    @BindView(R.id.right_hide_btn_layout)
+    ImageButton rightHideBtn;
+
+    /**
+     * 显示当前报警信息的父布局
+     */
+    @BindView(R.id.display_alarm_parent_layout)
+    LinearLayout alarmParentLayout;
+
+    /**
+     * 视频加载动画的View
+     */
+    @BindView(R.id.alarm_video_loading_icon_layout)
+    ImageView loadingView;
+
+    /**
+     * 视频加载提示的View
+     */
+    @BindView(R.id.alarm_video_loading_tv_layout)
+    TextView loadingTv;
+
+    /**
+     * 播放视频源的View
+     */
+    @BindView(R.id.alarm_video_view_layout)
+    NodePlayerView alarmView;
+
+    /**
+     * 播放对话时对方的视频源
+     */
+    @BindView(R.id.alarm_call_video_view_layout)
+    NodePlayerView alarmCallViewLayout;
+
+    /**
+     * 正在处理哪个哨位的报警信息
+     */
+    @BindView(R.id.alarm_handler_sentry_name_layout)
+    TextView handlerSentryNameLayout;
+
+    /**
+     * 处理报警时的时间信息
+     */
+    @BindView(R.id.alarm_handler_sentry_time_layout)
+    TextView handlerSenrtyTimeLayout;
 
     /**
      * 右侧报警队表
      */
+    @BindView(R.id.alarm_queue_listview_layout)
     ListView alarmQueueListViewLayout;
 
     /**
-     * 所有布防点封装类
+     * 报警队表
      */
-    private AllPointAddress sentinelPointObj;
-
-    /**
-     * 上下文
-     */
-    Context context;
-
-    /**
-     * 网络请求到的背景图片
-     */
-    Bitmap backGroupBitmap = null;
-
-    /**
-     * 状态报警队列的集合
-     */
-    LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
-
-    /**
-     * 接收报警信息的广播
-     */
-    public ReceiveAlarmBroadcast mReceiveAlarmBroadcast;
-
-    /**
-     * 展示报警信息的适配器
-     */
-    AlarmQueueAdapter mAlarmQueueAdapter;
-
-    /**
-     * 接收本地缓存的视频字典广播
-     */
-    public VideoSourcesBroadcast mVideoSourcesBroadcast;
-
-    /**
-     * 当前是否存在报警
-     */
-    boolean isHandleringAlarm = false;
-
-    /**
-     * 已处理的报警队列
-     */
-    ListView processedAlarmList;
-
-    /**
-     * 加载时的动画
-     */
-    Animation mLoadingAnim;
+    @BindView(R.id.sentinel_request_queue_layout)
+    ListView requestOpenBoxViewLayout;
 
     /**
      * 报警视频源播放器
@@ -247,40 +226,14 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
     NodePlayer alarmPlayer;
 
     /**
-     * 播放视频源的View
+     * 报警通话视频源播放器
      */
-    NodePlayerView alarmView;
+    NodePlayer alarmCallPlayer;
 
     /**
-     * 哪个报警被选中时的标识
+     * 加载时的动画
      */
-    int whichAlarmSelected = -1;
-
-    /**
-     * 本地缓存的所有的视频数制（视频字典）
-     */
-    List<VideoBean> allVideoList;
-
-    /**
-     * 展示已处理报警队列 的适配器
-     */
-    ProcessedAlarmQueueAdapter mProcessedAlarmQueueAdapter;
-
-    /**
-     * 用于标识是否正在屏保
-     */
-    boolean isScreenSaver = false;
-
-    /**
-     * 用来接收屏保的通知的广播
-     */
-    ReceiveScreenSaverBroadcast mReceiveScreenSaverBroadcast;
-
-    /**
-     * 用于接收取消屏保的广播
-     */
-    ReceiveCancelScreenSaverBroadcast mReceiveCancelScreenSaverBroadcast;
-
+    Animation mLoadingAnim;
 
     /**
      * 盛放哨位分组的数据
@@ -302,6 +255,137 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
      */
     SentinelResourcesGroupItemAdapter mSentinelResourcesGroupItemAdapter;
 
+    /**
+     * 展示已处理报警队列 的适配器
+     */
+    ProcessedAlarmQueueAdapter mProcessedAlarmQueueAdapter;
+
+    /**
+     * 展示事件的适配器
+     */
+    EventQueueAdapter eventQueueAdapter;
+
+    /**
+     * 上下文
+     */
+    Context context;
+
+    /**
+     * 事件信息的队列
+     */
+    LinkedList<EventSources> eventQueueList = new LinkedList<>();
+
+    /**
+     * 网络请求到的背景图片
+     */
+    Bitmap backGroupBitmap = null;
+
+    /**
+     * 用来存储所有哨位图标的集合
+     */
+    List<View> allView = new ArrayList<>();
+
+    /**
+     * 本地缓存的所有的Sip数制（SIp字典）
+     */
+    List<SipBean> allSipList;
+
+    /**
+     * 本地缓存的所有的视频数制（视频字典）
+     */
+    List<VideoBean> allVideoList;
+
+
+    /**
+     * 广播（Sip缓存完成）
+     */
+    SipSourcesBroadcast mSipSourcesBroadcast;
+
+    /**
+     * 点击哨位图标时产生的哨位面部视频对象
+     */
+    VideoBean setryVideoBean = null;
+
+    /**
+     * 左侧功能布局是否隐藏的标识
+     */
+    boolean leftParentLayotHide = false;
+
+    /**
+     * 右侧功能布局是否隐藏的标识
+     */
+    boolean rightParentLayotHide = false;
+
+    /**
+     * 当前的哨位名（与哪个哨位通话）
+     */
+    String sentryName = "";
+
+    /**
+     * 报警源的Sip号码
+     */
+    String alarmSipNumber = "";
+
+    /**
+     * 哪个开启申请被选中
+     */
+    int whichOpenBoxPosition = -1;
+
+    /**
+     * 哪个报警对象被选中
+     */
+    int whichAlarmPosition = -1;
+
+    /**
+     * 时间显示线程是否正在远行
+     */
+    boolean isTimingThreadWork = false;
+
+    /**
+     * 计时的子线程
+     */
+    Thread timingThread = null;
+
+    /**
+     * 计时
+     */
+    int timingNumber = 0;
+
+    /**
+     * 状态报警队列的集合
+     */
+    LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
+
+    /**
+     * 状态报警队列的集合
+     */
+    LinkedList<OpenBoxParamater> requestOpenBoxQueueList = new LinkedList<>();
+
+    /**
+     * 展示报警信息的适配器
+     */
+    AlarmQueueAdapter mAlarmQueueAdapter;
+
+    /**
+     * 接收报警信息的广播
+     */
+    public ReceiveAlarmBroadcast mReceiveAlarmBroadcast;
+
+    /**
+     * 接收开箱申请的广播
+     */
+    ReceiveBoxBroadcast mReceiveBoxBroadcast;
+
+    /**
+     * 展示申请供弹的适配器
+     */
+    RequestOpenBoxQueueAdapter requestOpenBoxQueueAdapter;
+
+    /**
+     * 接收本地缓存的视频字典广播
+     */
+    public VideoSourcesBroadcast mVideoSourcesBroadcast;
+
 
     public SecondDisplayActivity(Context outerContext, Display display) {
         super(outerContext, display);
@@ -311,136 +395,53 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         //隐藏状态栏
         hideTitleBar();
-
-        setContentView(R.layout.activity_seconddisplay_layout);
-
-        //初始化View
-        initializeView();
-
-        //加载所有的报警队列数据
-        initlizeAlarmQueueAdapterData();
-
-        //从网络加载背景地图的图片
-        initBackgroupBitmap(AppConfig.BACKGROUP_MAP_URL);
-
-        //注册广播接收报警信息
-        registerReceiveAlarmBroadcast();
-
-        //注册广播接收屏保的消息
-        registerReceiveScreenSaverBroadcast();
-
-        //注册广播接收取消屏保的消息
-        registerCancelReceiveScreenSaverBroadcast();
-
-        //加载已处理的报警信息
-        initProcessedAlarmData();
-
+        //加载本地的Sip资源
+        initSipSources();
         //加载本地的所有的视频资源
         initVideoSources();
-
+        //加载布局
+        setContentView(R.layout.activity_seconddisplay_layout);
+        //框架
+        ButterKnife.bind(this);
+        //初始化VIew
+        initView();
+        //加载背景地图
+        initBackgroupBitmap(AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig.BACKGROUP_MAP_URL);
+        //加载已处理的报警信息
+        initProcessedAlarmData();
+        //加载事件信息
+        initEventData();
         //初始化哨位分组数据
         initSentinelGroupData();
+        //注册广播接收报警信息
+        registerReceiveAlarmBroadcast();
+        //注册广播监听申请供弹
+        registerReceiveBoxBroadcast();
+        //加载所有的报警队列数据
+        initlizeAlarmQueueAdapterData();
     }
 
-    /**
-     * 加载哨位分组数据
-     */
-    private void initSentinelGroupData() {
+    private void initView() {
 
-        //判断网络
-        if (!NetworkUtils.isConnected()) {
-            handler.sendEmptyMessage(11);
-            return;
-        }
-        //请求sip分组数据的Url
-        String sipGroupUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._USIPGROUPS;
-
-        //请求sip组数据
-        HttpBasicRequest thread = new HttpBasicRequest(sipGroupUrl, new HttpBasicRequest.GetHttpData() {
-            @Override
-            public void httpData(String result) {
-                //无数据
-                if (TextUtils.isEmpty(result)) {
-                    Logutil.e("请求sip组无数据");
-                    handler.sendEmptyMessage(12);
-                    return;
-                }
-                //数据异常
-                if (result.contains("Execption")) {
-                    Logutil.e("请求sip组数据异常" + result);
-                    handler.sendEmptyMessage(12);
-                    return;
-                }
-                Logutil.d("當前數據分組信息--->>>" + result);
-                //让handler去处理数据
-                Message sipGroupMess = new Message();
-                sipGroupMess.what = 13;
-                sipGroupMess.obj = result;
-                handler.sendMessage(sipGroupMess);
-            }
-        });
-        new Thread(thread).start();
-
+        //加载动画
+        mLoadingAnim = AnimationUtils.loadAnimation(context, R.anim.loading);
+        //报警视频播放器
+        alarmPlayer = new NodePlayer(context);
+        alarmPlayer.setPlayerView(alarmView);
+        alarmPlayer.setVideoEnable(true);
+        alarmPlayer.setAudioEnable(false);
+        //接收到报警后的通话视频
+        alarmCallPlayer = new NodePlayer(context);
+        alarmCallPlayer.setPlayerView(alarmCallViewLayout);
+        alarmCallPlayer.setVideoEnable(true);
+        alarmCallPlayer.setAudioEnable(false);
 
     }
 
     /**
-     * 加载所有的本地视频资源
-     */
-    private void initVideoSources() {
-        try {
-            allVideoList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_VIDEO).toString()), VideoBean.class);
-            Logutil.d("我获取到数据了" + allVideoList.toString());
-        } catch (Exception e) {
-            Logutil.e("取video字典广播异常---->>>" + e.getMessage());
-            registerAllVideoSourceDoneBroadcast();
-        }
-    }
-
-    /**
-     * 初始化所有的已处理的报警信息数据
-     */
-    private void initProcessedAlarmData() {
-
-        LinkedList<AlarmVideoSource> mlist = new LinkedList<>();
-        mlist.clear();
-
-        Cursor c = new DbUtils(App.getApplication()).query(DbHelper.TAB_NAME, null, null, null, null, null, null, null);
-        if (c == null) {
-            Logutil.e("c is null");
-            return;
-        }
-        if (c.moveToFirst()) {
-            do {
-                AlarmVideoSource alarmVideoSource = new AlarmVideoSource();
-                String time = c.getString(c.getColumnIndex("time"));
-                String senderIp = c.getString(c.getColumnIndex("senderIp"));
-                String faceVideoId = c.getString(c.getColumnIndex("faceVideoId"));
-                String faceVideoName = c.getString(c.getColumnIndex("faceVideoName"));
-                String alarmType = c.getString(c.getColumnIndex("alarmType"));
-                String isHandler = c.getString(c.getColumnIndex("isHandler"));
-                // Logutil.d(time + "\t" + senderIp + "\t" + faceVideoId + "\t" + faceVideoName + "\t" + alarmType + "\t" + isHandler);
-                alarmVideoSource.setSenderIp(senderIp);
-                alarmVideoSource.setFaceVideoId(faceVideoId);
-                alarmVideoSource.setAlarmType(alarmType);
-                alarmVideoSource.setFaceVideoName(faceVideoName);
-                mlist.add(alarmVideoSource);
-            } while (c.moveToNext());
-        }
-
-        if (mProcessedAlarmQueueAdapter != null) {
-            mProcessedAlarmQueueAdapter = null;
-        }
-        mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
-        processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
-        mProcessedAlarmQueueAdapter.notifyDataSetChanged();
-    }
-
-    /**
-     * 隐藏TitleBar
+     * 隐藏状态栏
      */
     private void hideTitleBar() {
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -449,65 +450,39 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
     }
 
     /**
-     * 初始化View
+     * 加载本地的已缓存完成的Sip
      */
-    private void initializeView() {
-        //屏保的父布局
-        screenSaveraParentLayout = this.findViewById(R.id.screen_saver_parent_layout);
-        //副屏的根布局
-        secondaryScreenParentLayout = this.findViewById(R.id.secondary_screen_parent_layout);
-        //加载动画
-        mLoadingAnim = AnimationUtils.loadAnimation(context, R.anim.loading);
-        //显示地图的布局
-        backGrooupMapLayou = this.findViewById(R.id.backgroup_map_view_layout);
-        //显示哨位信息的图片布局
-        sentinelPointLayout = findViewById(R.id.police_sentinel_image_layout);
-        //显示地图的父布局
-        parentLayout = findViewById(R.id.sh_police_image_relative);
-        //显示报警信息的父而已
-        alarmParentLayout = findViewById(R.id.display_alarm_parent_layout);
-        //关闭报警页面的父按键
-        closeAlarmParentLayout = findViewById(R.id.close_alarm_btn);
-        //左侧功能区的父布局
-        leftFunctionParentLayout = this.findViewById(R.id.left_function_parent_layout);
-        //右侧功能区的父布局
-        rightFunctionParentLayout = this.findViewById(R.id.right_function_parent_layout);
-        //左侧显示或隐藏的按键
-        leftHideBtn = this.findViewById(R.id.left_hide_btn_layout);
-        //右侧显示或隐藏的按键
-        rightHideBtn = this.findViewById(R.id.right_hide_btn_layout);
-        //侧边根布局
-        sideParentLayout = this.findViewById(R.id.side_parent_layout);
-        //左侧按键监听
-        leftHideBtn.setOnClickListener(this);
-        //右侧按键监听
-        rightHideBtn.setOnClickListener(this);
-        //处理报警按键监听
-        closeAlarmParentLayout.setOnClickListener(this);
-        //视频加载动画
-        loadingView = findViewById(R.id.alarm_video_loading_icon_layout);
-        //视频加载提示
-        loadingTv = findViewById(R.id.alarm_video_loading_tv_layout);
-        //显示报警画面的视频View
-        alarmView = findViewById(R.id.alarm_video_view_layout);
-        //报警视频播放器
-        alarmPlayer = new NodePlayer(context);
-        alarmPlayer.setPlayerView(alarmView);
-        alarmPlayer.setVideoEnable(true);
-        alarmPlayer.setAudioEnable(false);
-        //处理按键报警
-        handlerAlarmBtn = findViewById(R.id.handler_alarm_btn);
-        handlerAlarmBtn.setOnClickListener(this);
-        //已处理的队列
-        processedAlarmList = findViewById(R.id.processed_alarm_list_layout);
+    private void initSipSources() {
+        try {
+            allSipList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_SIP).toString()), SipBean.class);
+        } catch (Exception e) {
+            //异常后注册广播用来接收sip缓存完成的通知
+            registerAllSipSourceDoneBroadcast();
+        }
+    }
 
-        //哨位分组
-        sentinelListViewLayout = findViewById(R.id.sentinel_group_listview_layout);
-        //哨位资源分组
-        sentinelResourcesListViewLayout = findViewById(R.id.sentinel_resources_group_listview_layout);
-        //右侧报警队列的ListView
-        alarmQueueListViewLayout = findViewById(R.id.alarm_queue_listview_layout);
+    /**
+     * 注册广播监听Sip资源缓存完成
+     */
+    private void registerAllSipSourceDoneBroadcast() {
+        mSipSourcesBroadcast = new SipSourcesBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("SipDone");
+        context.registerReceiver(mSipSourcesBroadcast, intentFilter);
+    }
 
+    /**
+     * Sip字典广播
+     */
+    class SipSourcesBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try {
+                allSipList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_SIP).toString()), SipBean.class);
+            } catch (Exception e) {
+                Logutil.e("取allSipList字典广播异常---->>>" + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -551,470 +526,49 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
         if (bitmap != null) {
             backGrooupMapLayou.setImageBitmap(bitmap);
             backGroupBitmap = bitmap;
-            initAllSentinelPoints(AppConfig.ALL_SENTINEL_POINT);
         } else {
             Logutil.e("请求到的背景图片为空---");
         }
     }
 
     /**
-     * 加载所有布防数据
+     * 初始化所有的已处理的报警信息数据
      */
-    private void initAllSentinelPoints(final String s) {
+    private void initProcessedAlarmData() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpURLConnection con = (HttpURLConnection) new URL(s).openConnection();
-                    con.setRequestMethod("GET");
-                    con.setConnectTimeout(3000);
-                    con.setReadTimeout(3000);
-                    String authString = "admin" + ":" + "pass";
-                    con.setRequestProperty("Authorization", "Basic " + new String(Base64.encode(authString.getBytes(), 0)));
-                    con.connect();
-                    if (con.getResponseCode() == 200) {
-                        InputStream in = con.getInputStream();
-                        String result = StringUtils.readTxt(in);
-                        if (TextUtils.isEmpty(result)) {
-                            Log.e("TAG", "请求无数据");
-                            return;
-                        }
-                        Message returnLoginMess = new Message();
-                        returnLoginMess.obj = result;
-                        returnLoginMess.what = 2;
-                        handler.sendMessage(returnLoginMess);
-                    } else {
-                        Log.e("TAG", "Sysinfo接口返回非200" + con.getResponseCode());
-                    }
-                    con.disconnect();
-                } catch (Exception e) {
-                    Logutil.e("请求哨位点数据异常--->>" + e.getMessage());
-                }
-            }
-        }).start();
-    }
+        LinkedList<AlarmVideoSource> mlist = new LinkedList<>();
+        mlist.clear();
 
-    /**
-     * 处理所有的哨位数据
-     */
-    private void handlerSentinelPointData(String result) {
-        try {
-            if (TextUtils.isEmpty(result)) {
-                Logutil.e("handlerSentinelPointData() data is null");
-                return;
-            }
-            sentinelPointObj = new AllPointAddress();
-            List<AllPointAddress.CamerasBean> cameras = new ArrayList<>();
-            List<AllPointAddress.TerminalsBean> terminals = new ArrayList<>();
-
-            JSONObject parentJson = new JSONObject(result);
-            JSONArray camerasArray = parentJson.getJSONArray("cameras");
-            JSONArray terminalsArray = parentJson.getJSONArray("terminals");
-            for (int i = 0; i < camerasArray.length(); i++) {
-                AllPointAddress.CamerasBean camerasBean = new AllPointAddress.CamerasBean();
-                AllPointAddress.CamerasBean.LocationBean mLocationBean = new AllPointAddress.CamerasBean.LocationBean();
-                JSONObject cameraJsonItem = camerasArray.getJSONObject(i);
-                String guid = cameraJsonItem.getString("guid");
-                String mapUrl = cameraJsonItem.getString("mapUrl");
-                String name = cameraJsonItem.getString("name");
-                JSONObject c_locationJson = cameraJsonItem.getJSONObject("location");
-                int x = c_locationJson.getInt("x");
-                int y = c_locationJson.getInt("y");
-                mLocationBean.setX(x);
-                mLocationBean.setY(y);
-                camerasBean.setGuid(guid);
-                camerasBean.setMapUrl(mapUrl);
-                camerasBean.setName(name);
-                camerasBean.setLocation(mLocationBean);
-                cameras.add(camerasBean);
-            }
-
-            for (int j = 0; j < terminalsArray.length(); j++) {
-                AllPointAddress.TerminalsBean mTerminalsBean = new AllPointAddress.TerminalsBean();
-                JSONObject terminalsJsonItem = terminalsArray.getJSONObject(j);
-
-                String guid = terminalsJsonItem.getString("guid");
-                String mapUrl = terminalsJsonItem.getString("mapUrl");
-                String name = terminalsJsonItem.getString("name");
-                JSONObject t_locationJson = terminalsJsonItem.getJSONObject("location");
-                int x = t_locationJson.getInt("x");
-                int y = t_locationJson.getInt("y");
-                AllPointAddress.TerminalsBean.LocationBeanX mLocationBeanX = new AllPointAddress.TerminalsBean.LocationBeanX();
-                mTerminalsBean.setGuid(guid);
-                mTerminalsBean.setMapUrl(mapUrl);
-                mTerminalsBean.setName(name);
-                mLocationBeanX.setX(x);
-                mLocationBeanX.setY(y);
-                mTerminalsBean.setLocation(mLocationBeanX);
-                terminals.add(mTerminalsBean);
-            }
-            sentinelPointObj.setCameras(cameras);
-            sentinelPointObj.setTerminals(terminals);
-            List<AllPointAddress.CamerasBean> c = sentinelPointObj.getCameras();
-
-            Log.d("TAG", "cc" + c.size());
-            Log.e("TAG", sentinelPointObj.getCameras().size() + "////" + sentinelPointObj.getTerminals().size());
-            handler.sendEmptyMessage(3);
-        } catch (Exception e) {
-            Log.e("TAG", "解析异常---->>>" + e.getMessage());
-        }
-    }
-
-
-    List<View> allView = new ArrayList<>();
-
-    /**
-     * 计算所有布防点的位置
-     */
-    private void disPlayAllSentinelPoints() {
-        if (backGroupBitmap == null) {
-            Logutil.e("backGroupBitmap  is null");
+        Cursor c = new DbUtils(App.getApplication()).query(DbHelper.TAB_NAME, null, null, null, null, null, null, null);
+        if (c == null) {
+            Logutil.e("c is null");
             return;
         }
-        //计算网络加载的背景图片的宽高
-        int netBitmapWidth = backGroupBitmap.getWidth();
-        int netBitmapHeight = backGroupBitmap.getHeight();
-        //计算本身背景布局的宽高
-        int nativeLayoutwidth = backGrooupMapLayou.getWidth();
-        int nativeLayoutHeight = backGrooupMapLayou.getHeight();
-        //算出宽高比例
-        float percent_width = (float) netBitmapWidth / nativeLayoutwidth;
-        float percent_height = (float) netBitmapHeight / nativeLayoutHeight;
-
-        //宽高比例保留两位小数
-        DecimalFormat decimalFormat = new DecimalFormat("0.00");
-        String width_format = decimalFormat.format(percent_width);
-        String height_format = decimalFormat.format(percent_height);
-
-        //最终的宽高比例
-        float final_format_width = Float.parseFloat(width_format);
-        float final_format_height = Float.parseFloat(height_format);
-
-
-        ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(sentinelPointLayout.getLayoutParams());
-
-        //清除上次的所有的图标
-        if (parentLayout != null) {
-            if (allView != null && allView.size() > 0) {
-                for (int n = 0; n < allView.size(); n++) {
-                    parentLayout.removeView(allView.get(n));
-                    allView.clear();
-                }
-            }
+        if (c.moveToFirst()) {
+            do {
+                AlarmVideoSource alarmVideoSource = new AlarmVideoSource();
+                String time = c.getString(c.getColumnIndex("time"));
+                String senderIp = c.getString(c.getColumnIndex("senderIp"));
+                String faceVideoId = c.getString(c.getColumnIndex("faceVideoId"));
+                String faceVideoName = c.getString(c.getColumnIndex("faceVideoName"));
+                String alarmType = c.getString(c.getColumnIndex("alarmType"));
+                String isHandler = c.getString(c.getColumnIndex("isHandler"));
+                // Logutil.d(time + "\t" + senderIp + "\t" + faceVideoId + "\t" + faceVideoName + "\t" + alarmType + "\t" + isHandler);
+                alarmVideoSource.setSenderIp(senderIp);
+                alarmVideoSource.setFaceVideoId(faceVideoId);
+                alarmVideoSource.setAlarmType(alarmType);
+                alarmVideoSource.setFaceVideoName(faceVideoName);
+                alarmVideoSource.setTime(time);
+                mlist.add(alarmVideoSource);
+            } while (c.moveToNext());
         }
 
-        if (sentinelResourcesGroupItemList != null && sentinelResourcesGroupItemList.size() > 0) {
-            for (int i = 0; i < sentinelResourcesGroupItemList.size(); i++) {
-                String location = sentinelResourcesGroupItemList.get(i).getLocation();
-                if (!TextUtils.isEmpty(location)) {
-                    String locationArry[] = location.split(",");
-                    int x = Integer.parseInt(locationArry[0]);
-                    int y = Integer.parseInt(locationArry[1]);
-                    // Logutil.d("x-->>" + x + "\n y---->>" + y);
-
-                    float sentinel_width = Float.parseFloat(decimalFormat.format(x / final_format_width)) - 15;
-                    float sentinel_height = Float.parseFloat(decimalFormat.format(y / final_format_height)) - 48;
-                    //定义显示其他哨兵的ImageView
-                    ImageView other_image = new ImageView(App.getApplication());
-                    allView.add(other_image);
-                    displaySentinel(other_image, layoutParams, (int) sentinel_width, (int) sentinel_height);
-                }
-            }
+        if (mProcessedAlarmQueueAdapter != null) {
+            mProcessedAlarmQueueAdapter = null;
         }
-
-        Logutil.d("sentinelResourcesGroupItemList--->>" + sentinelResourcesGroupItemList.size());
-        Logutil.d("allView---->>" + allView.size());
-
-
-        if (allView != null && allView.size() > 0) {
-            for (int k = 0; k < allView.size(); k++) {
-                final int finalK = k;
-                allView.get(k).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Logutil.d("图标点击了" + sentinelResourcesGroupItemList.get(finalK).getLocation() + "\t" + sentinelResourcesGroupItemList.get(finalK).getName());
-
-                        String location = sentinelResourcesGroupItemList.get(finalK).getLocation();
-                        int x = Integer.parseInt(location.split(",")[0]);
-
-                        Message message = new Message();
-                        message.what = 16;
-                        message.obj = allView.get(finalK);
-                        message.arg1 = x;
-                        handler.sendMessage(message);
-
-                    }
-                });
-            }
-        }
-
-
-//        for (int i = 0; i < sentinelPointObj.getCameras().size(); i++) {
-//            //计算哨位报警图距离显示图片控件左上角的xy坐标
-//            float sentinel_width = Float.parseFloat(decimalFormat.format(sentinelPointObj.getCameras().get(i).getLocation().getX() / final_format_width)) - 15;
-//            float sentinel_height = Float.parseFloat(decimalFormat.format(sentinelPointObj.getCameras().get(i).getLocation().getY() / final_format_height)) - 48;
-//            //定义显示其他哨兵的ImageView
-//            ImageView other_image = new ImageView(App.getApplication());
-//
-//
-//            displaySentinel(other_image, layoutParams, (int) sentinel_width, (int) sentinel_height);
-//        }
-    }
-    //Popuwindow
-    PopupWindow window;
-
-    /**
-     * 根据View位置显示Popuwindow
-     */
-    private void showPopu(View v, int x) {
-        //显示View
-        View inflate = LayoutInflater.from(context).inflate(R.layout.popu_layout, null);
-        //Popuwindow
-        window = new PopupWindow(inflate, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);
-        //背景
-        ColorDrawable dw = new ColorDrawable(0xb0000000);
-        window.setBackgroundDrawable(dw);
-        window.setOutsideTouchable(true);
-        //位置
-        window.showAsDropDown(v, 2500, -100);
-        window.update();
-    }
-
-
-    /**
-     * 展示所有的布防点
-     */
-    private void displaySentinel(ImageView imageView, final ViewGroup.MarginLayoutParams layoutParams, final int sentinel_width, final int sentinel_height) {
-        if (layoutParams != null) {
-            imageView.setImageResource(R.mipmap.sentinel);
-
-            //设置其他哨兵哨位点的位置
-            layoutParams.setMargins(sentinel_width, sentinel_height, 0, 0);
-            //将哨位点位置设置到RelativeLayout.LayoutParams
-            RelativeLayout.LayoutParams rllps = new RelativeLayout.LayoutParams(layoutParams);
-            //设置显示其他哨兵位置图片的宽高
-            rllps.width = 30;
-            rllps.height = 48;
-            //显示图片
-            parentLayout.addView(imageView, rllps);
-
-        }
-    }
-
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.left_hide_btn_layout:
-                //隐藏或显示左侧的功能布局
-                hideLeftParentLayout();
-                break;
-            case R.id.right_hide_btn_layout:
-                //隐藏或显示右侧的功能布局
-                hideRightParentLayout();
-                break;
-            case R.id.close_alarm_btn:
-                Logutil.d("点击了啊。 ");
-                isHandleringAlarm = false;
-                //关闭报警页面
-//                if (isHandleringAlarm)
-                alarmParentLayout.setVisibility(View.GONE);
-                break;
-
-            case R.id.handler_alarm_btn:
-                // context.sendBroadcast(new Intent("handlerAlarm"));
-                break;
-        }
-
-    }
-
-    /**
-     * 注册广播用于接收屏保通知
-     */
-    private void registerReceiveScreenSaverBroadcast() {
-        mReceiveScreenSaverBroadcast = new ReceiveScreenSaverBroadcast();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(AppConfig.SCREEN_SAVER_ACTION);
-        context.registerReceiver(mReceiveScreenSaverBroadcast, intentFilter);
-    }
-
-    /**
-     * 广播用来接收主屏是否已屏保的通知
-     */
-    class ReceiveScreenSaverBroadcast extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            handler.sendEmptyMessage(9);
-        }
-    }
-
-    /**
-     * 屏保操作
-     */
-    private void handlerScreenSaver() {
-        Logutil.d("副屏要屏保了");
-        //更改正在屏保的标识
-        isScreenSaver = true;
-        //显示屏保
-        screenSaveraParentLayout.setVisibility(View.VISIBLE);
-        //隐藏副屏的父布局
-        secondaryScreenParentLayout.setVisibility(View.GONE);
-    }
-
-    /**
-     * 注册广播用于接收取消屏保通知
-     */
-    private void registerCancelReceiveScreenSaverBroadcast() {
-        mReceiveCancelScreenSaverBroadcast = new ReceiveCancelScreenSaverBroadcast();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(AppConfig.CANCEL_SCREEN_SAVER_ACTION);
-        context.registerReceiver(mReceiveCancelScreenSaverBroadcast, intentFilter);
-    }
-
-    /**
-     * 广播用来接收取消主屏是否已屏保的通知
-     */
-    class ReceiveCancelScreenSaverBroadcast extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            handler.sendEmptyMessage(10);
-        }
-    }
-
-    /**
-     * 取消屏保的操作
-     */
-    private void handlerCancelScreenSaver() {
-        Logutil.e("副屏要取消屏保了");
-        //更改正在屏保的标识
-        isScreenSaver = false;
-        //显示屏保
-        screenSaveraParentLayout.setVisibility(View.GONE);
-        //隐藏副屏的父布局
-        secondaryScreenParentLayout.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * 注册接收报警信息广播
-     */
-    private void registerReceiveAlarmBroadcast() {
-        mReceiveAlarmBroadcast = new ReceiveAlarmBroadcast();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(AppConfig.ALARM_ACTION);
-        context.registerReceiver(mReceiveAlarmBroadcast, intentFilter);
-    }
-
-    /**
-     * 广播接收报警信息
-     */
-    class ReceiveAlarmBroadcast extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            AlarmVideoSource alarm = (AlarmVideoSource) intent.getSerializableExtra("alarm");
-            Logutil.i("Alarm-->>" + alarm);
-
-            if (TextUtils.isEmpty(alarm.getFaceVideoName()) && TextUtils.isEmpty(alarm.getAlarmType())) {
-                Logutil.e("alarm--- is null");
-                return;
-            }
-            alarmQueueList.add(alarm);
-            Logutil.d("alarmQueueList--- size-->>" + alarmQueueList.size());
-
-            if (mAlarmQueueAdapter != null)
-                mAlarmQueueAdapter.notifyDataSetChanged();
-
-            initProcessedAlarmData();
-
-            Message message = new Message();
-            message.what = 5;
-            message.obj = alarm;
-            handler.sendMessage(message);
-
-            playAlarmVideo(alarm);
-        }
-    }
-
-    /**
-     * 注册广播监听所有的视频数据是否解析完成
-     */
-    private void registerAllVideoSourceDoneBroadcast() {
-        mVideoSourcesBroadcast = new VideoSourcesBroadcast();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(AppConfig.RESOLVE_VIDEO_DONE_ACTION);
-        context.registerReceiver(mVideoSourcesBroadcast, intentFilter);
-    }
-
-    /**
-     * Video字典广播
-     */
-    class VideoSourcesBroadcast extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            try {
-                //取出本地缓存的所有的Video数据
-                allVideoList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_VIDEO).toString()), VideoBean.class);
-            } catch (Exception e) {
-                Logutil.e("取video字典广播异常---->>>" + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * 展示报警队列的适配器
-     */
-    class AlarmQueueAdapter extends BaseAdapter {
-
-        private int selectedItem = -1;
-
-        @Override
-        public int getCount() {
-            return alarmQueueList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return alarmQueueList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public void setSelectedItem(int selectedItem) {
-            this.selectedItem = selectedItem;
-        }
-
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-
-            ViewHolder viewHolder;
-            if (convertView == null) {
-                viewHolder = new ViewHolder();
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_alarm_listview_layout, null);
-                viewHolder.alarmName = convertView.findViewById(R.id.alarm_list_item_name_layout);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) convertView.getTag();
-            }
-            viewHolder.alarmName.setText(alarmQueueList.get(position).getFaceVideoName() + "\n" + alarmQueueList.get(position).getAlarmType());
-
-            if (position == selectedItem) {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_normal);
-                viewHolder.alarmName.setTextColor(0xffff0000);
-            } else {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_selected);
-                viewHolder.alarmName.setTextColor(0xffffffff);
-            }
-            return convertView;
-        }
-
-        //内部类
-        class ViewHolder {
-            TextView alarmName;
-        }
+        mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
+        processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
+        mProcessedAlarmQueueAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -1024,7 +578,6 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
 
         LinkedList<AlarmVideoSource> mlist;
 
-        private int selectedItem = -1;
 
         public ProcessedAlarmQueueAdapter(LinkedList<AlarmVideoSource> mlist) {
             this.mlist = mlist;
@@ -1045,8 +598,104 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
             return position;
         }
 
-        public void setSelectedItem(int selectedItem) {
-            this.selectedItem = selectedItem;
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ViewHolder viewHolder;
+            if (convertView == null) {
+                viewHolder = new ViewHolder();
+                convertView = LayoutInflater.from(context).inflate(R.layout.fragment_alarm_processed_event_item_layout, null);
+                viewHolder.alarmEventName = convertView.findViewById(R.id.alarm_processed_event_name_layout);
+                viewHolder.alarmType = convertView.findViewById(R.id.alarm_processed_event_type_layout);
+                viewHolder.alarmTime = convertView.findViewById(R.id.alarm_processed_event_time_layout);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+            viewHolder.alarmEventName.setText(mlist.get(position).getFaceVideoName());
+            viewHolder.alarmType.setText(mlist.get(position).getAlarmType());
+            viewHolder.alarmTime.setText(mlist.get(position).getTime());
+            return convertView;
+        }
+
+        //内部类
+        class ViewHolder {
+            //报警地点
+            TextView alarmEventName;
+            //报警类型
+            TextView alarmType;
+            //报警发生时间
+            TextView alarmTime;
+
+        }
+    }
+
+    /**
+     * 加载事件信息
+     */
+    private void initEventData() {
+
+        //清空事件队列
+        if (eventQueueList != null && eventQueueList.size() > 0) {
+            eventQueueList.clear();
+        }
+        //查询数据库
+        Cursor c = new DbUtils(App.getApplication()).query(DbHelper.EVENT_TAB_NAME, null, null, null, null, null, null, null);
+        if (c == null) {
+            Logutil.e("c is null");
+            return;
+        }
+        //遍历Cursor
+        if (c.moveToFirst()) {
+            do {
+                EventSources mEventSources = new EventSources();
+                String time = c.getString(c.getColumnIndex("time"));
+                String event = c.getString(c.getColumnIndex("event"));
+                mEventSources.setEvent(event);
+                mEventSources.setTime(time);
+                eventQueueList.add(mEventSources);
+            } while (c.moveToNext());
+        }
+        //把事件队列反转一下，最新的放在上面
+        eventQueueList = reverseLinkedList(eventQueueList);
+        //适配器展示
+        if (eventQueueAdapter == null) {
+            eventQueueAdapter = new EventQueueAdapter();
+            eventListViewLayout.setAdapter(eventQueueAdapter);
+        }
+        eventQueueAdapter.notifyDataSetChanged();
+
+    }
+
+    /**
+     * 反转linkedlist
+     */
+    private LinkedList reverseLinkedList(LinkedList linkedList) {
+        LinkedList<Object> newLinkedList = new LinkedList<>();
+        for (Object object : linkedList) {
+            newLinkedList.add(0, object);
+        }
+        return newLinkedList;
+    }
+
+    /**
+     * 展示事件信息的适配器
+     */
+    class EventQueueAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            return eventQueueList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return eventQueueList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
         }
 
 
@@ -1056,138 +705,67 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
             ViewHolder viewHolder;
             if (convertView == null) {
                 viewHolder = new ViewHolder();
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_alarm_listview_layout, null);
-                viewHolder.alarmName = convertView.findViewById(R.id.alarm_list_item_name_layout);
+                convertView = LayoutInflater.from(context).inflate(R.layout.fragment_processed_event_item_layout, null);
+                viewHolder.eventName = convertView.findViewById(R.id.processed_event_name_layout);
+                viewHolder.eventTime = convertView.findViewById(R.id.processed_event_time_layout);
                 convertView.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-            viewHolder.alarmName.setText(mlist.get(position).getFaceVideoName());
+            viewHolder.eventName.setText(eventQueueList.get(position).getEvent());
+            viewHolder.eventTime.setText(eventQueueList.get(position).getTime());
 
-            if (position == selectedItem) {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_normal);
-                viewHolder.alarmName.setTextColor(0xffff0000);
-            } else {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_selected);
-                viewHolder.alarmName.setTextColor(0xffffffff);
-            }
             return convertView;
         }
 
         //内部类
         class ViewHolder {
-            TextView alarmName;
+
+            //事件名称
+            TextView eventName;
+            //事件发生时间
+            TextView eventTime;
         }
     }
 
     /**
-     * 初始化数据
+     * 加载哨位分组数据
      */
-    private void initlizeAlarmQueueAdapterData() {
+    private void initSentinelGroupData() {
 
-        //显示报警列表的适配器
-        mAlarmQueueAdapter = new AlarmQueueAdapter();
-        alarmQueueListViewLayout.setAdapter(mAlarmQueueAdapter);
-        //默认第一个选中
-        mAlarmQueueAdapter.setSelectedItem(0);
-        whichAlarmSelected = 0;
-        mAlarmQueueAdapter.notifyDataSetChanged();
+        //判断网络
+        if (!NetworkUtils.isConnected()) {
+            handler.sendEmptyMessage(11);
+            return;
+        }
+        //请求sip分组数据的Url
+        String sipGroupUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._USIPGROUPS;
 
-
-        alarmQueueListViewLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        //请求sip组数据
+        HttpBasicRequest thread = new HttpBasicRequest(sipGroupUrl, new HttpBasicRequest.GetHttpData() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mAlarmQueueAdapter.setSelectedItem(position);
-                whichAlarmSelected = position;
-                mAlarmQueueAdapter.notifyDataSetChanged();
-                playAlarmVideo(alarmQueueList.get(whichAlarmSelected));
+            public void httpData(String result) {
+                //无数据
+                if (TextUtils.isEmpty(result)) {
+                    Logutil.e("请求sip组无数据");
+                    handler.sendEmptyMessage(12);
+                    return;
+                }
+                //数据异常
+                if (result.contains("Execption")) {
+                    Logutil.e("请求sip组数据异常" + result);
+                    handler.sendEmptyMessage(12);
+                    return;
+                }
+                Logutil.d("當前數據分組信息--->>>" + result);
+                //让handler去处理数据
+                Message sipGroupMess = new Message();
+                sipGroupMess.what = 13;
+                sipGroupMess.obj = result;
+                handler.sendMessage(sipGroupMess);
             }
         });
-
-    }
-
-    /**
-     * 隐藏或显示右侧的功能布局
-     */
-    private void hideRightParentLayout() {
-        if (!rightParentLayotHide) {
-            rightParentLayotHide = true;
-            rightFunctionParentLayout.setVisibility(View.GONE);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) rightHideBtn.getLayoutParams();
-            layoutParams.setMargins(200, 0, 0, 0);
-            rightHideBtn.setLayoutParams(layoutParams);
-        } else {
-            rightParentLayotHide = false;
-            rightFunctionParentLayout.setVisibility(View.VISIBLE);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) rightHideBtn.getLayoutParams();
-            layoutParams.setMargins(0, 0, 290, 0);
-            rightHideBtn.setLayoutParams(layoutParams);
-        }
-    }
-
-    /**
-     * 隐藏或显示左侧的功能布局
-     */
-    private void hideLeftParentLayout() {
-        if (!leftParentLayotHide) {
-            leftParentLayotHide = true;
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) leftHideBtn.getLayoutParams();
-            layoutParams.leftMargin = leftHideBtn.getLeft() - 290;
-            leftHideBtn.setLayoutParams(layoutParams);
-            TranslateAnimation animation = new TranslateAnimation(290, 0, 0, 0);
-            animation.setDuration(2000);
-            animation.setFillAfter(false);
-            leftFunctionParentLayout.startAnimation(animation);
-            leftFunctionParentLayout.clearAnimation();
-            leftFunctionParentLayout.setVisibility(View.GONE);
-        } else {
-            leftParentLayotHide = false;
-            leftFunctionParentLayout.setVisibility(View.VISIBLE);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) leftHideBtn.getLayoutParams();
-            layoutParams.leftMargin = leftHideBtn.getLeft() + 290;
-            leftHideBtn.setLayoutParams(layoutParams);
-        }
-    }
-
-    /**
-     * 播放报警源的视频
-     */
-    private void playAlarmVideo(AlarmVideoSource mAlarmVideoSource) {
-        loadingView.startAnimation(mLoadingAnim);
-        if (alarmPlayer != null && alarmPlayer.isPlaying()) {
-            alarmPlayer.stop();
-        }
-        //查询报警源的视频信息
-        if (allVideoList != null && allVideoList.size() > 0) {
-            for (VideoBean device : allVideoList) {
-                if (device != null) {
-                    if (device.getId().equals(mAlarmVideoSource.getFaceVideoId())) {
-                        String rtsp = device.getRtsp();
-                        if (!TextUtils.isEmpty(rtsp)) {
-                            Logutil.d("Rtsp-->>>" + rtsp);
-                            alarmPlayer.setInputUrl(rtsp);
-                            alarmPlayer.setNodePlayerDelegate(new NodePlayerDelegate() {
-                                @Override
-                                public void onEventCallback(NodePlayer player, int event, String msg) {
-                                    if (event == 1001 || event == 1102 || event == 1104) {
-                                        handler.sendEmptyMessage(7);
-                                    } else {
-                                        handler.sendEmptyMessage(6);
-                                    }
-                                }
-                            });
-                            alarmPlayer.start();
-                        } else {
-                            handler.sendEmptyMessage(8);
-                        }
-                    } else {
-                        handler.sendEmptyMessage(8);
-                    }
-                } else {
-                    handler.sendEmptyMessage(8);
-                }
-            }
-        }
+        new Thread(thread).start();
     }
 
     /**
@@ -1258,80 +836,6 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
 
             }
         });
-    }
-
-    /**
-     * 哨位分组适配器
-     */
-    class SentinelGroupAdapter extends BaseAdapter {
-        //选中对象的标识
-        private int clickTemp = -1;
-        //布局加载器
-        private LayoutInflater layoutInflater;
-
-        //构造函数
-        public SentinelGroupAdapter(Context context) {
-            layoutInflater = LayoutInflater.from(context);
-        }
-
-        @Override
-        public int getCount() {
-            return sentinelGroupItemList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return sentinelGroupItemList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public void setSeclection(int position) {
-            clickTemp = position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder viewHolder = null;
-
-            if (convertView == null) {
-                viewHolder = new ViewHolder();
-                convertView = layoutInflater.inflate(R.layout.item_video_group_monifor_layout, null);
-                viewHolder.videoGroupName = (TextView) convertView.findViewById(R.id.video_group_name_layout);
-                viewHolder.videoGroupParentLayout = (RelativeLayout) convertView.findViewById(R.id.video_group_parent_layout);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) convertView.getTag();
-            }
-
-            SipGroupInfoBean videoGroupInfoBean = sentinelGroupItemList.get(position);
-
-            if (videoGroupInfoBean != null)
-                viewHolder.videoGroupName.setText(videoGroupInfoBean.getName());
-
-            //选中状态
-            if (clickTemp == position) {
-                viewHolder.videoGroupName.setTextColor(0xffffffff);
-                viewHolder.videoGroupParentLayout.setBackgroundResource(R.mipmap.dtc_bg_list_group_selected);
-            } else {
-                viewHolder.videoGroupName.setTextColor(0xff6adeff);
-                viewHolder.videoGroupParentLayout.setBackgroundResource(R.mipmap.dtc_bg_list_group_normal);
-            }
-            return convertView;
-        }
-
-        /**
-         * 内部类
-         */
-        class ViewHolder {
-            //显示分组名
-            TextView videoGroupName;
-            //分组item的父布局
-            RelativeLayout videoGroupParentLayout;
-        }
     }
 
     /**
@@ -1409,6 +913,12 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
                             sentinelResourcesGroupItemList.add(groupItemInfoBean);
                         }
                     }
+
+                    //  Logutil.d(allSipList.size() + "\t" + allSipList.toString());
+                    //     Logutil.d("sentinelResourcesGroupItemList--->>" + sentinelResourcesGroupItemList.size() + "\t" + sentinelResourcesGroupItemList.toString());
+//
+
+
                     handler.sendEmptyMessage(15);
                 } catch (JSONException e) {
                     Logutil.e("Sip组内数据解析异常::" + e.getMessage());
@@ -1416,6 +926,80 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
             }
         });
         new Thread(httpThread).start();
+    }
+
+    /**
+     * 哨位分组适配器
+     */
+    class SentinelGroupAdapter extends BaseAdapter {
+        //选中对象的标识
+        private int clickTemp = -1;
+        //布局加载器
+        private LayoutInflater layoutInflater;
+
+        //构造函数
+        public SentinelGroupAdapter(Context context) {
+            layoutInflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        public int getCount() {
+            return sentinelGroupItemList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return sentinelGroupItemList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void setSeclection(int position) {
+            clickTemp = position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder viewHolder = null;
+
+            if (convertView == null) {
+                viewHolder = new ViewHolder();
+                convertView = layoutInflater.inflate(R.layout.item_video_group_monifor_layout, null);
+                viewHolder.videoGroupName = (TextView) convertView.findViewById(R.id.video_group_name_layout);
+                viewHolder.videoGroupParentLayout = (RelativeLayout) convertView.findViewById(R.id.video_group_parent_layout);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            SipGroupInfoBean videoGroupInfoBean = sentinelGroupItemList.get(position);
+
+            if (videoGroupInfoBean != null)
+                viewHolder.videoGroupName.setText(videoGroupInfoBean.getName());
+
+            //选中状态
+            if (clickTemp == position) {
+                viewHolder.videoGroupName.setTextColor(0xffffffff);
+                viewHolder.videoGroupParentLayout.setBackgroundResource(R.mipmap.dtc_bg_list_group_selected);
+            } else {
+                viewHolder.videoGroupName.setTextColor(0xff6adeff);
+                viewHolder.videoGroupParentLayout.setBackgroundResource(R.mipmap.dtc_bg_list_group_normal);
+            }
+            return convertView;
+        }
+
+        /**
+         * 内部类
+         */
+        class ViewHolder {
+            //显示分组名
+            TextView videoGroupName;
+            //分组item的父布局
+            RelativeLayout videoGroupParentLayout;
+        }
     }
 
     /**
@@ -1460,6 +1044,7 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
+
             SipGroupItemInfoBean mDevice = sentinelResourcesGroupItemList.get(position);
             viewHolder.sipItemName.setText(mDevice.getName());
             return convertView;
@@ -1470,33 +1055,1027 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
         }
     }
 
-    @Override
-    public boolean onTouchEvent(@NonNull MotionEvent event) {
+    /**
+     * 计算所有布防点的位置
+     */
+    private void disPlayAllSentinelPoints() {
+        if (backGroupBitmap == null) {
+            Logutil.e("backGroupBitmap  is null");
+            return;
+        }
+        //计算网络加载的背景图片的宽高
+        int netBitmapWidth = backGroupBitmap.getWidth();
+        int netBitmapHeight = backGroupBitmap.getHeight();
+        //计算本身背景布局的宽高
+        int nativeLayoutwidth = backGrooupMapLayou.getWidth();
+        int nativeLayoutHeight = backGrooupMapLayou.getHeight();
+        //算出宽高比例
+        float percent_width = (float) netBitmapWidth / nativeLayoutwidth;
+        float percent_height = (float) netBitmapHeight / nativeLayoutHeight;
 
-        Logutil.d("副屏点击" + ActivityUtils.getTopActivity());
-        if (window != null && window.isShowing()){
-            window.dismiss();
+        //宽高比例保留两位小数
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        String width_format = decimalFormat.format(percent_width);
+        String height_format = decimalFormat.format(percent_height);
+
+        //最终的宽高比例
+        float final_format_width = Float.parseFloat(width_format);
+        float final_format_height = Float.parseFloat(height_format);
+
+
+        ViewGroup.MarginLayoutParams layoutParams = new ViewGroup.MarginLayoutParams(sentinelPointLayout.getLayoutParams());
+
+        //清除上次的所有的图标
+        if (parentLayout != null) {
+            if (allView != null && allView.size() > 0) {
+                ViewGroup viewGroup = (ViewGroup) allView.get(0).getParent();
+                for (int n = 0; n < allView.size(); n++) {
+                    View view = allView.get(n);
+                    if (view != null) {
+                        viewGroup.removeView(view);
+                    }
+                }
+                viewGroup.invalidate();
+                allView.clear();
+            }
+        }
+        //遍历显示所有的哨位图标
+        if (sentinelResourcesGroupItemList != null && sentinelResourcesGroupItemList.size() > 0) {
+            for (int i = 0; i < sentinelResourcesGroupItemList.size(); i++) {
+                String location = sentinelResourcesGroupItemList.get(i).getLocation();
+                if (!TextUtils.isEmpty(location)) {
+                    String locationArry[] = location.split(",");
+                    int x = Integer.parseInt(locationArry[0]);
+                    int y = Integer.parseInt(locationArry[1]);
+                    float sentinel_width = Float.parseFloat(decimalFormat.format(x / final_format_width)) - 15;
+                    float sentinel_height = Float.parseFloat(decimalFormat.format(y / final_format_height)) - 48;
+                    //定义显示其他哨兵的ImageView
+                    ImageView other_image = new ImageView(App.getApplication());
+                    allView.add(other_image);
+                    displaySentinel(other_image, layoutParams, (int) sentinel_width, (int) sentinel_height);
+                }
+            }
+        }
+        //遍历加监听
+        if (allView != null && allView.size() > 0) {
+            for (int k = 0; k < allView.size(); k++) {
+
+                final int finalK = k;
+                allView.get(k).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String location = sentinelResourcesGroupItemList.get(finalK).getLocation();
+                        final int x = Integer.parseInt(location.split(",")[0]);
+                        String currentClickBeanId = sentinelResourcesGroupItemList.get(finalK).getId();
+                        if (TextUtils.isEmpty(currentClickBeanId)) {
+                            Logutil.d("为空了-->>" + currentClickBeanId);
+                            return;
+                        }
+                        //查询当前点击对象的面部视频
+                        if (allSipList != null && allSipList.size() > 0) {
+                            for (int i = 0; i < allSipList.size(); i++) {
+                                String deviceId = allSipList.get(i).getId();
+                                if (allSipList.get(i).getId().equals(currentClickBeanId)) {
+                                    setryVideoBean = allSipList.get(i).getSetryBean();
+                                }
+                            }
+                        }
+
+                        Logutil.d("setryVideoBean--->>" + setryVideoBean.toString());
+//                        //显示当前Popuwindow
+//                        context.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                showSentinelPopuWindow(allView.get(finalK), x, sentinelResourcesGroupItemList.get(finalK));
+//                            }
+//                        });
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * 展示所有的布防点
+     */
+    private void displaySentinel(ImageView imageView, final ViewGroup.MarginLayoutParams layoutParams, final int sentinel_width, final int sentinel_height) {
+        if (layoutParams != null) {
+            imageView.setImageResource(R.mipmap.sentinel);
+
+            //设置其他哨兵哨位点的位置
+            layoutParams.setMargins(sentinel_width, sentinel_height, 0, 0);
+            //将哨位点位置设置到RelativeLayout.LayoutParams
+            RelativeLayout.LayoutParams rllps = new RelativeLayout.LayoutParams(layoutParams);
+            //设置显示其他哨兵位置图片的宽高
+            rllps.width = 30;
+            rllps.height = 48;
+            //显示图片
+            parentLayout.addView(imageView, rllps);
+
+        }
+    }
+
+    /**
+     * 侧边显示或隐藏
+     */
+    @OnClick({R.id.left_hide_btn_layout, R.id.right_hide_btn_layout})
+    public void slideHideOrShow(View v) {
+        switch (v.getId()) {
+            case R.id.left_hide_btn_layout:
+                //隐藏或显示左侧的功能布局
+                hideLeftParentLayout();
+                break;
+            case R.id.right_hide_btn_layout:
+                //隐藏或显示右侧的功能布局
+                hideRightParentLayout();
+                break;
+        }
+    }
+
+    /**
+     * 隐藏或显示右侧的功能布局
+     */
+    private void hideRightParentLayout() {
+        if (!rightParentLayotHide) {
+            rightParentLayotHide = true;
+            rightFunctionParentLayout.setVisibility(View.GONE);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) rightHideBtn.getLayoutParams();
+            layoutParams.setMargins(200, 0, 0, 0);
+            rightHideBtn.setLayoutParams(layoutParams);
+        } else {
+            rightParentLayotHide = false;
+            rightFunctionParentLayout.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) rightHideBtn.getLayoutParams();
+            layoutParams.setMargins(0, 0, 290, 0);
+            rightHideBtn.setLayoutParams(layoutParams);
+        }
+    }
+
+    /**
+     * 隐藏或显示左侧的功能布局
+     */
+    private void hideLeftParentLayout() {
+        if (!leftParentLayotHide) {
+            leftParentLayotHide = true;
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) leftHideBtn.getLayoutParams();
+            layoutParams.leftMargin = leftHideBtn.getLeft() - 290;
+            leftHideBtn.setLayoutParams(layoutParams);
+            TranslateAnimation animation = new TranslateAnimation(290, 0, 0, 0);
+            animation.setDuration(2000);
+            animation.setFillAfter(false);
+            leftFunctionParentLayout.startAnimation(animation);
+            leftFunctionParentLayout.clearAnimation();
+            leftFunctionParentLayout.setVisibility(View.GONE);
+        } else {
+            leftParentLayotHide = false;
+            leftFunctionParentLayout.setVisibility(View.VISIBLE);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) leftHideBtn.getLayoutParams();
+            layoutParams.leftMargin = leftHideBtn.getLeft() + 290;
+            leftHideBtn.setLayoutParams(layoutParams);
+        }
+    }
+
+    /**
+     * 注册接收申请供弹信息广播
+     */
+    private void registerReceiveBoxBroadcast() {
+        mReceiveBoxBroadcast = new ReceiveBoxBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.BOX_ACTION);
+        context.registerReceiver(mReceiveBoxBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播接收申请开箱信息
+     */
+    class ReceiveBoxBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            initProcessedAlarmData();
+
+            initEventData();
+
+            OpenBoxParamater boxbean = (OpenBoxParamater) intent.getSerializableExtra("box");
+            Message message = new Message();
+            message.what = 17;
+            message.obj = boxbean;
+            handler.sendMessage(message);
+
+        }
+    }
+
+    /**
+     * 注册接收报警信息广播
+     */
+    private void registerReceiveAlarmBroadcast() {
+        mReceiveAlarmBroadcast = new ReceiveAlarmBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.ALARM_ACTION);
+        context.registerReceiver(mReceiveAlarmBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播接收报警信息
+     */
+    class ReceiveAlarmBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            //接收报警对象
+            AlarmVideoSource alarm = (AlarmVideoSource) intent.getSerializableExtra("alarm");
+            Logutil.i("Alarm-->>" + alarm);
+            //判断报警对象是否为空
+            if (TextUtils.isEmpty(alarm.getFaceVideoName()) && TextUtils.isEmpty(alarm.getAlarmType())) {
+                Logutil.e("alarm--- is null");
+                return;
+            }
+            //添加到集合
+            alarmQueueList.add(alarm);
+            Logutil.d("alarmQueueList--- size-->>" + alarmQueueList.size());
+            //刷新适配器
+            handler.sendEmptyMessage(3);
+            //加载已处理的报警数据
+            initProcessedAlarmData();
+            //加载所有的事件信息数据
+            initEventData();
+
+            //遍历查获此报警来源的sip号码
+            for (int i = 0; i < allSipList.size(); i++) {
+                SipBean mSipBean = allSipList.get(i);
+                if (mSipBean.getIpAddress().equals(alarm.getSenderIp())) {
+                    alarmSipNumber = mSipBean.getNumber();
+                    sentryName = mSipBean.getName();
+                }
+            }
+            Logutil.d("alarmSipNum--->>" + alarmSipNumber);
+            Logutil.d("isCalling" + AppConfig.IS_CALLING);
+            //如果非通话中，就直接拨打电话电话并
+            if (!AppConfig.IS_CALLING) {
+                if (!TextUtils.isEmpty(alarmSipNumber)) {
+                    try {
+                        //延时三秒后执行，为了让语音把报警内存播报完成
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    //播报
+                    App.startSpeaking("正在呼叫" + sentryName);
+                    //电话连接
+                    Linphone.callTo(alarmSipNumber, false);
+
+                    threadStart();
+                }
+                //播放报警视频源
+                playAlarmVideo(alarm);
+
+                //播放报警时的视频源
+                playAlarmCallVideo(alarm);
+            }
+        }
+    }
+
+    /**
+     * 展示报警队列的适配器
+     */
+    class AlarmQueueAdapter extends BaseAdapter {
+
+        private int selectedItem = -1;
+
+        @Override
+        public int getCount() {
+            return alarmQueueList.size();
         }
 
-        if (ActivityUtils.getTopActivity().equals("com.tehike.client.jst.app.project.ui.ScreenSaverActivity")) {
-            ActivityUtils.getTopActivity().finish();
-            handlerCancelScreenSaver();
+        @Override
+        public Object getItem(int position) {
+            return alarmQueueList.get(position);
         }
-        // ActivityUtils.removeActivity();
-        return super.onTouchEvent(event);
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void setSelectedItem(int selectedItem) {
+            this.selectedItem = selectedItem;
+        }
+
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ViewHolder viewHolder;
+            if (convertView == null) {
+                viewHolder = new ViewHolder();
+                convertView = LayoutInflater.from(context).inflate(R.layout.item_alarm_listview_layout, null);
+                viewHolder.alarmName = convertView.findViewById(R.id.alarm_list_item_name_layout);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+            viewHolder.alarmName.setText(alarmQueueList.get(position).getFaceVideoName() + "\t" + alarmQueueList.get(position).getAlarmType());
+
+            if (position == selectedItem) {
+                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_normal);
+                viewHolder.alarmName.setTextColor(0xffffffff);
+            } else {
+                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_selected);
+
+                viewHolder.alarmName.setTextColor(0xffff0000);
+            }
+            return convertView;
+        }
+
+        //内部类
+        class ViewHolder {
+            TextView alarmName;
+        }
+    }
+
+    /**
+     * 加载所有的本地视频资源
+     */
+    private void initVideoSources() {
+        try {
+            allVideoList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_VIDEO).toString()), VideoBean.class);
+            Logutil.d("我获取到数据了" + allVideoList.toString());
+        } catch (Exception e) {
+            Logutil.e("取video字典广播异常---->>>" + e.getMessage());
+            registerAllVideoSourceDoneBroadcast();
+        }
+    }
+
+    /**
+     * 注册广播监听所有的视频数据是否解析完成
+     */
+    private void registerAllVideoSourceDoneBroadcast() {
+        mVideoSourcesBroadcast = new VideoSourcesBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.RESOLVE_VIDEO_DONE_ACTION);
+        context.registerReceiver(mVideoSourcesBroadcast, intentFilter);
+    }
+
+    /**
+     * Video字典广播
+     */
+    class VideoSourcesBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try {
+                //取出本地缓存的所有的Video数据
+                allVideoList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_VIDEO).toString()), VideoBean.class);
+            } catch (Exception e) {
+                Logutil.e("取video字典广播异常---->>>" + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 展示报警队列的适配器
+     */
+    class RequestOpenBoxQueueAdapter extends BaseAdapter {
+
+        private int selectedItem = -1;
+
+        @Override
+        public int getCount() {
+            return requestOpenBoxQueueList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return requestOpenBoxQueueList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public void setSelectedItem(int selectedItem) {
+            this.selectedItem = selectedItem;
+            notifyDataSetChanged();
+        }
+
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ViewHolder viewHolder;
+            if (convertView == null) {
+                viewHolder = new ViewHolder();
+                convertView = LayoutInflater.from(context).inflate(R.layout.item_alarm_listview_layout, null);
+                viewHolder.alarmName = convertView.findViewById(R.id.alarm_list_item_name_layout);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            for (int i = 0; i < allSipList.size(); i++) {
+                SipBean mSipBean = allSipList.get(i);
+                if (mSipBean.getIpAddress().equals(requestOpenBoxQueueList.get(position).getSendIp())) {
+                    String textStr = mSipBean.getName() + " <font color=\"#FF0000\">" + "申请供弹" + "</font>";
+                    viewHolder.alarmName.setText(Html.fromHtml(textStr));
+                }
+            }
+
+
+            if (position == selectedItem) {
+                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_normal);
+                viewHolder.alarmName.setTextColor(0xffffffff);
+            } else {
+                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_selected);
+
+                viewHolder.alarmName.setTextColor(0xffff0000);
+            }
+            return convertView;
+        }
+
+        //内部类
+        class ViewHolder {
+            TextView alarmName;
+        }
+    }
+
+    /**
+     * 播放报警源的视频
+     */
+    private void playAlarmVideo(AlarmVideoSource mAlarmVideoSource) {
+        loadingView.startAnimation(mLoadingAnim);
+        if (alarmPlayer != null && alarmPlayer.isPlaying()) {
+            alarmPlayer.stop();
+        }
+        //查询报警源的视频信息
+        if (allVideoList != null && allVideoList.size() > 0) {
+            for (VideoBean device : allVideoList) {
+                if (device != null) {
+                    if (device.getId().equals(mAlarmVideoSource.getFaceVideoId())) {
+                        String rtsp = device.getRtsp();
+                        if (!TextUtils.isEmpty(rtsp)) {
+                            Logutil.d("Rtsp-->>>" + rtsp);
+                            alarmPlayer.setInputUrl(rtsp);
+                            alarmPlayer.setNodePlayerDelegate(new NodePlayerDelegate() {
+                                @Override
+                                public void onEventCallback(NodePlayer player, int event, String msg) {
+                                    if (event == 1001 || event == 1102 || event == 1104) {
+                                        handler.sendEmptyMessage(7);
+                                    } else {
+                                        handler.sendEmptyMessage(6);
+                                    }
+                                }
+                            });
+                            alarmPlayer.start();
+                        } else {
+                            handler.sendEmptyMessage(8);
+                        }
+                    } else {
+                        handler.sendEmptyMessage(8);
+                    }
+                } else {
+                    handler.sendEmptyMessage(8);
+                }
+            }
+        }
+    }
+
+    /**
+     * 初始化数据
+     */
+    private void initlizeAlarmQueueAdapterData() {
+        //显示报警列表的适配器
+        mAlarmQueueAdapter = new AlarmQueueAdapter();
+        alarmQueueListViewLayout.setAdapter(mAlarmQueueAdapter);
+        //默认第一个选中
+        mAlarmQueueAdapter.setSelectedItem(0);
+        whichAlarmPosition = 0;
+        mAlarmQueueAdapter.notifyDataSetChanged();
+
+
+        alarmQueueListViewLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mAlarmQueueAdapter.setSelectedItem(position);
+                whichAlarmPosition = position;
+                mAlarmQueueAdapter.notifyDataSetChanged();
+                Logutil.d("positon" + position);
+                // playAlarmVideo(alarmQueueList.get(whichAlarmPosition));
+            }
+        });
+
+        //展示事件队列
+        eventQueueAdapter = new EventQueueAdapter();
+        eventListViewLayout.setAdapter(eventQueueAdapter);
+    }
+
+    /**
+     * 处理申请供弹请求
+     */
+    private void handlerOpenBoxInfo(OpenBoxParamater boxbean) {
+
+        //显示报警弹窗
+        alarmParentLayout.setVisibility(View.VISIBLE);
+        //申请对象添加到集合
+        requestOpenBoxQueueList.add(boxbean);
+        //谁发起的申请
+        String requestIp = boxbean.getSendIp();
+        //把打开的哪个弹箱的ID
+        String requestOpenBoxId = boxbean.getBoxId();
+
+        String requestDeviceName = "";
+
+        String requestOpenBoxName = "";
+
+        //要播报的内容
+        String voiceContent = "";
+
+        //判断字典是否存在
+        if (allSipList == null || allSipList.size() == 0) {
+            return;
+        }
+        //遍历查询
+        for (int i = 0; i < allSipList.size(); i++) {
+            SipBean mSipBean = allSipList.get(i);
+            if (mSipBean.getIpAddress().equals(requestIp)) {
+                requestDeviceName = mSipBean.getName();
+            }
+            if (mSipBean.getId().equals(requestOpenBoxId)) {
+                requestOpenBoxName = mSipBean.getName();
+            }
+        }
+        //  voiceContent = requestDeviceName + "申请打开" + requestOpenBoxName + "的子弹箱！";
+        // App.startSpeaking(requestIp + "设备申请开启弹箱");
+
+        Logutil.d("requestIp" + requestIp);
+        Logutil.d("requestOpenBoxId" + requestOpenBoxId);
+        Logutil.d("requestDeviceName" + requestDeviceName);
+        Logutil.d("requestOpenBoxName" + requestOpenBoxName);
+
+        //展示供弹申请队列
+        if (requestOpenBoxQueueAdapter == null) {
+            requestOpenBoxQueueAdapter = new RequestOpenBoxQueueAdapter();
+            requestOpenBoxViewLayout.setAdapter(requestOpenBoxQueueAdapter);
+        }
+        //第一个选中
+        requestOpenBoxQueueAdapter.setSelectedItem(0);
+        whichOpenBoxPosition = 0;
+        //刷新队列
+        requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        //列表item加监听
+        requestOpenBoxViewLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Logutil.d("Position-->>" + position);
+                whichOpenBoxPosition = position;
+                requestOpenBoxQueueAdapter.setSelectedItem(position);
+                requestOpenBoxQueueAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    /**
+     * 计时线程开启
+     */
+    public void threadStart() {
+        isTimingThreadWork = true;
+        if (timingThread != null && timingThread.isAlive()) {
+        } else {
+            timingThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (isTimingThreadWork) {
+
+                        try {
+                            Thread.sleep(1 * 1000);
+                            handler.sendEmptyMessage(9);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            });
+            timingThread.start();
+        }
+    }
+
+    /**
+     * 计时线程停止
+     */
+    public void threadStop() {
+        if (isTimingThreadWork) {
+            if (timingThread != null && timingThread.isAlive()) {
+                timingThread.interrupt();
+                timingThread = null;
+            }
+            timingNumber = 0;
+            isTimingThreadWork = false;
+            handler.sendEmptyMessage(10);
+        }
+    }
+
+    /**
+     * 播放报警时通话的视频源
+     */
+    private void playAlarmCallVideo(AlarmVideoSource alarm) {
+
+        //判断字典是否存在
+        if (allSipList == null || allSipList.size() == 0) {
+            return;
+        }
+        //播放通话视频的地址
+        String rtsp = "";
+
+        //遍历查询
+        for (int i = 0; i < allSipList.size(); i++) {
+            SipBean mSipBean = allSipList.get(i);
+            if (mSipBean.getIpAddress().equals(alarm.getSenderIp())) {
+                alarmSipNumber = mSipBean.getNumber();
+                sentryName = mSipBean.getName();
+                if (mSipBean.getVideoBean() != null) {
+                    if (!TextUtils.isEmpty(mSipBean.getVideoBean().getRtsp())) {
+                        rtsp = mSipBean.getVideoBean().getRtsp();
+                    }
+                }
+            }
+        }
+        handler.sendEmptyMessage(4);
+
+        //选 判断播放地址
+        if (TextUtils.isEmpty(rtsp)) {
+            Logutil.e("播放通话时的面部 视频为null");
+            return;
+        }
+        //是否正在播放
+        if (alarmCallPlayer != null) {
+            alarmCallPlayer.stop();
+        }
+        //加载地址
+        alarmCallPlayer.setInputUrl(rtsp);
+        //播放回调
+        alarmCallPlayer.setNodePlayerDelegate(new NodePlayerDelegate() {
+            @Override
+            public void onEventCallback(NodePlayer player, int event, String msg) {
+                Logutil.d("event-->>" + event);
+            }
+        });
+        //开始播放
+        alarmCallPlayer.start();
+    }
+
+    /**
+     * 处理供弹请求
+     */
+    @OnClick({R.id.accpet_open_box_btn_layout, R.id.refuse_open_box_btn_layout, R.id.accpet_open_all_box_btn_layout})
+    public void handlerRequestOpenBoxOperate(View view) {
+
+        switch (view.getId()) {
+            case R.id.accpet_open_box_btn_layout:
+                //同意供弹
+                acceptOpenAmmoBox();
+                break;
+            case R.id.refuse_open_box_btn_layout:
+                //拒绝供弹
+                rejectOpenAmmoBox();
+                break;
+            case R.id.accpet_open_all_box_btn_layout:
+                //同意全部供弹
+                accpetOpenAllAmmoBox();
+                break;
+        }
+    }
+
+    /**
+     * 同意供弹
+     */
+    private void acceptOpenAmmoBox() {
+        //判断申请供弹队列是否有数据
+        if (requestOpenBoxQueueList != null && whichOpenBoxPosition != -1) {
+            //子线程去申请供弹
+            new Thread(new HandlerAmmoBoxThread(requestOpenBoxQueueList.get(whichOpenBoxPosition), 0)).start();
+            //移除 队列
+            requestOpenBoxQueueList.remove(whichOpenBoxPosition);
+        }
+        //刷新适配器
+        if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        }
+        //判断供弹队列和报警队列是否有数据
+        if (alarmQueueList.size() == 0 && requestOpenBoxQueueList.size() == 0) {
+            //隐藏弹窗
+            alarmParentLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 拒绝供弹
+     */
+    private void rejectOpenAmmoBox() {
+        //判断数据是否存在
+        if (requestOpenBoxQueueList != null && requestOpenBoxQueueList.size() > 0 && whichOpenBoxPosition != -1) {
+            //子线程发送拒绝供弹数据
+            new Thread(new HandlerAmmoBoxThread(requestOpenBoxQueueList.get(whichOpenBoxPosition), 1)).start();
+            //移除队列
+            requestOpenBoxQueueList.remove(whichOpenBoxPosition);
+        }
+        //刷新适配器
+        if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        }
+        //判断供弹队列和报警队列是否有数据
+        if (alarmQueueList.size() == 0 && requestOpenBoxQueueList.size() == 0) {
+            //隐藏弹窗
+            alarmParentLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 同意全部供弹
+     */
+    private void accpetOpenAllAmmoBox() {
+        //判断队列中是否有数据
+        if (requestOpenBoxQueueList.size() > 0) {
+            //循环的去同意
+            for (OpenBoxParamater o : requestOpenBoxQueueList) {
+                new Thread(new HandlerAmmoBoxThread(o, 0)).start();
+            }
+        }
+        //清除队列
+        requestOpenBoxQueueList.clear();
+        //刷新适配器
+        if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        }
+        //判断供弹队列和报警队列是否有数据
+        if (alarmQueueList.size() == 0 && requestOpenBoxQueueList.size() == 0) {
+            //隐藏弹窗
+            alarmParentLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 处理报警信息
+     */
+    @OnClick({R.id.colse_alarm_btn_layout, R.id.handler_alarm_btn_layout, R.id.colse_all_alarm_btn_layout})
+    public void handlerAlarmOperate(View view) {
+        switch (view.getId()) {
+            case R.id.colse_alarm_btn_layout:
+                //关闭报警
+                closeAlarm();
+                break;
+            case R.id.handler_alarm_btn_layout:
+                //处理报警
+                handlerAlarm();
+                break;
+            case R.id.colse_all_alarm_btn_layout:
+                //关闭全部报警
+                closeAllAlarm();
+                break;
+        }
+    }
+
+    /**
+     * 关闭报警
+     */
+    private void closeAlarm() {
+        //如果正在通话中
+        if (AppConfig.IS_CALLING) {
+            //从队列中移除
+            if (whichAlarmPosition != -1) {
+                alarmQueueList.remove(whichAlarmPosition);
+            }
+            //刷新适配器
+            if (mAlarmQueueAdapter != null) {
+                mAlarmQueueAdapter.setSelectedItem(0);
+                whichAlarmPosition = 0;
+                mAlarmQueueAdapter.notifyDataSetChanged();
+            }
+            //关闭播放器
+            if (alarmCallPlayer != null)
+                alarmCallPlayer.stop();
+            if (alarmPlayer != null)
+                alarmPlayer.stop();
+            //挂断电话
+            SipManager.getLc().terminateAllCalls();
+
+            App.startSpeaking("关闭报警");
+        }
+        //判断队列中是否还有未处理的报警
+        if (alarmQueueList.size() > 0) {
+            handler.sendEmptyMessage(10);
+            AlarmVideoSource alarm = null;
+            //获取当前的报警对象
+            if (whichAlarmPosition != -1) {
+                alarm = alarmQueueList.get(whichAlarmPosition);
+            }
+            //判断当前报警对象是否为空
+            if (alarm != null) {
+                if (!AppConfig.IS_CALLING) {
+                    //遍历查找当前报警对象的Sip号码
+                    for (int i = 0; i < allSipList.size(); i++) {
+                        SipBean mSipBean = allSipList.get(i);
+                        if (mSipBean.getIpAddress().equals(alarm.getSenderIp())) {
+                            alarmSipNumber = mSipBean.getNumber();
+                            sentryName = mSipBean.getName();
+                        }
+                    }
+                    Logutil.d("alarmSipNum--->>" + alarmSipNumber);
+                    if (!TextUtils.isEmpty(alarmSipNumber)) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        App.startSpeaking("正在呼叫" + sentryName);
+                        Linphone.callTo(alarmSipNumber, false);
+                        threadStart();
+                    }
+                    //播放报警视频源
+                    playAlarmVideo(alarm);
+                    //播放通话视频源
+                    playAlarmCallVideo(alarm);
+                }
+            }
+        } else {
+            //判断申请供弹队列中是否还有未处理的
+            if (requestOpenBoxQueueList.size() == 0) {
+                alarmParentLayout.setVisibility(View.GONE);
+                threadStop();
+            }
+        }
+    }
+
+    /**
+     * 处理报警
+     */
+    private void handlerAlarm() {
+        if (AppConfig.IS_CALLING) {
+            SipManager.getLc().terminateAllCalls();
+        }
+
+        //处理报警
+        AlarmVideoSource mAlarmBean = null;
+        if (whichAlarmPosition != -1) {
+            mAlarmBean = alarmQueueList.get(whichAlarmPosition);
+        }
+        if (mAlarmBean != null) {
+            handler.sendEmptyMessage(10);
+            Logutil.d("mA-->>" + mAlarmBean.toString());
+            if (!AppConfig.IS_CALLING) {
+                for (int i = 0; i < allSipList.size(); i++) {
+                    SipBean mSipBean = allSipList.get(i);
+                    if (mSipBean.getIpAddress().equals(mAlarmBean.getSenderIp())) {
+                        alarmSipNumber = mSipBean.getNumber();
+                        sentryName = mSipBean.getName();
+                    }
+                }
+                Logutil.d("alarmSipNum--->>" + alarmSipNumber);
+                if (!TextUtils.isEmpty(alarmSipNumber)) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    App.startSpeaking("正在呼叫" + sentryName);
+                    Linphone.callTo(alarmSipNumber, false);
+                    threadStart();
+                }
+                //播放报警视频源
+                playAlarmVideo(mAlarmBean);
+                playAlarmCallVideo(mAlarmBean);
+            }
+        }
+    }
+
+    /**
+     * 关闭全部报警
+     */
+    private void closeAllAlarm() {
+        //清空报警队列
+        alarmQueueList.clear();
+        //刷新适配器
+        if (mAlarmQueueAdapter != null) {
+            mAlarmQueueAdapter.notifyDataSetChanged();
+        }
+        //中断通话
+        SipManager.getLc().terminateAllCalls();
+        //停止播放报警源视频
+        if (alarmPlayer != null) {
+            alarmPlayer.stop();
+        }
+        if (alarmCallPlayer != null) {
+            alarmCallPlayer.stop();
+        }
+        if (requestOpenBoxQueueList.size() == 0)
+            alarmParentLayout.setVisibility(View.GONE);
+
+        App.startSpeaking("报警已全部关闭");
+
+    }
+
+    /**
+     * 向服务器发起供弹请求的子线程
+     */
+    class HandlerAmmoBoxThread extends Thread {
+        OpenBoxParamater mOpenBoxParamater;
+        int action;
+
+        public HandlerAmmoBoxThread(OpenBoxParamater mOpenBoxParamater, int action) {
+            this.mOpenBoxParamater = mOpenBoxParamater;
+            this.action = action;
+        }
+
+        @Override
+        public void run() {
+
+            byte[] sendData = new byte[72];
+            // 数据头
+            byte[] flag = mOpenBoxParamater.getFalg().getBytes();
+            System.arraycopy(flag, 0, sendData, 0, 4);
+            // 版本号
+            byte[] version = new byte[4];
+            version[0] = 0;
+            version[1] = 0;
+            version[2] = 0;
+            version[3] = 1;
+            System.arraycopy(version, 0, sendData, 4, 4);
+            // 动作， 0-请求，1-同意，2-拒绝，3-直接开启
+            sendData[9] = (byte) action;
+            sendData[10] = 0;
+            sendData[11] = 0;
+            sendData[12] = 0;
+
+            // 随机申请 码
+
+            // uiAction = 0, 保存设备端随机生成的申请码
+            byte[] requestCode = new byte[4];
+
+            // uiAction = 0, 保存设备端的SALT
+            byte[] requestSalt = new byte[4];
+            // uiAction = 1, 保存服务端根据申请码计算得到的开锁码
+            byte[] responseCode = new byte[4];
+
+            System.arraycopy(requestCode, 0, sendData, 12, 4);
+            System.arraycopy(requestSalt, 0, sendData, 16, 4);
+            System.arraycopy(responseCode, 0, sendData, 20, 4);
+
+            //测试（有问题）
+            byte[] senderIP = new byte[4];
+            senderIP[0] = 19;
+            senderIP[1] = 0;
+            senderIP[2] = 0;
+            senderIP[3] = 70;
+
+            System.arraycopy(senderIP, 0, sendData, 24, 4);
+
+            byte[] senderID = mOpenBoxParamater.getBoxId().getBytes();
+            System.arraycopy(senderID, 0, sendData, 28, senderID.length);
+            // System.out.println(Arrays.toString(sendData));
+
+            Socket socket = null;
+            OutputStream os = null;
+            try {
+                // 测试
+                socket = new Socket("19.0.0.229", 2000);
+                os = socket.getOutputStream();
+                os.write(sendData);
+                os.flush();
+                System.out.println("发送成功");
+            } catch (IOException e) {
+                String err = e.getMessage();
+                e.printStackTrace();
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
     }
 
     @Override
     public void onDisplayRemoved() {
         if (mReceiveAlarmBroadcast != null)
             context.unregisterReceiver(mReceiveAlarmBroadcast);
-        if (mVideoSourcesBroadcast != null)
-            context.unregisterReceiver(mVideoSourcesBroadcast);
-        if (mReceiveScreenSaverBroadcast != null)
-            context.unregisterReceiver(mReceiveScreenSaverBroadcast);
-        if (mReceiveCancelScreenSaverBroadcast != null)
-            context.unregisterReceiver(mReceiveCancelScreenSaverBroadcast);
-        super.onDetachedFromWindow();
+        if (mReceiveBoxBroadcast != null)
+            context.unregisterReceiver(mReceiveBoxBroadcast);
+        if (mSipSourcesBroadcast != null)
+            context.unregisterReceiver(mSipSourcesBroadcast);
+        if (mSipSourcesBroadcast != null)
+            context.unregisterReceiver(mSipSourcesBroadcast);
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        super.onDisplayRemoved();
     }
 
     private Handler handler = new Handler() {
@@ -1504,49 +2083,47 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
+                    //显示背景地图
                     Bitmap bitmap = (Bitmap) msg.obj;
                     disPlayBackGroupBitmap(bitmap);
                     break;
-                case 2:
-                    String result = (String) msg.obj;
-                    //处理所有的哨位点信息
-                    handlerSentinelPointData(result);
-                    break;
                 case 3:
-                    disPlayAllSentinelPoints();
+                    alarmParentLayout.setVisibility(View.VISIBLE);
+                    //刷新报警队列适配器
+                    if (mAlarmQueueAdapter != null)
+                        mAlarmQueueAdapter.notifyDataSetChanged();
                     break;
-                case 5:
-                    if (!isHandleringAlarm) {
-                        alarmParentLayout.setVisibility(View.VISIBLE);
-                        isHandleringAlarm = true;
-                    }
+                case 4:
+                    //显示正在处理哪个哨位的报警信息
+                    handlerSentryNameLayout.setText(sentryName);
                     break;
                 case 6:
+                    //提示报警源视频正在加载
                     loadingTv.setVisibility(View.VISIBLE);
                     loadingTv.setText(R.string.reconnect);
                     loadingView.setVisibility(View.VISIBLE);
                     break;
                 case 7:
+                    //报警源视频加载完成
                     loadingView.setVisibility(View.GONE);
                     loadingView.clearAnimation();
                     loadingTv.setVisibility(View.GONE);
                     break;
                 case 8:
+                    //提示报警源视频无法加载
                     loadingTv.setVisibility(View.VISIBLE);
                     loadingTv.setText(R.string.notconnect);
                     loadingView.setVisibility(View.VISIBLE);
                     break;
                 case 9:
-                    //屏倮设置
-                    handlerScreenSaver();
+                    //报警时的通话计时
+                    timingNumber++;
+                    handlerSenrtyTimeLayout.setText(TimeUtils.getTime(timingNumber) + "");
                     break;
                 case 10:
-                    //取消屏保设置
-                    handlerCancelScreenSaver();
-                    break;
-                case 11:
-                    //提示网络异常
-                    ToastUtils.showShort("网络异常!");
+                    //停止计时
+                    threadStop();
+                    handlerSenrtyTimeLayout.setText("00:00");
                     break;
                 case 12:
                     //提示未加载到哨位分组数据
@@ -1566,15 +2143,12 @@ public class SecondDisplayActivity extends Presentation implements View.OnClickL
                     disPlaySentinelResourcesGroupItemAdapter();
                     disPlayAllSentinelPoints();
                     break;
-                case 16:
-                    View v = (View) msg.obj;
-                    int x = msg.arg1;
-
-                    showPopu(v,x);
+                case 17:
+                    //处理申请供弹请求
+                    OpenBoxParamater boxbean = (OpenBoxParamater) msg.obj;
+                    handlerOpenBoxInfo(boxbean);
                     break;
             }
         }
     };
-
-
 }

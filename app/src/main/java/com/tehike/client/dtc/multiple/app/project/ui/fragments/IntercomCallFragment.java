@@ -2197,6 +2197,7 @@ public class IntercomCallFragment extends BaseFragment {
 
             @Override
             public void callConnected() {
+                AppConfig.IS_CALLING = true;
                 Logutil.i("super.callConnected();");
                 //fragment向宿主Activity传递数据
                 callBackValue.SendMessageValue("true");
@@ -2225,6 +2226,7 @@ public class IntercomCallFragment extends BaseFragment {
 
             @Override
             public void callEnd() {
+                AppConfig.IS_CALLING = false;
                 Logutil.i("super.callEnd();");
                 //fragment向宿主Activity传递数据
                 callBackValue.SendMessageValue("false");
@@ -2232,6 +2234,7 @@ public class IntercomCallFragment extends BaseFragment {
 
             @Override
             public void callReleased() {
+                AppConfig.IS_CALLING = false;
                 Logutil.i("super.callReleased();");
                 //fragment向宿主Activity传递数据
                 callBackValue.SendMessageValue("false");
@@ -2253,6 +2256,7 @@ public class IntercomCallFragment extends BaseFragment {
 
             @Override
             public void error() {
+                AppConfig.IS_CALLING = false;
                 Logutil.i("     super.error();");
             }
         });

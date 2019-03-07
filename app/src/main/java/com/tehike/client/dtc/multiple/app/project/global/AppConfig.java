@@ -11,6 +11,9 @@ public class AppConfig {
         throw new UnsupportedOperationException("不能被实例化");
     }
 
+
+    public static boolean IS_CALLING = false;
+
     /**
      * 会议号码
      */
@@ -21,20 +24,11 @@ public class AppConfig {
      */
     public static String COMMIT_NATIVE_INFO_PATH = "http://19.0.0.20/RecordTheNumForData/RecordLog.php?paramater=";
 
-    /**
-     * 获取服务器时间的URl
-     */
-    public static String SERVER_TIME = "http://19.0.0.20/zkth/upDateTime.php";
 
-    /**
-     * 背景地图
-     */
-    public static String BACKGROUP_MAP_URL = "http://19.0.0.229:8080/images/Beijing256-2.JPG";
-
-    /**
-     * 本机获取到的所有的哨位点
-     */
-    public static String ALL_SENTINEL_POINT = "http://19.0.0.229:8080/webapi/locations";
+//    /**
+//     * 本机获取到的所有的哨位点
+//     */
+//    public static String ALL_SENTINEL_POINT = "http://19.0.0.229:8080/webapi/locations";
 
     /**
      * webApi接口的host
@@ -45,6 +39,33 @@ public class AppConfig {
      * webapi获取sysinfo
      */
     public static String _SYSINFO = ":8080/webapi/sysinfo";
+
+    /**
+     * 根据设备guid关联视频
+     */
+    public static String _LINKED_VIDEO = ":8080/webapi/sentryvideos?guid=";
+
+
+    /**
+     * 获取服务器时间的URl
+     */
+    public static String SERVER_TIME = ":8080/webapi/ntp";
+
+    /**
+     * 背景地图
+     */
+    public static String BACKGROUP_MAP_URL = ":8080/images/Beijing256-2.JPG";
+
+    /**
+     * webapi获取支持的设备类型
+     */
+    public static String _SUPPORT_DEVICE_TYPE = ":8080/webapi/devicetypes";
+
+    /**
+     * webapi获取弹箱信息
+     */
+    public static String _BOX_DEVICES = ":8080/webapi/onlinedevices";
+
 
     /**
      * webapi获取sip分组
@@ -121,7 +142,7 @@ public class AppConfig {
     /**
      * 更新apk的路径(远程服务器文件夹名)
      */
-    public static String UPDATE_APK_PATH = ":8080/wpf/";
+    public static String UPDATE_APK_PATH = ":8080/Dtc/";
 
     /**
      * 更新apk的路径
@@ -256,6 +277,11 @@ public class AppConfig {
      * 接收报警的Action
      */
     public static String ALARM_ACTION = "receiveAlarm";
+
+    /**
+     * 接收申请开启子弹箱的Action
+     */
+    public static String BOX_ACTION = "receivebox";
 
 
     /**

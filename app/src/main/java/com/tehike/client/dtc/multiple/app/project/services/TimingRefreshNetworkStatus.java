@@ -7,9 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
-import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +58,7 @@ public class TimingRefreshNetworkStatus extends Service {
         @Override
         public void run() {
             boolean networkStatus = NetworkUtils.isConnected();
-            Logutil.d("networkStatus---->>>"+networkStatus);
+           // Logutil.d("networkStatus---->>>"+networkStatus);
             Intent intent = new Intent();
             intent.setAction(AppConfig.REFRESH_NETWORK_ACTION);
             intent.putExtra("isNormal",networkStatus);

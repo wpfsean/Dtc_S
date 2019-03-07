@@ -3,7 +3,6 @@ package com.tehike.client.dtc.multiple.app.project.utils;
 import android.util.Xml;
 
 import com.tehike.client.dtc.multiple.app.project.update.UpDateInfo;
-
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.BufferedReader;
@@ -22,6 +21,18 @@ import java.io.InputStreamReader;
  */
 
 public class StringUtils {
+
+    /**
+     * 判断字符串中是否包含中文
+     */
+    public static boolean isChineseChar(char c) {
+        try {
+            return String.valueOf(c).getBytes("UTF-8").length > 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
     /**
@@ -42,7 +53,7 @@ public class StringUtils {
     /**
      * 解析自更新类文件
      */
-    public static  UpDateInfo resolveXml(String xml) {
+    public static UpDateInfo resolveXml(String xml) {
         UpDateInfo upDateInfo = new UpDateInfo();
         XmlPullParser parser = Xml.newPullParser();
         InputStream input = new ByteArrayInputStream(xml.getBytes());
