@@ -170,7 +170,7 @@
                     android:layout_height="30dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/btn_pressed_select_bg"
-                    android:text="离线预览"
+                    android:text="弹箱预览"
                     android:textColor="@color/white" />
 
                 <Button
@@ -180,14 +180,36 @@
                     android:layout_below="@+id/offline_preview_btn_layout"
                     android:layout_marginTop="5dp"
                     android:background="@drawable/btn_pressed_select_bg"
-                    android:text="一键开启"
+                    android:text="开启弹箱"
                     android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/all_quick_open_box_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/quick_open_box_btn_layout"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/btn_pressed_select_bg"
+                    android:text="全部开启"
+                    android:textColor="@color/white" />
+
+
+                <Button
+                    android:id="@+id/offline_open_box_btn_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/all_quick_open_box_btn_layout"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/btn_pressed_select_bg"
+                    android:text="离线开启"
+                    android:textColor="@color/white" />
+
 
                 <Button
                     android:id="@+id/close_preview_btn_layout"
                     android:layout_width="fill_parent"
                     android:layout_height="30dp"
-                    android:layout_below="@+id/quick_open_box_btn_layout"
+                    android:layout_below="@+id/offline_open_box_btn_layout"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/btn_pressed_select_bg"
                     android:text="关闭预览"

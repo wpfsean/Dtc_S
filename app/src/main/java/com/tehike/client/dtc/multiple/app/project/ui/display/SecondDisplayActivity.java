@@ -12,12 +12,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -51,7 +53,9 @@ import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
 import com.tehike.client.dtc.multiple.app.project.phone.PhoneCallback;
 import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipService;
+import com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity;
 import com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.CryptoUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.GsonUtils;
@@ -68,17 +72,25 @@ import org.json.JSONObject;
 import org.linphone.core.LinphoneCall;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -99,6 +111,17 @@ import cn.nodemedia.NodePlayerView;
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class SecondDisplayActivity extends Presentation {
 
+    /**
+     * 副屏的整个父布局
+     */
+    @BindView(R.id.secondary_screen_parent_layout)
+    RelativeLayout secondaryScreenParentLayout;
+
+    /**
+     * 屏保的父布局
+     */
+    @BindView(R.id.screen_saver_parent_layout)
+    RelativeLayout screenSaverParentLayout;
 
     /**
      * 地图背景布局(用于显示地图)
@@ -219,6 +242,30 @@ public class SecondDisplayActivity extends Presentation {
      */
     @BindView(R.id.sentinel_request_queue_layout)
     ListView requestOpenBoxViewLayout;
+
+    /**
+     * 点击弹窗父布局
+     */
+    @BindView(R.id.sentry_click_parent_layout)
+    RelativeLayout dialogClickSentryParentLayout;
+
+    /**
+     * 点击弹窗时哨位名称
+     */
+    @BindView(R.id.sentinel_name_layout)
+    TextView dialogClickSentryNameLayout;
+
+    /**
+     * 哨痊视频预览的父布局
+     */
+    @BindView(R.id.sentry_preview_parent_layout)
+    RelativeLayout sentryVideoPreviewParentnLayout;
+
+    /**
+     * 屏保显示时间
+     */
+    @BindView(R.id.display_screen_saver_tv_layout)
+    TextView displayScreenSaverTvLayout;
 
     /**
      * 报警视频源播放器
@@ -386,6 +433,42 @@ public class SecondDisplayActivity extends Presentation {
      */
     public VideoSourcesBroadcast mVideoSourcesBroadcast;
 
+    /**
+     * 用来接收屏保的通知的广播
+     */
+    ReceiveScreenSaverBroadcast mReceiveScreenSaverBroadcast;
+
+    /**
+     * 取消屏保的广播
+     */
+    ReceiveCancelScreenSaverBroadcast mReceiveCancelScreenSaverBroadcast;
+
+    /**
+     * 用于标识是否正在屏保
+     */
+    boolean isScreenSaving = false;
+
+    /**
+     * 定时器
+     */
+    Timer timer;
+
+    String screenTvContent[] = {"像狮子一样高傲,像少女一样温柔。",
+            "我骄傲孤独怎敌她温言软语你不忍辜负 ,你和她余生共度而我显得突兀就此退出",
+            "承诺如同珍珠，它的莹润是蚌痛苦的代价，也是蚌的荣耀。",
+            "希望有一天，你能遇到那个愿为你弯腰的人。从此以后，其他人不过就是匆匆浮云。",
+            "偶尔会想念童年时光，不知愁滋味，不用担责备，不会为别人心碎，不知人间苦累。",
+            "岁月永远年轻，我们慢慢老去，你会发现，童心未泯，是一件值得骄傲的事情。",
+            "如果我们都是孩子，就可以留在时光的原地，坐在一起一边听那些永不老去的故事一边慢慢皓首。",
+            "我们像是表面上的针，不停的转动，一面转，一面看着时间匆匆离去，却无能为力。",
+            "记忆想是倒在掌心的水，不论你摊开还是紧握，终究还是会从指缝中一滴一滴流淌干净。",
+            "一个人的自愈的能力越强，才越有可能接近幸福。做一个寡言，却心有一片海的人，不伤人害己，于淡泊中，平和自在。",
+            "那一世，你在天涯，我在海角，组合在一起，便是一场唯美的爱情宣言；那一世，你渡沧海，我醉桑田，组合在一起，便是一笔动人的多情诗篇。",
+            "静静的躺在岁月的长河中，回忆着有你的一幕幕，泪湿眼眸。曾经的幸福像在放纪录片一样一张张地倒映在眼前。",
+            "不曾爱过，亦不曾痛过，所有的心思和生命，在遇到他的时刻苏醒，汹涌如潮。只是他却，视而不见。",
+            "自由是这么来的可奴隶也是这么来的。《勇敢的心》",
+            "当我站在瀑布面前，觉得非常难过，应该是两个人站在这里。"
+    };
 
     public SecondDisplayActivity(Context outerContext, Display display) {
         super(outerContext, display);
@@ -421,10 +504,26 @@ public class SecondDisplayActivity extends Presentation {
         registerReceiveBoxBroadcast();
         //加载所有的报警队列数据
         initlizeAlarmQueueAdapterData();
+        //注册广播监听是否要屏保
+        registerReceiveScreenSaverBroadcast();
+        // 注册广播用于接收取消屏保通知
+        registerCancelReceiveScreenSaverBroadcast();
     }
 
-    private void initView() {
+    /**
+     * 隐藏状态栏
+     */
+    private void hideTitleBar() {
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    }
 
+    /**
+     * 初始化View
+     */
+    private void initView() {
+        timer = new Timer();
         //加载动画
         mLoadingAnim = AnimationUtils.loadAnimation(context, R.anim.loading);
         //报警视频播放器
@@ -438,15 +537,6 @@ public class SecondDisplayActivity extends Presentation {
         alarmCallPlayer.setVideoEnable(true);
         alarmCallPlayer.setAudioEnable(false);
 
-    }
-
-    /**
-     * 隐藏状态栏
-     */
-    private void hideTitleBar() {
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     /**
@@ -1140,15 +1230,14 @@ public class SecondDisplayActivity extends Presentation {
                                 }
                             }
                         }
-
                         Logutil.d("setryVideoBean--->>" + setryVideoBean.toString());
-//                        //显示当前Popuwindow
-//                        context.runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                showSentinelPopuWindow(allView.get(finalK), x, sentinelResourcesGroupItemList.get(finalK));
-//                            }
-//                        });
+                        Message message = new Message();
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("sentry", sentinelResourcesGroupItemList.get(finalK));
+                        message.setData(bundle);
+                        message.what = 2;
+                        handler.sendMessage(message);
+
                     }
                 });
             }
@@ -1173,6 +1262,114 @@ public class SecondDisplayActivity extends Presentation {
             parentLayout.addView(imageView, rllps);
 
         }
+    }
+
+    /**
+     * 点击哨位名时显示
+     */
+    private void showClickSentryPopuWindow(SipGroupItemInfoBean sipGroupItemInfoBean) {
+        dialogClickSentryParentLayout.setVisibility(View.VISIBLE);
+        dialogClickSentryNameLayout.setText(sipGroupItemInfoBean.getName());
+    }
+
+    /**
+     * 哨位操作
+     */
+    @OnClick({R.id.make_sentinel_voice_call_layout, R.id.make_sentinel_video_call_layout, R.id.sentinel_video_layout, R.id.popu_prompt_close_btn_layout})
+    public void sentryOperating(View view) {
+        switch (view.getId()) {
+            case R.id.make_sentinel_voice_call_layout:
+                Logutil.w("语音电话");
+                break;
+            case R.id.make_sentinel_video_call_layout:
+                Logutil.w("视频电话");
+                break;
+            case R.id.sentinel_video_layout:
+                Logutil.w("面部视频");
+                displaySentryPreviewVideo();
+                break;
+            case R.id.popu_prompt_close_btn_layout:
+                sentryVideoPreviewLoadingParentLayout.setVisibility(View.VISIBLE);
+                sentryVideoPreviewParentnLayout.setVisibility(View.GONE);
+                setryVideoBean = null;
+                preViewNodePlayer.stop();
+                preViewNodePlayer.release();
+                break;
+        }
+    }
+
+    /**
+     * 预览哨位面部视频的播放器
+     */
+    NodePlayer preViewNodePlayer;
+
+    /**
+     * 视频预览时播放器的View
+     */
+    @BindView(R.id.popu_prompt_loading_video_view_layout)
+    NodePlayerView nodePlayerView;
+
+    /**
+     * 预览视频加载时View的父布局
+     */
+    @BindView(R.id.popu_prompt_loading_parent_layout)
+    RelativeLayout sentryVideoPreviewLoadingParentLayout;
+
+    /**
+     * 加载预览视频的动画
+     */
+    @BindView(R.id.popu_sentinel_loading_icon_layout)
+    ImageView preViewVideoloadingView;
+
+    /**
+     * 哨位视频预览
+     */
+    private void displaySentryPreviewVideo() {
+        if (setryVideoBean != null) {
+            String rtsp = setryVideoBean.getRtsp();
+            if (!TextUtils.isEmpty(rtsp)) {
+                dialogClickSentryParentLayout.setVisibility(View.GONE);
+                sentryVideoPreviewParentnLayout.setVisibility(View.VISIBLE);
+                preViewVideoloadingView.startAnimation(mLoadingAnim);
+                preViewNodePlayer = new NodePlayer(App.getApplication());
+                preViewNodePlayer.setPlayerView(nodePlayerView);
+                preViewNodePlayer.setAudioEnable(false);
+                preViewNodePlayer.setVideoEnable(true);
+                preViewNodePlayer.setInputUrl(rtsp);
+                preViewNodePlayer.start();
+                preViewNodePlayer.setNodePlayerDelegate(new NodePlayerDelegate() {
+                    @Override
+                    public void onEventCallback(NodePlayer player, int event, String msg) {
+                        Logutil.d("event---" + event);
+                        if (event == 1001) {
+                            handler.sendEmptyMessage(18);
+                        }
+                    }
+                });
+            } else {
+                Logutil.e("rtsp is null");
+            }
+        } else {
+            Logutil.e("v is null");
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
+        isScreenSaving = false;
+        timer.cancel();
+        Logutil.d("点击");
+        //隐藏哨位操作的弹窗布局
+        dialogClickSentryParentLayout.setVisibility(View.GONE);
+        //隐藏屏保页面
+        screenSaverParentLayout.setVisibility(View.GONE);
+        //显示主页面
+        secondaryScreenParentLayout.setVisibility(View.VISIBLE);
+        //结束屏保页面
+        if (ActivityUtils.getTopActivity().getClass().toString().equals("class com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+            ActivityUtils.getTopActivity().finish();
+        }
+        return super.onTouchEvent(event);
     }
 
     /**
@@ -1299,6 +1496,7 @@ public class SecondDisplayActivity extends Presentation {
             initProcessedAlarmData();
             //加载所有的事件信息数据
             initEventData();
+
 
             //遍历查获此报警来源的sip号码
             for (int i = 0; i < allSipList.size(); i++) {
@@ -1866,6 +2064,7 @@ public class SecondDisplayActivity extends Presentation {
             if (whichAlarmPosition != -1) {
                 alarm = alarmQueueList.get(whichAlarmPosition);
             }
+
             //判断当前报警对象是否为空
             if (alarm != null) {
                 if (!AppConfig.IS_CALLING) {
@@ -2062,6 +2261,97 @@ public class SecondDisplayActivity extends Presentation {
         }
     }
 
+    /**
+     * 注册广播用于接收屏保通知
+     */
+    private void registerReceiveScreenSaverBroadcast() {
+        mReceiveScreenSaverBroadcast = new ReceiveScreenSaverBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.SCREEN_SAVER_ACTION);
+        context.registerReceiver(mReceiveScreenSaverBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播用来接收主屏是否已屏保的通知
+     */
+    class ReceiveScreenSaverBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isScreenSaving = true;
+            handler.sendEmptyMessage(19);
+        }
+    }
+
+    /**
+     * 屏保操作
+     */
+    private void handlerScreenSave() {
+        isScreenSaving = true;
+        //显示屏保布局
+        screenSaverParentLayout.setVisibility(View.VISIBLE);
+        //隐藏副屏主布局
+        secondaryScreenParentLayout.setVisibility(View.GONE);
+        //随机屏保文字
+
+
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+            timer = new Timer();
+        }
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.sendEmptyMessage(21);
+            }
+        }, 0, 10000);
+    }
+
+    /**
+     * 设置屏保文字
+     */
+    private void displayScreenTv() {
+        int num = (int) (Math.random() * 1000);
+        while (num > screenTvContent.length - 1) {
+            if (num <= screenTvContent.length - 1) {
+                break;
+            }
+            num = (int) (Math.random() * 1000);
+        }
+        displayScreenSaverTvLayout.setText("\u3000\u3000" + screenTvContent[num]);
+    }
+
+    /**
+     * 注册广播用于接收取消屏保通知
+     */
+    private void registerCancelReceiveScreenSaverBroadcast() {
+        mReceiveCancelScreenSaverBroadcast = new ReceiveCancelScreenSaverBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.CANCEL_SCREEN_SAVER_ACTION);
+        context.registerReceiver(mReceiveCancelScreenSaverBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播用来接收取消主屏是否已屏保的通知
+     */
+    class ReceiveCancelScreenSaverBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isScreenSaving = false;
+            timer.cancel();
+            handler.sendEmptyMessage(20);
+        }
+    }
+
+    /**
+     * 取消屏保操作
+     */
+    private void handlerCancelScreenSave() {
+        screenSaverParentLayout.setVisibility(View.GONE);
+        //隐藏副屏的父布局
+        secondaryScreenParentLayout.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public void onDisplayRemoved() {
         if (mReceiveAlarmBroadcast != null)
@@ -2072,6 +2362,10 @@ public class SecondDisplayActivity extends Presentation {
             context.unregisterReceiver(mSipSourcesBroadcast);
         if (mSipSourcesBroadcast != null)
             context.unregisterReceiver(mSipSourcesBroadcast);
+        if (mReceiveCancelScreenSaverBroadcast != null)
+            context.unregisterReceiver(mReceiveCancelScreenSaverBroadcast);
+        if (mReceiveScreenSaverBroadcast != null)
+            context.unregisterReceiver(mReceiveScreenSaverBroadcast);
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
@@ -2087,7 +2381,29 @@ public class SecondDisplayActivity extends Presentation {
                     Bitmap bitmap = (Bitmap) msg.obj;
                     disPlayBackGroupBitmap(bitmap);
                     break;
+                case 2:
+                    Bundle bundle = msg.getData();
+                    SipGroupItemInfoBean mSipGroupItemInfoBean = (SipGroupItemInfoBean) bundle.getSerializable("sentry");
+                    //处理报警信息
+                    showClickSentryPopuWindow(mSipGroupItemInfoBean);
+                    break;
                 case 3:
+                    //有报警时，判断是否 正在屏保
+                    if (isScreenSaving) {
+                        //隐藏屏保布局
+                        screenSaverParentLayout.setVisibility(View.GONE);
+                        //显示副屏主布局
+                        secondaryScreenParentLayout.setVisibility(View.VISIBLE);
+                        //同时把主屏的屏保activty杀列
+                        if (ActivityUtils.getTopActivity().getClass().toString().equals("class com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+                            ActivityUtils.getTopActivity().finish();
+                        }
+                        //取消定时器
+                        timer.cancel();
+                    }
+                    //重置屏保标识
+                    isScreenSaving = false;
+                    //显示处理报警布局
                     alarmParentLayout.setVisibility(View.VISIBLE);
                     //刷新报警队列适配器
                     if (mAlarmQueueAdapter != null)
@@ -2147,6 +2463,25 @@ public class SecondDisplayActivity extends Presentation {
                     //处理申请供弹请求
                     OpenBoxParamater boxbean = (OpenBoxParamater) msg.obj;
                     handlerOpenBoxInfo(boxbean);
+                    break;
+                case 18:
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    preViewVideoloadingView.clearAnimation();
+                    sentryVideoPreviewLoadingParentLayout.setVisibility(View.GONE);
+                    break;
+                case 19:
+                    //屏保操作
+                    handlerScreenSave();
+                    break;
+                case 20:
+                    handlerCancelScreenSave();
+                    break;
+                case 21:
+                    displayScreenTv();
                     break;
             }
         }

@@ -453,11 +453,6 @@ public class DtcDutyLoginActivity extends BaseActivity {
         disPlaySystemSetDialog();
     }
 
-    int systemVoiceValue = 0;
-    int systemCallValue = 0;
-    int systemRingValue = 0;
-
-
     /**
      * 弹出设置弹窗
      */
@@ -939,6 +934,7 @@ public class DtcDutyLoginActivity extends BaseActivity {
                     handlerSysinfoData(result);
                     break;
                 case 12:
+                    isClickLoginBtnFlag = false;
                     //登录失败(超时)
                     disPlayLoginErrorViewLayout.setVisibility(View.VISIBLE);
                     disPlayLoginErrorViewLayout.setText("登录异常");

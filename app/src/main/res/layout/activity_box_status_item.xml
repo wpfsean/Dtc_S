@@ -51,6 +51,24 @@
         </RelativeLayout>
 
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/box_status_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/red"
+                android:layout_marginBottom="6dp"
+                android:layout_marginRight="6dp"
+                />
+
+        </RelativeLayout>
+
+
     </FrameLayout>
 
 </LinearLayout>

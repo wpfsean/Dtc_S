@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.tehike.client.dtc.multiple.app.project.R;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -76,6 +77,9 @@ public class ScreenSaverActivity extends BaseActivity {
 
     }
 
+    /**
+     * 获取当天星期几
+     */
     public static String getWeek() {
         Calendar cal = Calendar.getInstance();
         int i = cal.get(Calendar.DAY_OF_WEEK);
@@ -134,8 +138,8 @@ public class ScreenSaverActivity extends BaseActivity {
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                openActivityAndCloseThis(DtcDutyMainActivity.class);
                 ScreenSaverActivity.this.sendBroadcast(new Intent(AppConfig.CANCEL_SCREEN_SAVER_ACTION));
+                ActivityUtils.getTopActivity().finish();
                 break;
         }
         return super.dispatchTouchEvent(ev);
