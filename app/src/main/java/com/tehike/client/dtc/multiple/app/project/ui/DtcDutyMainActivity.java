@@ -734,7 +734,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                     break;
                 case 9:
                     count++;
-                    Logutil.d("count-->>" + count);
+                //    Logutil.d("count-->>" + count);
                     if (count == AppConfig.SCREEN_SAVE_TIME) {
                         openActivity(ScreenSaverActivity.class);
                         DtcDutyMainActivity.this.sendBroadcast(new Intent(AppConfig.SCREEN_SAVER_ACTION));

@@ -238,8 +238,8 @@
                         android:id="@+id/single_player_load_image_layout"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
-                        android:src="@drawable/ic_loading"
-                        android:layout_centerInParent="true" />
+                        android:layout_centerInParent="true"
+                        android:src="@drawable/ic_loading" />
                     <!--单屏提示-->
                     <TextView
                         android:id="@+id/single_loadtv_layout"
@@ -262,15 +262,15 @@
             android:id="@+id/video_monitor_right_layout"
             android:layout_width="124dp"
             android:layout_height="match_parent"
-            android:layout_marginRight="5dp"
             android:layout_alignParentRight="true"
+            android:layout_marginRight="5dp"
             android:background="@mipmap/dtc_list_bg"
             android:orientation="vertical">
 
             <!--最顶端资源控制按钮-->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="24dp"
                 android:layout_marginTop="4dp">
 
                 <TextView
@@ -282,17 +282,18 @@
                     android:gravity="center"
                     android:text="资源控制"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="9sp" />
 
                 <TextView
                     android:id="@+id/ptz_control_layout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="云台控制"
                     android:textColor="@color/colorText"
-                    android:textSize="12sp" />
+                    android:textSize="9sp" />
             </LinearLayout>
 
             <!--资源控制-->
@@ -301,7 +302,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="5dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="visible">
 
                 <!--视频资源分组布局-->
                 <RelativeLayout
@@ -582,7 +584,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_centerHorizontal="true"
-                            android:background="@drawable/video_nine_screen_btn_bg"/>
+                            android:background="@drawable/video_nine_screen_btn_bg" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -628,20 +630,376 @@
 
             <!--云台控制-->
             <LinearLayout
-                android:visibility="gone"
                 android:id="@+id/ptz_parent_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="5dp"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="22dp"
+                android:orientation="vertical"
+                android:visibility="gone">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+
+                <!--云台方向控制父布局-->
+                <RelativeLayout
+                    android:layout_width="110dp"
+                    android:layout_height="110dp"
                     android:layout_gravity="center"
-                    android:gravity="center"
-                    android:textColor="@color/white"
-                    android:text="我是云台控制页面"/>
+                    android:background="@mipmap/dtc_video_direction_bg">
+
+                    <!--中间复位-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_reset_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_centerInParent="true"
+                        android:background="@drawable/ptz_reset_bg" />
+
+                    <!--上-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_top_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_above="@+id/ptz_control_reset_btn_layout"
+                        android:layout_centerInParent="true"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/ptz_top_bg" />
+
+                    <!--下-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_below_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_below="@+id/ptz_control_reset_btn_layout"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/ptz_below_bg"  />
+
+                    <!--左-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_left_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginRight="16dp"
+                        android:layout_toLeftOf="@+id/ptz_control_reset_btn_layout"
+                        android:background="@drawable/ptz_left_bg" />
+
+                    <!--右-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_right_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="16dp"
+                        android:layout_toRightOf="@+id/ptz_control_reset_btn_layout"
+                        android:background="@drawable/ptz_right_bg"  />
+
+                    <!--左上-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_top_left_btn_layout"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_above="@+id/ptz_control_left_btn_layout"
+                        android:layout_centerVertical="true"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginRight="16dp"
+                        android:layout_toLeftOf="@+id/ptz_control_top_btn_layout"
+                        android:background="@drawable/ptz_top_left_bg" />
+
+                    <!--右上-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_top_right_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_above="@+id/ptz_control_right_btn_layout"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_toRightOf="@+id/ptz_control_top_btn_layout"
+                        android:background="@drawable/ptz_top_right_bg" />
+
+                    <!--左下-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_left_below_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_below="@+id/ptz_control_left_btn_layout"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_toLeftOf="@+id/ptz_control_below_btn_layout"
+                        android:background="@drawable/ptz_left_below_bg" />
+
+                    <!--右下-->
+                    <ImageButton
+                        android:id="@+id/ptz_control_right_below_btn_layout"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_below="@+id/ptz_control_left_btn_layout"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_toRightOf="@+id/ptz_control_below_btn_layout"
+                        android:background="@drawable/ptz_right_below_bg"  />
+
+                </RelativeLayout>
+
+                <!--变焦父布局-->
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@mipmap/dtc_video_yuntai_btn_bg">
+
+                    <ImageButton
+                        android:id="@+id/ptz_control_big_btn_layout"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:background="@drawable/ptz_add_bg" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="变焦"
+                        android:textColor="@color/colorText"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:id="@+id/ptz_control_small_btn_layout"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/ptz_low_bg" />
+
+                </RelativeLayout>
+
+                <!--变距父布局-->
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@mipmap/dtc_video_yuntai_btn_bg">
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:background="@drawable/ptz_add_bg"/>
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="变距"
+                        android:textColor="@color/colorText"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/ptz_low_bg" />
+
+                </RelativeLayout>
+
+                <!--光圈父布局-->
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@mipmap/dtc_video_yuntai_btn_bg">
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:background="@drawable/ptz_add_bg" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="光圈"
+                        android:textColor="@color/colorText"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/ptz_low_bg" />
+
+                </RelativeLayout>
+
+                <!--雨刷父布局-->
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@mipmap/dtc_video_yuntai_btn_bg">
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:background="@drawable/ptz_add_bg" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="雨刷"
+                        android:textColor="@color/colorText"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/ptz_low_bg"/>
+
+                </RelativeLayout>
+
+                <!--转速父布局-->
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@mipmap/dtc_video_yuntai_btn_bg">
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:background="@drawable/ptz_add_bg" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="转速"
+                        android:textColor="@color/colorText"
+                        android:textSize="12sp" />
+
+                    <ImageButton
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:background="@drawable/ptz_low_bg" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_width="fill_parent"
+                android:layout_height="20dp"
+                android:layout_marginTop="10dp"
+                android:background="@mipmap/dtc_video_zhuansu_bg">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/colorText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+
+
             </LinearLayout>
 
         </LinearLayout>

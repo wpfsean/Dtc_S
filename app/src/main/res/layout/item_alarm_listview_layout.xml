@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--显示报警队列和供弹队列的子view-->
+<?xml version="1.0" encoding="utf-8"?><!--显示报警队列和供弹队列的子view-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:descendantFocusability="blocksDescendants"
     android:orientation="vertical">
+
 
     <View
         android:layout_width="fill_parent"
@@ -22,8 +21,8 @@
             android:id="@+id/alarm_list_item_name_layout"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:gravity="center"
             android:layout_gravity="center"
+            android:gravity="center"
             android:textColor="@color/red"
             android:textSize="9sp" />
 

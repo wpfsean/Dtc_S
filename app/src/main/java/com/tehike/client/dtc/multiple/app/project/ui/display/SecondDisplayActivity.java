@@ -29,6 +29,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -241,7 +242,7 @@ public class SecondDisplayActivity extends Presentation {
      * 报警队表
      */
     @BindView(R.id.sentinel_request_queue_layout)
-    ListView requestOpenBoxViewLayout;
+    GridView requestOpenBoxViewLayout;
 
     /**
      * 点击弹窗父布局
@@ -449,10 +450,13 @@ public class SecondDisplayActivity extends Presentation {
     boolean isScreenSaving = false;
 
     /**
-     * 定时器
+     * 定时器（定时的变换屏保文字）
      */
     Timer timer;
 
+    /**
+     * 屏保提示文字
+     */
     String screenTvContent[] = {"像狮子一样高傲,像少女一样温柔。",
             "我骄傲孤独怎敌她温言软语你不忍辜负 ,你和她余生共度而我显得突兀就此退出",
             "承诺如同珍珠，它的莹润是蚌痛苦的代价，也是蚌的荣耀。",
@@ -653,12 +657,16 @@ public class SecondDisplayActivity extends Presentation {
             } while (c.moveToNext());
         }
 
-        if (mProcessedAlarmQueueAdapter != null) {
-            mProcessedAlarmQueueAdapter = null;
+        mlist = reverseLinkedList(mlist);
+        if (mProcessedAlarmQueueAdapter == null) {
+            mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
+            processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
+            mProcessedAlarmQueueAdapter.notifyDataSetChanged();
+        }else {
+            mProcessedAlarmQueueAdapter.notifyDataSetChanged();
         }
-        mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
-        processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
-        mProcessedAlarmQueueAdapter.notifyDataSetChanged();
+
+
     }
 
     /**
@@ -1292,8 +1300,10 @@ public class SecondDisplayActivity extends Presentation {
                 sentryVideoPreviewLoadingParentLayout.setVisibility(View.VISIBLE);
                 sentryVideoPreviewParentnLayout.setVisibility(View.GONE);
                 setryVideoBean = null;
-                preViewNodePlayer.stop();
-                preViewNodePlayer.release();
+                if (preViewNodePlayer != null) {
+                    preViewNodePlayer.stop();
+                    preViewNodePlayer.release();
+                }
                 break;
         }
     }
@@ -1489,7 +1499,6 @@ public class SecondDisplayActivity extends Presentation {
             }
             //添加到集合
             alarmQueueList.add(alarm);
-            Logutil.d("alarmQueueList--- size-->>" + alarmQueueList.size());
             //刷新适配器
             handler.sendEmptyMessage(3);
             //加载已处理的报警数据
@@ -1634,6 +1643,7 @@ public class SecondDisplayActivity extends Presentation {
      */
     class RequestOpenBoxQueueAdapter extends BaseAdapter {
 
+        //item选中标识
         private int selectedItem = -1;
 
         @Override
@@ -1651,11 +1661,11 @@ public class SecondDisplayActivity extends Presentation {
             return position;
         }
 
+        //item选中的方法
         public void setSelectedItem(int selectedItem) {
             this.selectedItem = selectedItem;
             notifyDataSetChanged();
         }
-
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -1663,36 +1673,38 @@ public class SecondDisplayActivity extends Presentation {
             ViewHolder viewHolder;
             if (convertView == null) {
                 viewHolder = new ViewHolder();
-                convertView = LayoutInflater.from(context).inflate(R.layout.item_alarm_listview_layout, null);
-                viewHolder.alarmName = convertView.findViewById(R.id.alarm_list_item_name_layout);
+                convertView = LayoutInflater.from(context).inflate(R.layout.item_open_box_listview_layout, null);
+                viewHolder.requestOpenBoxSentryNameLayout = convertView.findViewById(R.id.request_open_ammo_box_sentry_name_layout);
+                viewHolder.requestOpenAmmoBoxParentLayout = convertView.findViewById(R.id.request_open_ammo_box_parent_layout);
                 convertView.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
-
+            //显示申请供弹的名称
             for (int i = 0; i < allSipList.size(); i++) {
                 SipBean mSipBean = allSipList.get(i);
                 if (mSipBean.getIpAddress().equals(requestOpenBoxQueueList.get(position).getSendIp())) {
-                    String textStr = mSipBean.getName() + " <font color=\"#FF0000\">" + "申请供弹" + "</font>";
-                    viewHolder.alarmName.setText(Html.fromHtml(textStr));
+                    viewHolder.requestOpenBoxSentryNameLayout.setText(mSipBean.getName());
+                    break;
                 }
             }
-
-
+            //item选中时背景更改
             if (position == selectedItem) {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_normal);
-                viewHolder.alarmName.setTextColor(0xffffffff);
+                viewHolder.requestOpenAmmoBoxParentLayout.setBackgroundResource(R.mipmap.dtc_bg_danxiang_yes_selected);
+                viewHolder.requestOpenBoxSentryNameLayout.setTextColor(0xffff00ff);
             } else {
-                viewHolder.alarmName.setBackgroundResource(R.mipmap.dtc_btn1_bg_selected);
-
-                viewHolder.alarmName.setTextColor(0xffff0000);
+                viewHolder.requestOpenAmmoBoxParentLayout.setBackgroundResource(R.drawable.request_open_ammo_box_item_bg);
+                viewHolder.requestOpenBoxSentryNameLayout.setTextColor(0xffffffff);
             }
             return convertView;
         }
 
         //内部类
         class ViewHolder {
-            TextView alarmName;
+            //申请供弹item父布局
+            RelativeLayout requestOpenAmmoBoxParentLayout;
+            //申请打开弹箱的哨位名称
+            TextView requestOpenBoxSentryNameLayout;
         }
     }
 
@@ -1771,6 +1783,20 @@ public class SecondDisplayActivity extends Presentation {
      */
     private void handlerOpenBoxInfo(OpenBoxParamater boxbean) {
 
+        //判断当前是否正在屏保
+        if (isScreenSaving) {
+            //隐藏屏保布局
+            screenSaverParentLayout.setVisibility(View.GONE);
+            //显示副屏主布局
+            secondaryScreenParentLayout.setVisibility(View.VISIBLE);
+            //同时把主屏的屏保activty杀列
+            if (ActivityUtils.getTopActivity().getClass().toString().equals("class com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+                ActivityUtils.getTopActivity().finish();
+            }
+            //取消定时器
+            timer.cancel();
+            isScreenSaving = false;
+        }
         //显示报警弹窗
         alarmParentLayout.setVisibility(View.VISIBLE);
         //申请对象添加到集合
@@ -1922,7 +1948,7 @@ public class SecondDisplayActivity extends Presentation {
     /**
      * 处理供弹请求
      */
-    @OnClick({R.id.accpet_open_box_btn_layout, R.id.refuse_open_box_btn_layout, R.id.accpet_open_all_box_btn_layout})
+    @OnClick({R.id.accpet_open_box_btn_layout, R.id.refuse_open_box_btn_layout, R.id.accpet_open_all_box_btn_layout, R.id.refuse_all_open_box_btn_layout})
     public void handlerRequestOpenBoxOperate(View view) {
 
         switch (view.getId()) {
@@ -1938,6 +1964,10 @@ public class SecondDisplayActivity extends Presentation {
                 //同意全部供弹
                 accpetOpenAllAmmoBox();
                 break;
+            case R.id.refuse_all_open_box_btn_layout:
+                //拒绝全部供弹
+                rejectOpenAllAmmoBox();
+                break;
         }
     }
 
@@ -1946,7 +1976,7 @@ public class SecondDisplayActivity extends Presentation {
      */
     private void acceptOpenAmmoBox() {
         //判断申请供弹队列是否有数据
-        if (requestOpenBoxQueueList != null && whichOpenBoxPosition != -1) {
+        if (requestOpenBoxQueueList != null && requestOpenBoxQueueList.size() > 0 && whichOpenBoxPosition != -1) {
             //子线程去申请供弹
             new Thread(new HandlerAmmoBoxThread(requestOpenBoxQueueList.get(whichOpenBoxPosition), 0)).start();
             //移除 队列
@@ -1954,6 +1984,8 @@ public class SecondDisplayActivity extends Presentation {
         }
         //刷新适配器
         if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.setSelectedItem(0);
+            whichOpenBoxPosition = 0;
             requestOpenBoxQueueAdapter.notifyDataSetChanged();
         }
         //判断供弹队列和报警队列是否有数据
@@ -1961,6 +1993,7 @@ public class SecondDisplayActivity extends Presentation {
             //隐藏弹窗
             alarmParentLayout.setVisibility(View.GONE);
         }
+        App.startSpeaking("同意供弹请求");
     }
 
     /**
@@ -1976,6 +2009,8 @@ public class SecondDisplayActivity extends Presentation {
         }
         //刷新适配器
         if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.setSelectedItem(0);
+            whichOpenBoxPosition = 0;
             requestOpenBoxQueueAdapter.notifyDataSetChanged();
         }
         //判断供弹队列和报警队列是否有数据
@@ -1983,6 +2018,7 @@ public class SecondDisplayActivity extends Presentation {
             //隐藏弹窗
             alarmParentLayout.setVisibility(View.GONE);
         }
+        App.startSpeaking("拒绝供弹请求");
     }
 
     /**
@@ -2007,6 +2043,32 @@ public class SecondDisplayActivity extends Presentation {
             //隐藏弹窗
             alarmParentLayout.setVisibility(View.GONE);
         }
+        App.startSpeaking("同意全部供弹");
+    }
+
+    /**
+     * 拒绝全部供弹
+     */
+    private void rejectOpenAllAmmoBox() {
+        //判断队列中是否有数据
+        if (requestOpenBoxQueueList.size() > 0) {
+            //循环的去同意
+            for (OpenBoxParamater o : requestOpenBoxQueueList) {
+                new Thread(new HandlerAmmoBoxThread(o, 1)).start();
+            }
+        }
+        //清除队列
+        requestOpenBoxQueueList.clear();
+        //刷新适配器
+        if (requestOpenBoxQueueAdapter != null) {
+            requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        }
+        //判断供弹队列和报警队列是否有数据
+        if (alarmQueueList.size() == 0 && requestOpenBoxQueueList.size() == 0) {
+            //隐藏弹窗
+            alarmParentLayout.setVisibility(View.GONE);
+        }
+        App.startSpeaking("拒绝全部供弹");
     }
 
     /**
@@ -2034,10 +2096,11 @@ public class SecondDisplayActivity extends Presentation {
      * 关闭报警
      */
     private void closeAlarm() {
+        Logutil.d("AppConfig.IS_CALLING" + AppConfig.IS_CALLING);
         //如果正在通话中
         if (AppConfig.IS_CALLING) {
             //从队列中移除
-            if (whichAlarmPosition != -1) {
+            if (alarmQueueList.size() > 0 && whichAlarmPosition != -1) {
                 alarmQueueList.remove(whichAlarmPosition);
             }
             //刷新适配器
@@ -2053,12 +2116,10 @@ public class SecondDisplayActivity extends Presentation {
                 alarmPlayer.stop();
             //挂断电话
             SipManager.getLc().terminateAllCalls();
-
             App.startSpeaking("关闭报警");
         }
         //判断队列中是否还有未处理的报警
         if (alarmQueueList.size() > 0) {
-            handler.sendEmptyMessage(10);
             AlarmVideoSource alarm = null;
             //获取当前的报警对象
             if (whichAlarmPosition != -1) {
@@ -2085,7 +2146,8 @@ public class SecondDisplayActivity extends Presentation {
                         }
                         App.startSpeaking("正在呼叫" + sentryName);
                         Linphone.callTo(alarmSipNumber, false);
-                        threadStart();
+                        handler.sendEmptyMessage(10);
+                        timingNumber = -4;
                     }
                     //播放报警视频源
                     playAlarmVideo(alarm);
@@ -2106,13 +2168,14 @@ public class SecondDisplayActivity extends Presentation {
      * 处理报警
      */
     private void handlerAlarm() {
+        Logutil.d("AppConfig.IS_CALLING" + AppConfig.IS_CALLING);
         if (AppConfig.IS_CALLING) {
             SipManager.getLc().terminateAllCalls();
         }
 
         //处理报警
         AlarmVideoSource mAlarmBean = null;
-        if (whichAlarmPosition != -1) {
+        if (alarmQueueList.size() > 0 && whichAlarmPosition != -1) {
             mAlarmBean = alarmQueueList.get(whichAlarmPosition);
         }
         if (mAlarmBean != null) {
@@ -2135,7 +2198,8 @@ public class SecondDisplayActivity extends Presentation {
                     }
                     App.startSpeaking("正在呼叫" + sentryName);
                     Linphone.callTo(alarmSipNumber, false);
-                    threadStart();
+                    handler.sendEmptyMessage(10);
+                    timingNumber = -4;
                 }
                 //播放报警视频源
                 playAlarmVideo(mAlarmBean);
@@ -2163,11 +2227,12 @@ public class SecondDisplayActivity extends Presentation {
         if (alarmCallPlayer != null) {
             alarmCallPlayer.stop();
         }
+        threadStop();
+        handler.sendEmptyMessage(10);
         if (requestOpenBoxQueueList.size() == 0)
             alarmParentLayout.setVisibility(View.GONE);
 
         App.startSpeaking("报警已全部关闭");
-
     }
 
     /**
@@ -2434,11 +2499,12 @@ public class SecondDisplayActivity extends Presentation {
                 case 9:
                     //报警时的通话计时
                     timingNumber++;
-                    handlerSenrtyTimeLayout.setText(TimeUtils.getTime(timingNumber) + "");
+                    Logutil.d("timingNumber" + timingNumber);
+                    if (timingNumber > 0)
+                        handlerSenrtyTimeLayout.setText(TimeUtils.getTime(timingNumber) + "");
                     break;
                 case 10:
                     //停止计时
-                    threadStop();
                     handlerSenrtyTimeLayout.setText("00:00");
                     break;
                 case 12:

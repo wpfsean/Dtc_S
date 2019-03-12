@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!--显示报警队列和供弹队列的子view-->
+
+    <!--父布局-->
+    <RelativeLayout
+        android:id="@+id/request_open_ammo_box_parent_layout"
+        android:layout_width="85dp"
+        android:layout_height="45dp"
+        android:background="@drawable/request_open_ammo_box_item_bg">
+
+        <!--左侧图标父布局-->
+        <RelativeLayout
+            android:id="@+id/request_open_box_parent_icon_layout"
+            android:layout_width="22dp"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="@mipmap/dtc_alarm_icon_danxiang" />
+        </RelativeLayout>
+
+        <!--整个右侧父布局-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@+id/request_open_box_parent_icon_layout"
+            android:orientation="vertical">
+
+            <!--右侧上半部分布局-->
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <!--哨位图标-->
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@mipmap/dtc_alarm_icon_shaowei" />
+                <!--哨位名称-->
+                <TextView
+                    android:id="@+id/request_open_ammo_box_sentry_name_layout"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="2dp"
+                    android:ellipsize="end"
+                    android:gravity="left"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:text="大门哨"
+                    android:textColor="@color/white"
+                    android:textSize="9sp" />
+
+            </LinearLayout>
+
+            <!--右侧上半部分布局-->
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@mipmap/dtc_alarm_icon_danxiang1" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="2dp"
+                    android:ellipsize="end"
+                    android:gravity="left"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:text="申请供弹"
+                    android:textColor="@color/white"
+                    android:textSize="9sp" />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+</LinearLayout>

@@ -2192,6 +2192,7 @@ public class IntercomCallFragment extends BaseFragment {
 
             @Override
             public void outgoingInit() {
+                AppConfig.IS_CALLING = true;
                 Logutil.i("super.outgoingInit();");
             }
 

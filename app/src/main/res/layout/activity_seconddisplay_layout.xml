@@ -125,7 +125,6 @@
             android:layout_marginTop="2dp"
             android:orientation="vertical">
 
-
             <!--显示地图的父布局-->
             <RelativeLayout
                 android:id="@+id/sh_police_image_relative"
@@ -410,7 +409,6 @@
 
             </RelativeLayout>
 
-
             <!--显示当前报警信息的父布局-->
             <LinearLayout
                 android:id="@+id/display_alarm_parent_layout"
@@ -600,13 +598,21 @@
                                 android:textColor="@color/colorYellow" />
 
                             <!--申请供弹队列-->
-                            <ListView
+                            <GridView
                                 android:id="@+id/sentinel_request_queue_layout"
                                 android:layout_width="match_parent"
                                 android:layout_height="120dp"
+                                android:layout_marginTop="36dp"
+                                android:layout_marginBottom="12dp"
+                                android:layout_marginLeft="4dp"
+                                android:layout_marginRight="4dp"
+                                android:gravity="center"
+                                android:horizontalSpacing="5dp"
+                                android:numColumns="3"
+                                android:scrollbars="none"
+                                android:verticalSpacing="9dp"
                                 android:layout_above="@+id/ammo_box_btn_parent_layout">
-
-                            </ListView>
+                            </GridView>
 
                             <!--底部按键父布局-->
                             <RelativeLayout
@@ -620,7 +626,7 @@
                                     android:layout_width="64dp"
                                     android:layout_height="20dp"
                                     android:layout_centerVertical="true"
-                                    android:layout_marginLeft="22dp"
+                                    android:layout_marginLeft="6dp"
                                     android:background="@drawable/handler_accept_alarm_btn_bg"
                                     android:gravity="center"
                                     android:text="同意供弹"
@@ -632,11 +638,11 @@
                                     android:layout_width="64dp"
                                     android:layout_height="20dp"
                                     android:layout_centerVertical="true"
-                                    android:layout_marginLeft="10dp"
+                                    android:layout_marginLeft="6dp"
                                     android:layout_toRightOf="@+id/accpet_open_box_btn_layout"
                                     android:background="@drawable/handler_reject_alarm_btn_bg"
                                     android:gravity="center"
-                                    android:text="关闭供弹"
+                                    android:text="拒绝供弹"
                                     android:textColor="@color/white"
                                     android:textSize="9sp" />
 
@@ -645,11 +651,24 @@
                                     android:layout_width="64dp"
                                     android:layout_height="20dp"
                                     android:layout_centerVertical="true"
-                                    android:layout_marginLeft="10dp"
+                                    android:layout_marginLeft="6dp"
                                     android:layout_toRightOf="@+id/refuse_open_box_btn_layout"
                                     android:background="@drawable/handler_reject_alarm_btn_bg"
                                     android:gravity="center"
-                                    android:text="同意全部供弹"
+                                    android:text="全部同意"
+                                    android:textColor="@color/white"
+                                    android:textSize="9sp" />
+
+                                <Button
+                                    android:id="@+id/refuse_all_open_box_btn_layout"
+                                    android:layout_width="64dp"
+                                    android:layout_height="20dp"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="6dp"
+                                    android:layout_toRightOf="@+id/accpet_open_all_box_btn_layout"
+                                    android:background="@drawable/handler_reject_alarm_btn_bg"
+                                    android:gravity="center"
+                                    android:text="全部拒绝"
                                     android:textColor="@color/white"
                                     android:textSize="9sp" />
 
@@ -913,7 +932,6 @@
 
                 </LinearLayout>
             </RelativeLayout>
-
 
         </FrameLayout>
 
