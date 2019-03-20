@@ -137,7 +137,7 @@ public class AppConfig {
     /**
      * 屏保计时
      */
-    public static int SCREEN_SAVE_TIME = 600;
+    public static int SCREEN_SAVE_TIME = 30;
 
     /**
      * 更新apk的路径(远程服务器文件夹名)
@@ -182,6 +182,16 @@ public class AppConfig {
     public static double LOCATION_LOG = 0;
 
     /**
+     * 本机Cpu信息
+     */
+    public static double DEVICE_CPU = 0;
+
+    /**
+     * 本机的Rom信息
+     */
+    public static double DEVICE_RAM = 0;
+
+    /**
      * 上位机监听端口
      */
     public static int S_PORT = 32321;
@@ -209,27 +219,22 @@ public class AppConfig {
     /**
      * 视频资源的文件名
      */
-    public static String SOURCES_VIDEO = "videoResource.txt";
+    public static String SOURCES_VIDEO = "videoResource.bin";
 
     /**
      * Sip资源的文件名
      */
-    public static String SOURCES_SIP = "sipResource.txt";
+    public static String SOURCES_SIP = "sipResource.bin";
 
     /**
      * Sip资源的文件名
      */
-    public static String SYSINFO = "sysinfo.txt";
+    public static String SYSINFO = "sysinfo.bin";
 
     /**
      * 报警类型颜色对象
      */
-    public static String ALARM_COLOR = "alarmColor.txt";
-
-    /**
-     * 记录所有的哨位点信息
-     */
-    public static String SENTINEL_POINT = "sentinelPoints.txt";
+    public static String ALARM_COLOR = "alarmColor.bin";
 
     /**
      * 主页面是否可以滑动

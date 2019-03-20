@@ -628,7 +628,6 @@ public class NetworkBroadcastFragment extends BaseFragment {
         }
     }
 
-
     /**
      * 中間GridView数据展示
      */
@@ -1157,8 +1156,6 @@ public class NetworkBroadcastFragment extends BaseFragment {
 
         //停止计时
         threadStop();
-
-
     }
 
     /**
@@ -1170,6 +1167,7 @@ public class NetworkBroadcastFragment extends BaseFragment {
             if (getActivity() != null) {
                 if (broadcastItemSelected <= itemSelectedList.size() - 1) {
                     Logutil.d(itemSelectedList.get(broadcastItemSelected).getName());
+                    handler.sendEmptyMessage(12);
                     removeBroadcastItem(itemSelectedList.get(broadcastItemSelected).getNumber());
                 }
                 mWebcastingAdapter.notifyDataSetChanged();
@@ -1205,13 +1203,14 @@ public class NetworkBroadcastFragment extends BaseFragment {
                                 JSONObject jsonObject = new JSONObject(result);
                                 boolean isSuccess = jsonObject.getBoolean("success");
                                 if (isSuccess) {
-                                    itemSelectedList.remove(broadcastItemSelected);
+                                    handler.sendEmptyMessage(14);
                                 } else {
                                     ToastUtils.showShort("强拆失败！");
                                 }
                             } catch (Exception e) {
                             }
                         }
+                        handler.sendEmptyMessage(13);
                         Logutil.d("拆除成功" + result);
                     } else {
                         Logutil.e("拆除失败" + connection.getResponseCode());
@@ -1265,6 +1264,31 @@ public class NetworkBroadcastFragment extends BaseFragment {
         new Thread(new DoSomethingThread(requestUrl)).start();
     }
 
+    /**
+     * 显示下在广播的界面
+     */
+    private void disPlayBroadcastingUI() {
+
+        display_all_broadcast_item_parent_layout.setVisibility(View.GONE);
+        display_all_broadcasting_item_parent_layout.setVisibility(View.VISIBLE);
+
+
+        mWebcastingAdapter = new WebcastingAdapter(getActivity());
+        broadcastinGridViewLayout.setAdapter(mWebcastingAdapter);
+        mWebcastingAdapter.notifyDataSetChanged();
+        broadcastinGridViewLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                broadcastItemSelected = position;
+                mWebcastingAdapter.setSeclection(position);
+                mWebcastingAdapter.notifyDataSetChanged();
+                if (itemSelectedList != null && !itemSelectedList.isEmpty()) {
+                    if (broadcastItemSelected != -1)
+                        Logutil.d("AA" + itemSelectedList.get(broadcastItemSelected).getName());
+                }
+            }
+        });
+    }
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
@@ -1373,33 +1397,51 @@ public class NetworkBroadcastFragment extends BaseFragment {
                     //取消加载框
                     dismissProgressDialog();
                     break;
+                case 14:
+                    //踢人成功操作
+                    itemSelectedList.remove(broadcastItemSelected);
+                    if (itemSelectedList.size()>0){
+                        broadcastItemSelected = 0;
+                        mWebcastingAdapter.setSeclection(0);
+                        mWebcastingAdapter.notifyDataSetChanged();
+                    }
+                    if (itemSelectedList.size()==0){
+                        //显示或隐藏父布局
+                        display_all_broadcast_item_parent_layout.setVisibility(View.VISIBLE);
+                        display_all_broadcasting_item_parent_layout.setVisibility(View.GONE);
+
+                        //计时显示修正
+                        displayBroadcastTimeLayout.setText("");
+
+                        //修正按钮的状态
+                        webcastBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+                        webListenBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+                        webMeetingBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+
+                        //销毁显示正在广播成员 的适配器
+                        if (mWebcastingAdapter != null) {
+                            mWebcastingAdapter = null;
+                        }
+
+                        //刷新一下显示所有广播成员的适配器
+                        if (mWebcastItemAdapter != null && getActivity() != null) {
+                            mWebcastItemAdapter.changeAllItemState();
+                            mWebcastItemAdapter.notifyDataSetChanged();
+                            if (itemSelectedList != null && !itemSelectedList.isEmpty()) {
+                                itemSelectedList.clear();
+                            }
+                        }
+                        //挂断电话
+                        if (callIsConnected) {
+                            Linphone.hangUp();
+                            callIsConnected = false;
+                        }
+                        //停止计时
+                        threadStop();
+
+                    }
+                    break;
             }
         }
     };
-
-    /**
-     * 显示下在广播的界面
-     */
-    private void disPlayBroadcastingUI() {
-
-        display_all_broadcast_item_parent_layout.setVisibility(View.GONE);
-        display_all_broadcasting_item_parent_layout.setVisibility(View.VISIBLE);
-
-
-        mWebcastingAdapter = new WebcastingAdapter(getActivity());
-        broadcastinGridViewLayout.setAdapter(mWebcastingAdapter);
-        mWebcastingAdapter.notifyDataSetChanged();
-        broadcastinGridViewLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                broadcastItemSelected = position;
-                mWebcastingAdapter.setSeclection(position);
-                mWebcastingAdapter.notifyDataSetChanged();
-                if (itemSelectedList != null && !itemSelectedList.isEmpty()) {
-                    if (broadcastItemSelected != -1)
-                        Logutil.d("AA" + itemSelectedList.get(broadcastItemSelected).getName());
-                }
-            }
-        });
-    }
 }

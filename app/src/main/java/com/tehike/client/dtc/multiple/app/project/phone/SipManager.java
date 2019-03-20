@@ -56,7 +56,7 @@ public class SipManager implements LinphoneCoreListener {
 
     public SipManager(Context serviceContext) {
         mServiceContext = serviceContext;
-        LinphoneCoreFactory.instance().setDebugMode(false, "zk");
+        LinphoneCoreFactory.instance().setDebugMode(false, "Dtc_S");
         sExited = false;
         String basePath = mServiceContext.getFilesDir().getAbsolutePath();
         mLPConfigXsd = basePath + "/lpconfig.xsd";
@@ -217,7 +217,7 @@ public class SipManager implements LinphoneCoreListener {
             if (versionName == null) {
                 versionName = String.valueOf(mServiceContext.getPackageManager().getPackageInfo(mServiceContext.getPackageName(), 0).versionCode);
             }
-            mLc.setUserAgent("Zzzz", versionName);
+            mLc.setUserAgent("Dtc_S", versionName);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }

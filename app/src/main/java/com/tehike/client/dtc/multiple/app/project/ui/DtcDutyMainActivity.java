@@ -37,6 +37,7 @@ import com.tehike.client.dtc.multiple.app.project.services.TimingAutoUpdateServi
 import com.tehike.client.dtc.multiple.app.project.services.TimingCheckSipStatus;
 import com.tehike.client.dtc.multiple.app.project.services.TimingRefreshNetworkStatus;
 import com.tehike.client.dtc.multiple.app.project.services.TimingRequestAlarmTypeService;
+import com.tehike.client.dtc.multiple.app.project.services.TimingSendHbService;
 import com.tehike.client.dtc.multiple.app.project.services.TimingSendNativeInfoService;
 import com.tehike.client.dtc.multiple.app.project.services.UpdateSystemSettingService;
 import com.tehike.client.dtc.multiple.app.project.services.UpdateSystemTimeService;
@@ -339,6 +340,9 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         }
         if (!ServiceUtil.isServiceRunning(ReceiveOpenBoxRequestService.class)) {
             ServiceUtil.startService(ReceiveOpenBoxRequestService.class);
+        }
+        if (!ServiceUtil.isServiceRunning(TimingSendHbService.class)) {
+            ServiceUtil.startService(TimingSendHbService.class);
         }
     }
 
@@ -648,7 +652,9 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         if (ServiceUtil.isServiceRunning(TimingCheckSipStatus.class)) {
             ServiceUtil.stopService(TimingCheckSipStatus.class);
         }
-
+        if (ServiceUtil.isServiceRunning(TimingSendHbService.class)) {
+            ServiceUtil.stopService(TimingSendHbService.class);
+        }
         ActivityUtils.removeAllActivity();
 
 

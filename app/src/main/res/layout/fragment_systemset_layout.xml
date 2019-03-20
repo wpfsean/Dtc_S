@@ -13,6 +13,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:visibility="visible">
+
             <!--左部分-->
             <LinearLayout
                 android:id="@+id/system_set_left_layout"
@@ -21,11 +22,11 @@
                 android:layout_marginLeft="5dp"
                 android:background="@mipmap/dtc_list_bg"
                 android:orientation="vertical">
-                .
 
+                <!--功能文字提示-->
                 <TextView
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="26dp"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="3dp"
                     android:gravity="center"
@@ -33,105 +34,187 @@
                     android:textColor="#ffe034"
                     android:textSize="12sp" />
 
-
-                <RelativeLayout
+                <!--左侧功能布局-->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                    <Button
-                        android:id="@+id/native_infor_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/custom_screen_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="18dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="终端信息"
-                        android:textColor="@color/white" />
+                    <!--系统信息-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_system_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@mipmap/dtc_btn1_bg_selected"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/alarm_set_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/native_infor_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="报警设置"
-                        android:textColor="@color/white" />
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_system" />
 
-                    <Button
-                        android:id="@+id/alltime_set_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/alarm_set_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="时长设置"
-                        android:textColor="@color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="系统信息"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
 
-                    <Button
-                        android:id="@+id/screent_set_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/alltime_set_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="屏幕设置"
-                        android:textColor="@color/white" />
+                    </LinearLayout>
 
-                    <Button
-                        android:id="@+id/ringing_set_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/screent_set_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="铃声设置"
-                        android:textColor="@color/white" />
+                    <!--时间设置-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_time_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/all_set_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/ringing_set_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="高级设置"
-                        android:textColor="@color/white" />
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_time" />
 
-                    <Button
-                        android:id="@+id/login_out_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="32dp"
-                        android:layout_below="@+id/all_set_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="退出登录"
-                        android:textColor="@color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="时间设置"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
 
+                    </LinearLayout>
 
+                    <!--报警设置-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_alarm_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
 
-                </RelativeLayout>
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_alarm" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="报警设置"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <!--显示设置-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_display_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_show" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="显示设置"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <!--声音设置-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_ring_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_voice" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="声音设置"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <!--高级设置-->
+                    <LinearLayout
+                        android:id="@+id/system_setting_advanced_set_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_setting" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="高级设置"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
             </LinearLayout>
 
             <!--中间部分-->
@@ -140,13 +223,668 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="3dp"
                 android:layout_marginRight="3dp"
-                android:background="@mipmap/dtc_middle_bg"
                 android:layout_toLeftOf="@+id/system_set_right_layout"
-                android:layout_toRightOf="@+id/system_set_left_layout">
+                android:layout_toRightOf="@+id/system_set_left_layout"
+                android:background="@mipmap/dtc_middle_bg"
+                android:orientation="vertical">
+
+                <!--系统信息父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_system_infor_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="1dp"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#011b41"></LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#0c2f62">
+
+                        <!--网络状态-->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="网络状态"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_network_status_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="left|center"
+                                android:text="型号"
+                                android:layout_marginLeft="60dp"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="Dtc_F"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp"
+                        android:background="#011b41">
+
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="以太网接口"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_nettype_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="left|center"
+                                android:text="硬件"
+                                android:layout_marginLeft="60dp"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_harware_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#0c2f62">
+
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="Ip地址"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_ip_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="left|center"
+                                android:text="本机号码"
+                                android:layout_marginLeft="60dp"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_number_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp"
+                        android:background="#011b41">
+
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="网关"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_gateway_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
 
 
 
+                        </LinearLayout>
 
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#0c2f62">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="子网掩码"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_netmask_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp"
+                        android:background="#011b41">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="Dns"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_dns_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#0c2f62">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:layout_marginLeft="76dp"
+                                android:gravity="left|center"
+                                android:text="Mac地址"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <TextView
+                                android:id="@+id/system_infor_mac_tv_layout"
+                                android:layout_width="fill_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!--时间设置父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_time_set_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!--屏保时长设置-->
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:background="#0c2f62">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="left"
+                            android:text="屏保时长:"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/system_set_screent_saver_time_edit_layout"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@null"
+                            android:gravity="left"
+                            android:hint="秒"
+                            android:paddingBottom="2dp"
+                            android:paddingTop="2dp"
+                            android:textColor="@color/white"
+                            android:textCursorDrawable="@drawable/edittext_bg" />
+
+                    </LinearLayout>
+
+                    <!--数据刷新间隔时长设置-->
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="40dp"
+                        android:background="#011b41">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="left"
+                            android:text="数据刷新间隔:"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/system_set_data_refresh_time_edit_layout"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@null"
+                            android:gravity="left"
+                            android:hint="毫秒"
+                            android:paddingBottom="2dp"
+                            android:paddingTop="2dp"
+                            android:textColor="@color/white"
+                            android:textCursorDrawable="@drawable/edittext_bg" />
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+                <!--报警设置父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_alarm_set_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="报警设置父布局"
+                        android:textColor="@color/red" />
+                </LinearLayout>
+
+                <!--显示设置父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_display_set_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/system_blacklight_valus_tv_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="系统背光亮度:"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <SeekBar
+                        android:id="@+id/system_blacklight_seekbar_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:max="245"
+                        android:min="1" />
+
+                </LinearLayout>
+
+                <!--声音设置父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_ring_set_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="系统声音"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <SeekBar
+                        android:id="@+id/system_ring_seekbar_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100"
+                        android:min="0" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="通话声音"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <SeekBar
+                        android:id="@+id/calling_ring_seekbar_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+
+
+                </LinearLayout>
+
+                <!--高级设置父布局-->
+                <LinearLayout
+                    android:id="@+id/system_setting_advanced_set_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!--摇杆串口选择-->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="摇杆串口选择:"
+                        android:textColor="@color/white" />
+
+                    <!--摇杆串口下垃加载-->
+                    <Spinner
+                        android:id="@+id/yg_serial_port_spinner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                    </Spinner>
+
+                    <!--键盘串口选择-->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="键盘串口选择:"
+                        android:textColor="@color/white" />
+
+                    <!--键盘串口下垃加载-->
+                    <Spinner
+                        android:id="@+id/keyboard_serial_port_spinner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                    </Spinner>
+
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -165,8 +903,9 @@
                     android:layout_height="match_parent">
 
                     <TextView
+                        android:id="@+id/system_setting_function_right_tv_layout"
                         android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="26dp"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="3dp"
                         android:gravity="center"
@@ -174,13 +913,51 @@
                         android:textColor="#ffe034"
                         android:textSize="12sp" />
 
+                    <Button
+                        android:id="@+id/system_setting_cancel_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="28dp"
+                        android:layout_below="@+id/system_setting_function_right_tv_layout"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_cancel_btn_bg"
+                        android:text="取    消"
+                        android:textColor="@color/white" />
+
+                    <Button
+                        android:id="@+id/system_setting_save_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="28dp"
+                        android:layout_below="@+id/system_setting_cancel_btn_layout"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_sure_btn_bg"
+                        android:text="保    存"
+                        android:textColor="@color/white" />
+
+
+                    <Button
+                        android:id="@+id/system_setting_loginout_btn_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="28dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginLeft="6dp"
+                        android:layout_marginRight="6dp"
+                        android:layout_marginTop="18dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:text="退出登录"
+                        android:textColor="@color/white" />
+
 
                 </RelativeLayout>
 
 
             </LinearLayout>
-        </RelativeLayout>
 
+        </RelativeLayout>
 
     </LinearLayout>
 

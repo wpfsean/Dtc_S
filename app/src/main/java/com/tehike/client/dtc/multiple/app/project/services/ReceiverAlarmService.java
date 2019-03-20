@@ -15,6 +15,7 @@ import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
 import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.AlarmVideoSource;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ByteUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.RecordLog;
@@ -206,6 +207,10 @@ public class ReceiverAlarmService extends Service {
             contentValues.put("alarmType", mAlarmVideoSource.getAlarmType());
             contentValues.put("isHandler", "否");
             new DbUtils(App.getApplication()).insert(DbHelper.TAB_NAME, contentValues);
+            //清除屏保
+            if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+                ActivityUtils.getTopActivity().finish();
+            }
         }
     }
 

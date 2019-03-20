@@ -34,9 +34,10 @@
 -keep public class * extends android.content.BroadcastReceiver  # 保持哪些类不被混淆
 -keep public class * extends android.content.ContentProvider    # 保持哪些类不被混淆
 -keep public class * extends android.preference.Preference        # 保持哪些类不被混淆
--keep public class com.tehike.client.jst.app.project.phone.SipService    # 保持哪些类不被混淆
+-keep public class com.tehike.client.dtc.multiple.app.project.phone.SipService    # 保持哪些类不被混淆
 #-keep class com.tehike.client.jst.app.project.utils.**{*;}
 #保持众云不混淆
+-keep class com.iflytek.**{*;}
 -keep class android.app.**{*;}
 #保持Linphone不混淆
 -keep class org.linphone.**{*;}

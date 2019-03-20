@@ -16,6 +16,7 @@ import com.tehike.client.dtc.multiple.app.project.update.UpDateInfo;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -106,9 +107,11 @@ public class TimingAutoUpdateService extends Service {
 
                 } else {
                     Logutil.e("请求更新失败");
+                    WriteLogToFile.info("请求更新失败--->>>"+AppConfig.WEB_HOST+ SysinfoUtils.getSysinfo().getWebresourceServer()+AppConfig.UPDATE_APK_PATH+AppConfig.UPDATE_APK_FILE);
                 }
             } catch (Exception e) {
                 Logutil.e("请求更新异常"+e.getMessage());
+                WriteLogToFile.info("请求更新异常"+e.getMessage());
             }
         }
     }

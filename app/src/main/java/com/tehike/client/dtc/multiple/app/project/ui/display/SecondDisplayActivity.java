@@ -662,7 +662,7 @@ public class SecondDisplayActivity extends Presentation {
             mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
             processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
             mProcessedAlarmQueueAdapter.notifyDataSetChanged();
-        }else {
+        } else {
             mProcessedAlarmQueueAdapter.notifyDataSetChanged();
         }
 
@@ -1233,10 +1233,14 @@ public class SecondDisplayActivity extends Presentation {
                         if (allSipList != null && allSipList.size() > 0) {
                             for (int i = 0; i < allSipList.size(); i++) {
                                 String deviceId = allSipList.get(i).getId();
-                                if (allSipList.get(i).getId().equals(currentClickBeanId)) {
+                                if (deviceId.equals(currentClickBeanId)) {
                                     setryVideoBean = allSipList.get(i).getSetryBean();
                                 }
                             }
+                        }
+                        if (setryVideoBean == null) {
+                            Logutil.d("哨们视频为空");
+                            return;
                         }
                         Logutil.d("setryVideoBean--->>" + setryVideoBean.toString());
                         Message message = new Message();
@@ -1276,9 +1280,15 @@ public class SecondDisplayActivity extends Presentation {
      * 点击哨位名时显示
      */
     private void showClickSentryPopuWindow(SipGroupItemInfoBean sipGroupItemInfoBean) {
+        currentSentinelBean = sipGroupItemInfoBean;
         dialogClickSentryParentLayout.setVisibility(View.VISIBLE);
         dialogClickSentryNameLayout.setText(sipGroupItemInfoBean.getName());
     }
+
+    /**
+     * 当前点击对象
+     */
+    SipGroupItemInfoBean currentSentinelBean;
 
     /**
      * 哨位操作
@@ -1287,10 +1297,28 @@ public class SecondDisplayActivity extends Presentation {
     public void sentryOperating(View view) {
         switch (view.getId()) {
             case R.id.make_sentinel_voice_call_layout:
-                Logutil.w("语音电话");
+                if (currentSentinelBean != null) {
+                    Intent intent = new Intent();
+                    intent.putExtra("call", false);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("bean", currentSentinelBean);
+                    intent.setAction("makeCall");
+                    intent.putExtra("bundle", bundle);
+                    App.getApplication().sendBroadcast(intent);
+                }
+                Logutil.d("语音电话" + currentSentinelBean.toString());
                 break;
             case R.id.make_sentinel_video_call_layout:
-                Logutil.w("视频电话");
+                if (currentSentinelBean != null) {
+                    Intent intent = new Intent();
+                    intent.putExtra("call", true);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("bean", currentSentinelBean);
+                    intent.setAction("makeCall");
+                    intent.putExtra("bundle", bundle);
+                    App.getApplication().sendBroadcast(intent);
+                }
+                Logutil.d("视频电话" + currentSentinelBean.toString());
                 break;
             case R.id.sentinel_video_layout:
                 Logutil.w("面部视频");
@@ -1368,7 +1396,6 @@ public class SecondDisplayActivity extends Presentation {
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         isScreenSaving = false;
         timer.cancel();
-        Logutil.d("点击");
         //隐藏哨位操作的弹窗布局
         dialogClickSentryParentLayout.setVisibility(View.GONE);
         //隐藏屏保页面
@@ -1376,7 +1403,7 @@ public class SecondDisplayActivity extends Presentation {
         //显示主页面
         secondaryScreenParentLayout.setVisibility(View.VISIBLE);
         //结束屏保页面
-        if (ActivityUtils.getTopActivity().getClass().toString().equals("class com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+        if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
             ActivityUtils.getTopActivity().finish();
         }
         return super.onTouchEvent(event);

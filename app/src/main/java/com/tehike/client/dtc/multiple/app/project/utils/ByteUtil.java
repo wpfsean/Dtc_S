@@ -62,13 +62,8 @@ public class ByteUtil {
     }
 
 
-
-
     /**
      * int 转志Byte数组
-     *
-     * @param i
-     * @return
      */
     public static byte[] toByteArray(int i) {
         byte[] bt = new byte[4];
@@ -78,6 +73,32 @@ public class ByteUtil {
         bt[3] = (byte) ((0xff000000 & i) >> 24);
         return bt;
     }
+
+    // 以下 是整型数 和 网络字节序的  byte[] 数组之间的转换
+    public static byte[] longToBytes(long n) {
+        byte[] b = new byte[8];
+        b[7] = (byte) (n & 0xff);
+        b[6] = (byte) (n >> 8 & 0xff);
+        b[5] = (byte) (n >> 16 & 0xff);
+        b[4] = (byte) (n >> 24 & 0xff);
+        b[3] = (byte) (n >> 32 & 0xff);
+        b[2] = (byte) (n >> 40 & 0xff);
+        b[1] = (byte) (n >> 48 & 0xff);
+        b[0] = (byte) (n >> 56 & 0xff);
+        return b;
+    }
+
+
+    //double 转byte
+    public static byte[] getBytes(double data) {
+        long intBits = Double.doubleToLongBits(data);
+        byte[] byteRet = new byte[8];
+        for (int i = 0; i < 8; i++) {
+            byteRet[i] = (byte) ((intBits >> 8 * i) & 0xff);
+        }
+        return byteRet;
+    }
+
 
     public static boolean isChineseChar(char c) {
         try {

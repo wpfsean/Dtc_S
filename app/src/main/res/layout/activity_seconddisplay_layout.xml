@@ -764,7 +764,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone">
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -865,7 +864,7 @@
 
                 <LinearLayout
                     android:layout_width="450dp"
-                    android:layout_height="350dp"
+                    android:layout_height="300dp"
                     android:layout_centerInParent="true"
                     android:background="#8c7853"
                     android:orientation="vertical">
@@ -883,7 +882,7 @@
 
                     <FrameLayout
                         android:layout_width="600dp"
-                        android:layout_height="300dp"
+                        android:layout_height="210dp"
                         android:layout_gravity="center"
                         android:background="@color/black">
 
@@ -900,16 +899,6 @@
                             android:layout_height="match_parent"
                             android:background="@color/black"
                             android:padding="2dp">
-
-                            <!--<TextView-->
-                            <!--android:layout_above="@+id/popu_sentinel_loading_icon_layout"-->
-                            <!--android:layout_width="wrap_content"-->
-                            <!--android:layout_height="wrap_content"-->
-                            <!--android:layout_centerHorizontal="true"-->
-                            <!--android:layout_marginBottom="24dp"-->
-                            <!--android:textSize="16sp"-->
-                            <!--android:textColor="@color/red"-->
-                            <!--android:text="Loading"/>-->
 
                             <ImageView
                                 android:id="@+id/popu_sentinel_loading_icon_layout"

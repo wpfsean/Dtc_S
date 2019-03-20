@@ -95,6 +95,7 @@
         <service android:name=".services.TimingSendNativeInfoService" />
         <service android:name=".services.UpdateSystemTimeService"/>
         <service android:name=".services.ReceiveOpenBoxRequestService"/>
+        <service android:name=".services.TimingSendHbService"/>
 
         <!--<service android:name=".voice.TimingCheckVoiceIsLiveService"/>-->
 

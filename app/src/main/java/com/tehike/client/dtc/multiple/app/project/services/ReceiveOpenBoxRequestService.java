@@ -16,6 +16,7 @@ import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.OpenBoxParamater;
 import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ByteUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.CryptoUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
@@ -207,6 +208,10 @@ public class ReceiveOpenBoxRequestService extends Service {
         contentValues1.put("event", deviceName + "申请开启" + mOpenBoxParamater.getBoxId() + "子弹箱");
         new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
         Logutil.d("数据库写入成功");
+        //清除屏保
+        if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+            ActivityUtils.getTopActivity().finish();
+        }
     }
 
     /**

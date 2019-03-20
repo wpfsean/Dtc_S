@@ -415,12 +415,17 @@ public class DtcDutyLoginActivity extends BaseActivity {
      */
     @OnClick(R.id.userlogin_button_cancel_layout)
     public void test(View view) {
-        if (con != null) {
-            con.disconnect();
-            con = null;
-            handler.sendEmptyMessage(9);
-            isClickLoginBtnFlag = false;
-        }
+
+        String topActivityName = ActivityUtils.getTopActivity().getClass().getName();
+        Logutil.d("Name-->>>"+topActivityName);
+
+
+//        if (con != null) {
+//            con.disconnect();
+//            con = null;
+//            handler.sendEmptyMessage(9);
+//            isClickLoginBtnFlag = false;
+//        }
     }
 
     /**

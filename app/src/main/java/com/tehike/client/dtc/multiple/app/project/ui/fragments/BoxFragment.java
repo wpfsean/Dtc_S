@@ -2,6 +2,7 @@ package com.tehike.client.dtc.multiple.app.project.ui.fragments;
 
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -28,6 +29,8 @@ import android.widget.TextView;
 
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.R;
+import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
+import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SipGroupInfoBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SysInfoBean;
@@ -42,6 +45,8 @@ import com.tehike.client.dtc.multiple.app.project.utils.HttpBasicRequest;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -450,6 +455,7 @@ public class BoxFragment extends BaseFragment {
 
             initializeBoxGroupData();
         } catch (Exception e) {
+            WriteLogToFile.info("support box type error --->>>"+e.getMessage());
             Logutil.e("解析设备类型Exception--->>>" + e.getMessage());
         }
     }
@@ -555,7 +561,8 @@ public class BoxFragment extends BaseFragment {
                     }
                     handler.sendEmptyMessage(6);
                 } catch (JSONException e) {
-                    Logutil.e("Sip组内数据解析异常::" + e.getMessage());
+                    WriteLogToFile.info("弹箱组内数据解析异常::" + e.getMessage());
+                    Logutil.e("弹箱组内数据解析异常::" + e.getMessage());
                 }
             }
         });
@@ -1301,6 +1308,13 @@ public class BoxFragment extends BaseFragment {
             if (ammoCode == 1) {
                 String boxId = mBoxBean.getId();
                 if (!TextUtils.isEmpty(boxId)) {
+
+                    //保存事件到数据库
+                    ContentValues contentValues1 = new ContentValues();
+                    contentValues1.put("time", TimeUtils.getCurrentTime());
+                    contentValues1.put("event", SysinfoUtils.getSysinfo().getDeviceName()+"开启"+mBoxBean.getName()+ "的子弹箱");
+                    new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
+
                     OpenBoxThread openBoxThread = new OpenBoxThread(3, boxId);
                     new Thread(openBoxThread).start();
                 }

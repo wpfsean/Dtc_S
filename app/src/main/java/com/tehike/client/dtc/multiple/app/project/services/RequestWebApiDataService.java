@@ -169,7 +169,8 @@ public class RequestWebApiDataService extends Service {
                     }
                     con.disconnect();
                 } catch (Exception e) {
-                    Logutil.d("er-->>" + e.getMessage());
+                    WriteLogToFile.info("请求videoSources资源异常-->>>"+e.getMessage());
+                    Logutil.e("请求videoSources资源异常-->>" + e.getMessage());
                     handler.sendEmptyMessage(2);
                 }
             }
@@ -207,9 +208,10 @@ public class RequestWebApiDataService extends Service {
                 }
             } else {
                 Logutil.e("请求数据异常--->>>" + jsonObject.getString("reason"));
-                Logutil.e("result--->>>" + result);
+                WriteLogToFile.info("请求数据异常--->>>" + jsonObject.getString("reason"));
             }
         } catch (Exception e) {
+            WriteLogToFile.info("解析webapi获取Video资源时为为空-->>" + e.getMessage());
             Logutil.e("解析webapi获取Video资源时为为空-->>" + e.getMessage());
         }
     }
@@ -365,11 +367,13 @@ public class RequestWebApiDataService extends Service {
                         handler.sendMessage(message);
                     } else {
                         Logutil.d("!200-->>" + con.getResponseCode());
+                        WriteLogToFile.info("请求sip资源非200-->>"+ con.getResponseCode());
                         handler.sendEmptyMessage(5);
                     }
                     con.disconnect();
                 } catch (Exception e) {
                     Logutil.d("er-->>" + e.getMessage());
+                    WriteLogToFile.info("请求sip资源异常-->>"+ e.getMessage());
                     handler.sendEmptyMessage(5);
                 }
             }
@@ -411,8 +415,10 @@ public class RequestWebApiDataService extends Service {
                 }
             } else {
                 Logutil.e("请求数据异常--->>>" + jsonObject.getString("reason"));
+                WriteLogToFile.info("请求数据异常--->>>" + jsonObject.getString("reason"));
             }
         } catch (Exception e) {
+            WriteLogToFile.info("解析sip资源异常--->>>"+e.getMessage());
             Logutil.e("异常-->>" + e.getMessage());
         }
     }
@@ -502,6 +508,7 @@ public class RequestWebApiDataService extends Service {
                         }
                     }
                 } catch (Exception ex) {
+                    WriteLogToFile.info("解析关联视频数据error-->>" + ex.getMessage());
                     Logutil.e("解析关联视频数据error-->>" + ex.getMessage());
                 }
             }

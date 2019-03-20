@@ -8,6 +8,7 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.SoundPool;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
@@ -705,15 +706,14 @@ public class RemoteVoiceOperatService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                mediaPlayer = MediaPlayer.create(App.getApplication(), type);
-                mediaPlayer.start();
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                SoundPool soundPool=new  SoundPool(100,AudioManager.STREAM_MUSIC,5);//构建对象
+                soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
                     @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        Logutil.i("播放完成");
-
+                    public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                        soundPool.play(sampleId,1,1,1,0,1);//播放
                     }
                 });
+                soundPool.load(App.getApplication(),type,1);//加载资源
             }
         }).start();
     }

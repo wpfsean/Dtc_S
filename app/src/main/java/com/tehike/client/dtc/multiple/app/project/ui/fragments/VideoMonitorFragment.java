@@ -17,7 +17,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,10 +26,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.kongqw.serialportlibrary.Device;
-import com.kongqw.serialportlibrary.SerialPortFinder;
 import com.kongqw.serialportlibrary.SerialPortManager;
 import com.kongqw.serialportlibrary.listener.OnOpenSerialPortListener;
 import com.kongqw.serialportlibrary.listener.OnSerialPortDataListener;
+import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.R;
 import com.tehike.client.dtc.multiple.app.project.entity.VideoBean;
 import com.tehike.client.dtc.multiple.app.project.entity.VideoGroupInfoBean;
@@ -46,6 +45,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.HttpBasicRequest;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.PageModel;
+import com.tehike.client.dtc.multiple.app.project.utils.SharedPreferencesUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ToastUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
@@ -94,31 +94,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
      */
     @BindView(R.id.group_item_listview_layout)
     ListView groupItemListView;
-
-    /**
-     * 盛放video视频组数据的集合(上部列表)
-     */
-    List<VideoGroupInfoBean> videoGroupList = new ArrayList<>();
-
-    /**
-     * 盛放video视频数据的集合（下部列表 ）
-     */
-    List<VideoBean> videoGroupItemList = new ArrayList<>();
-
-    /**
-     * 当前点击时存放数据的列表（通过字典查询后的视频组列表数据）
-     */
-    List<VideoBean> videoDataSources = new ArrayList<>();
-
-    /**
-     * 当前四屏的数据集合
-     */
-    List<VideoBean> currentList = new ArrayList<>();
-
-    /**
-     * 本地缓存的所有的视频数制（视频字典）
-     */
-    List<VideoBean> allVideoList;
 
     /**
      * 第一个播放器所在的父布局
@@ -274,6 +249,30 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     @BindView(R.id.ptz_parent_layout)
     LinearLayout ptzParentLayout;
 
+    /**
+     * 盛放video视频组数据的集合(上部列表)
+     */
+    List<VideoGroupInfoBean> videoGroupList = new ArrayList<>();
+
+    /**
+     * 盛放video视频数据的集合（下部列表 ）
+     */
+    List<VideoBean> videoGroupItemList = new ArrayList<>();
+
+    /**
+     * 当前点击时存放数据的列表（通过字典查询后的视频组列表数据）
+     */
+    List<VideoBean> videoDataSources = new ArrayList<>();
+
+    /**
+     * 当前四屏的数据集合
+     */
+    List<VideoBean> currentList = new ArrayList<>();
+
+    /**
+     * 本地缓存的所有的视频数制（视频字典）
+     */
+    List<VideoBean> allVideoList;
 
     /**
      * 展示某个组内数据的ada
@@ -386,26 +385,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     SerialPortManager mSerialPortManager;
 
     /**
-     * 获取所有串口设备的集合
-     */
-    ArrayList<Device> devices;
-
-    /**
-     * 是否已打开串口的标识
-     */
-    boolean isSerialPortOpenSuccess = false;
-
-    /**
-     * 云台的ptzUrl
-     */
-    String mPtzUrl;
-
-    /**
-     * 支持云台的token
-     */
-    String mToken;
-
-    /**
      * 当前所有的指令集
      */
     String singleCommand = "";
@@ -414,6 +393,26 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
      * 集合存放指令
      */
     LinkedList<String> allCommand = new LinkedList<>();
+
+    /**
+     * 串口是否成功打开的标识
+     */
+    boolean isSerialPortOpenSuccess = false;
+
+    /**
+     * 摇杆串口
+     */
+    Device ygSerialPortDevice;
+
+    /**
+     * 云台控制的URL
+     */
+    String mPtzUrl;
+
+    /**
+     * 云台控制的Token
+     */
+    String mToken;
 
     /**
      * ptz移动参数(测试)
@@ -472,14 +471,14 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     private void initializeSerialPort() {
         //串口管理类
         mSerialPortManager = new SerialPortManager();
-        SerialPortFinder serialPortFinder = new SerialPortFinder();
-        //遍历本设备的所有的串口
-        devices = serialPortFinder.getDevices();
-        //判断串口
-        if (devices.size() == 0) {
-            Logutil.e("没有可用串口");
-            return;
+        String ygSelected = (String) SharedPreferencesUtils.getObject(App.getApplication(), "ygserialport", "");
+        if (TextUtils.isEmpty(ygSelected)) {
+            ygSerialPortDevice = new Device("ttyACM1", "", new File("/dev/ttyACM1"));
+            SharedPreferencesUtils.putObject(App.getApplication(), "ygserialport", GsonUtils.GsonString(ygSerialPortDevice));
+        } else {
+            ygSerialPortDevice = GsonUtils.GsonToBean(ygSelected, Device.class);
         }
+        Logutil.e("摇杆-->>" + ygSerialPortDevice.toString());
 
         //打开com1（测试）
         boolean openSerialPort = mSerialPortManager.setOnOpenSerialPortListener(this)
@@ -509,14 +508,12 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                             handler.sendMessage(message);
                             singleCommand = "";
                         }
-
                     }
-
                     @Override
                     public void onDataSent(byte[] bytes) {
                         Log.i("TAG", "onDataSent [ byte[] ]: " + Arrays.toString(bytes));
                     }
-                }).openSerialPort(devices.get(2).getFile(), 9600);
+                }).openSerialPort(ygSerialPortDevice.getFile(), 9600);
 
         Logutil.d("openSerialPort--->>" + openSerialPort);
     }
@@ -534,10 +531,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
         mPtzUrl = currentDevice.getPtzUrl();
         mToken = currentDevice.getToken();
 
-        if (TextUtils.isEmpty(mPtzUrl) || TextUtils.isEmpty(mToken)){
-            handler.sendEmptyMessage(25);
-            return;
-        }
         Logutil.d(currentDevice.toString());
         Logutil.d(mPtzUrl);
         Logutil.d(mToken);
@@ -555,6 +548,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
             String z = singleInstruct.substring(10, 14);
 
             //      Log.d("TAG", y + "\n" + x + "\n" + z);
+
 
             //向下的最小值
             int downMin = Integer.valueOf("0020", 16);
@@ -606,7 +600,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "-0.03"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "0.1", "-0.03"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -620,7 +614,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "0.03"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "0.1", "0.03"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -634,7 +628,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.1", "0.03"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "-0.1", "0.03"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -667,7 +661,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.03", "0"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "-0.03", "0"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -679,7 +673,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.03", "0"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "0.03", "0"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -696,7 +690,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "-0.3"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "0", "-0.3"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -708,7 +702,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                         @Override
                         public void run() {
                             try {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "0.3"));
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, "001", "0", "0.3"));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -720,9 +714,9 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 云台控制的Post请求
+     * 云台控制时的Post请求
      */
-    public  String postRequest(String baseUrl, String params) {
+    public String postRequest(String baseUrl, String params) {
         String receive = "";
         try {
             // 新建一个URL对象
@@ -771,6 +765,139 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
+     * 云台控制按键
+     */
+    @OnTouch({R.id.ptz_control_reset_btn_layout, R.id.ptz_control_top_btn_layout, R.id.ptz_control_below_btn_layout, R.id.ptz_control_left_btn_layout, R.id.ptz_control_right_btn_layout, R.id.ptz_control_top_left_btn_layout, R.id.ptz_control_top_right_btn_layout, R.id.ptz_control_left_below_btn_layout, R.id.ptz_control_right_below_btn_layout, R.id.ptz_control_big_btn_layout, R.id.ptz_control_small_btn_layout})
+    public boolean onTouch(View v, MotionEvent event) {
+        //先判断当前页面是否可见
+        if (!isCurrentPageVisible || getActivity() == null) {
+            Logutil.d("不可见");
+            return false;
+        }
+        if (currentDevice == null) {
+            return false;
+        }
+        //获取云台控制的url
+        mPtzUrl = currentDevice.getPtzUrl();
+        //获取云台控制的token
+        mToken = currentDevice.getToken();
+        //Log
+        Logutil.d(currentDevice.toString());
+        Logutil.d(mPtzUrl);
+        Logutil.d(mToken);
+        //判断是否支持云台
+        if (TextUtils.isEmpty(mPtzUrl) || TextUtils.isEmpty(mToken)) {
+            Logutil.d("不支持云台");
+            handler.sendEmptyMessage(25);
+            return false;
+        }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                switch (v.getId()) {
+                    case R.id.ptz_control_reset_btn_layout:
+                        Logutil.d("reset");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzReset, mToken, mToken));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_top_btn_layout:
+                        Logutil.d("top");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.03", "0"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_below_btn_layout:
+                        Logutil.d("below");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.03", "0"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_left_btn_layout:
+                        Logutil.d("left");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "-0.3"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_right_btn_layout:
+                        Logutil.d("right");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "0.3"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_top_left_btn_layout:
+                        Logutil.d("top_left");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "-0.03"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_top_right_btn_layout:
+                        Logutil.d("top_right");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "0.03"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_left_below_btn_layout:
+                        Logutil.d("left_below");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                            }
+                        }).start();
+                        postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.1", "0.03"));
+                        break;
+                    case R.id.ptz_control_right_below_btn_layout:
+                        Logutil.d("right_below");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.1", "0.03"));
+                            }
+                        }).start();
+                        break;
+                    case R.id.ptz_control_big_btn_layout:
+                        Logutil.d("big");
+                        ControlPtzUtils controlPtz = new ControlPtzUtils(mPtzUrl, mToken, "zoom_s", 0.3, 0.03);
+                        controlPtz.start();
+                        break;
+                    case R.id.ptz_control_small_btn_layout:
+                        Logutil.d("small");
+                        ControlPtzUtils controlPtz1 = new ControlPtzUtils(mPtzUrl, mToken, "zoom_b", -0.3, -0.03);
+                        controlPtz1.start();
+                        break;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                Logutil.d("松开");
+                ControlPtzUtils controlPtz1 = new ControlPtzUtils(mPtzUrl, mToken, "stop", 0.00, 0.00);
+                controlPtz1.start();
+                break;
+        }
+        return false;
+    }
+
+    /**
      * 初始化视频数据
      */
     private void initializeVideoData() {
@@ -796,22 +923,20 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 串口是否打开成功回调
+     * 串口打开成功回调
      */
     @Override
     public void onSuccess(File device) {
         Log.i("TAG", "成功打开--->>");
         isSerialPortOpenSuccess = true;
-        WriteLogToFile.info("成功打开--->>");
+        WriteLogToFile.info(device.getName() + "打开成功");
     }
 
     /**
-     * 串口是否打开失败回调
+     * 串口打开失败回调
      */
     @Override
     public void onFail(File device, Status status) {
-
-        isSerialPortOpenSuccess = false;
         switch (status) {
             case NO_READ_WRITE_PERMISSION:
                 Log.i("TAG", "没有读写权限");
@@ -821,7 +946,8 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                 Log.i("TAG", "串口打开失败");
                 break;
         }
-        WriteLogToFile.info("摇杆串口打开失败--->>" + device.getName() + status);
+        isSerialPortOpenSuccess = false;
+        WriteLogToFile.info(device.getName() + "打开失败" + status);
     }
 
     /**
@@ -1592,136 +1718,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 云台控制按键
-     */
-    @OnTouch({R.id.ptz_control_reset_btn_layout, R.id.ptz_control_top_btn_layout, R.id.ptz_control_below_btn_layout, R.id.ptz_control_left_btn_layout, R.id.ptz_control_right_btn_layout, R.id.ptz_control_top_left_btn_layout, R.id.ptz_control_top_right_btn_layout, R.id.ptz_control_left_below_btn_layout, R.id.ptz_control_right_below_btn_layout,R.id.ptz_control_big_btn_layout,R.id.ptz_control_small_btn_layout})
-    public boolean onTouch(View v, MotionEvent event) {
-        //先判断当前页面是否可见
-        if (!isCurrentPageVisible || getActivity() == null) {
-            Logutil.d("不可见");
-            return false;
-        }
-        //获取云台控制的url
-        mPtzUrl = currentDevice.getPtzUrl();
-        //获取云台控制的token
-        mToken = currentDevice.getToken();
-        //Log
-        Logutil.d(currentDevice.toString());
-        Logutil.d(mPtzUrl);
-        Logutil.d(mToken);
-        //判断是否支持云台
-        if (TextUtils.isEmpty(mPtzUrl) || TextUtils.isEmpty(mToken)) {
-            Logutil.d("不支持云台");
-            handler.sendEmptyMessage(25);
-            return false;
-        }
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                switch (v.getId()) {
-                    case R.id.ptz_control_reset_btn_layout:
-                        Logutil.d("reset");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzReset, mToken, mToken));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_top_btn_layout:
-                        Logutil.d("top");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.03", "0"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_below_btn_layout:
-                        Logutil.d("below");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.03", "0"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_left_btn_layout:
-                        Logutil.d("left");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "-0.3"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_right_btn_layout:
-                        Logutil.d("right");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0", "0.3"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_top_left_btn_layout:
-                        Logutil.d("top_left");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "-0.03"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_top_right_btn_layout:
-                        Logutil.d("top_right");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "0.1", "0.03"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_left_below_btn_layout:
-                        Logutil.d("left_below");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                            }
-                        }).start();
-                        postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.1", "0.03"));
-                        break;
-                    case R.id.ptz_control_right_below_btn_layout:
-                        Logutil.d("right_below");
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                postRequest(mPtzUrl, String.format(ptzMoveParamater, mToken, "-0.1", "0.03"));
-                            }
-                        }).start();
-                        break;
-                    case R.id.ptz_control_big_btn_layout:
-                        Logutil.d("big");
-                        ControlPtzUtils controlPtz = new ControlPtzUtils(mPtzUrl, mToken, "zoom_s", 0.3, 0.03);
-                        controlPtz.start();
-                        break;
-                    case R.id.ptz_control_small_btn_layout:
-                        Logutil.d("small");
-                        ControlPtzUtils controlPtz1 = new ControlPtzUtils(mPtzUrl, mToken, "zoom_b", -0.3, -0.03);
-                        controlPtz1.start();
-                        break;
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                Logutil.d("松开");
-                ControlPtzUtils controlPtz1 = new ControlPtzUtils(mPtzUrl, mToken, "stop", 0.00, 0.00);
-                controlPtz1.start();
-                break;
-        }
-        return false;
-    }
-
-    /**
      * 十六分屏功能
      */
     @OnClick(R.id.sixteen_screen_btn_layout)
@@ -2342,12 +2338,12 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 第一个窗口轮巡时的数据下标
+     * 第一个窗口轮巡时的初始下标
      */
     int firstPlayerRoundSubNum = 0;
 
     /**
-     * 第一个窗口是否正在轮巡
+     * 第一个窗口是否正在轮巡的标识
      */
     boolean isFirstPlayerRounding = false;
 
@@ -2390,12 +2386,12 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 第二个窗口轮巡时的数据下标
+     * 第二个窗口轮巡时的初始下标
      */
     int secondPlayerRoundSubNum = 0;
 
     /**
-     * 第二个窗口是否正在轮巡
+     * 第二个窗口是否正在轮巡的标识
      */
     boolean isSecondPlayerRounding = false;
 
@@ -2435,12 +2431,12 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 第三个窗口轮巡时的数据下标
+     * 第三个窗口轮巡时的初始下标
      */
     int thirdPlayerRoundSubNum = 0;
 
     /**
-     * 第三个窗口是否正在轮巡
+     * 第三个窗口是否正在轮巡的标识
      */
     boolean isThridPlayerRounding = false;
 
@@ -2480,12 +2476,12 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
     }
 
     /**
-     * 第四个窗口轮巡时的数据下标
+     * 第四个窗口轮巡时的初始下标
      */
     int fourthPlayerRoundSubNum = 0;
 
     /**
-     * 第四个窗口是否正在轮巡
+     * 第四个窗口是否正在轮巡的标识
      */
     boolean isFourthPlayerRounding = false;
 
@@ -2786,17 +2782,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
         }
     }
 
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         isCurrentPageVisible = isVisibleToUser;
@@ -2805,47 +2790,32 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
             if (videoGroupAdapter != null) {
                 videoGroupAdapter.notifyDataSetChanged();
             }
-        }
-
-        /**
-         * 存在Bug 。
-         *
-         */
-
-        Logutil.d("VideoMonitor-->>>" + isCurrentPageVisible);
-        if (isVisibleToUser) {
-            if (isCurrentFourScreen) {
+            //判断当前是否是单屏并播放
+            if (isCurrentSingleScreen) {
                 isCurrentSingleScreen = true;
                 isCurrentFourScreen = false;
-                Logutil.i("多屏切换单屏");
-                if (firstPlayer != null && firstPlayer.isPlaying()) {
-                    firstPlayer.stop();
-                }
-                if (secondPlayer != null && secondPlayer.isPlaying()) {
-                    secondPlayer.stop();
-                }
-                if (thirdPlayer != null && thirdPlayer.isPlaying()) {
-                    thirdPlayer.stop();
-                }
-                if (fourthPlayer != null && fourthPlayer.isPlaying()) {
-                    fourthPlayer.stop();
-                }
-                if (isCurrentPageVisible) {
-                    //多屏显示，单屏隐藏
-                    multiScreenLayout.setVisibility(View.GONE);
-                    singleScreenLayout.setVisibility(View.VISIBLE);
-                    firstParentLayout.setVisibility(View.GONE);
-                    secondParentLayout.setVisibility(View.GONE);
-                    thirdParentLayout.setVisibility(View.GONE);
-                    fourthParentLayout.setVisibility(View.GONE);
-                    //播放器view可见
-                    firstPlayView.setVisibility(View.GONE);
-                    secondPlayView.setVisibility(View.GONE);
-                    thirdPlayView.setVisibility(View.GONE);
-                    fourthPlayView.setVisibility(View.GONE);
-                    initDoubleClickFourScreenPlay();
+                if (singlePlayer != null) {
+                    singlePlayer.start();
                 }
             }
+            //判断当前是否是四分屏并播放
+            if (isCurrentFourScreen) {
+                isCurrentSingleScreen = false;
+                isCurrentFourScreen = true;
+                if (firstPlayer != null) {
+                    firstPlayer.start();
+                }
+                if (secondPlayer != null) {
+                    secondPlayer.start();
+                }
+                if (thirdPlayer != null) {
+                    thirdPlayer.start();
+                }
+                if (fourthPlayer != null) {
+                    fourthPlayer.start();
+                }
+            }
+
         } else {
             isFirstPlayerRounding = false;
             isSecondPlayerRounding = false;
@@ -2853,26 +2823,102 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
             isFourthPlayerRounding = false;
             singlePlayerIsRounding = false;
 
-            Logutil.i("isCurrentSingleScreen--->>" + isCurrentSingleScreen);
-            Logutil.i("isCurrentFourScreen--->>" + isCurrentFourScreen);
+            Logutil.d("不可见");
+            if (isCurrentSingleScreen) {
+                isCurrentSingleScreen = true;
+                isCurrentFourScreen = false;
+                if (singlePlayer != null) {
+                    singlePlayer.stop();
+                }
+            }
+            if (isCurrentFourScreen) {
+                isCurrentSingleScreen = false;
+                isCurrentFourScreen = true;
+                if (firstPlayer != null) {
+                    firstPlayer.stop();
+                }
+                if (secondPlayer != null) {
+                    secondPlayer.stop();
+                }
+                if (thirdPlayer != null) {
+                    thirdPlayer.stop();
+                }
+                if (fourthPlayer != null) {
+                    fourthPlayer.stop();
+                }
+            }
         }
+
+//        /**
+//         * 存在Bug 。
+//         *
+//         */
+//        Logutil.d("VideoMonitor-->>>" + isCurrentPageVisible);
+//        Logutil.d("isVisibleToUser-->>"+isVisibleToUser);
+//        if (isVisibleToUser) {
+//            if (isCurrentFourScreen) {
+//                isCurrentSingleScreen = true;
+//                isCurrentFourScreen = false;
+//                Logutil.i("多屏切换单屏");
+//                if (firstPlayer != null && firstPlayer.isPlaying()) {
+//                    firstPlayer.stop();
+//                }
+//                if (secondPlayer != null && secondPlayer.isPlaying()) {
+//                    secondPlayer.stop();
+//                }
+//                if (thirdPlayer != null && thirdPlayer.isPlaying()) {
+//                    thirdPlayer.stop();
+//                }
+//                if (fourthPlayer != null && fourthPlayer.isPlaying()) {
+//                    fourthPlayer.stop();
+//                }
+//                if (isCurrentPageVisible) {
+//                    //多屏显示，单屏隐藏
+//                    multiScreenLayout.setVisibility(View.GONE);
+//                    singleScreenLayout.setVisibility(View.VISIBLE);
+//                    firstParentLayout.setVisibility(View.GONE);
+//                    secondParentLayout.setVisibility(View.GONE);
+//                    thirdParentLayout.setVisibility(View.GONE);
+//                    fourthParentLayout.setVisibility(View.GONE);
+//                    //播放器view可见
+//                    firstPlayView.setVisibility(View.GONE);
+//                    secondPlayView.setVisibility(View.GONE);
+//                    thirdPlayView.setVisibility(View.GONE);
+//                    fourthPlayView.setVisibility(View.GONE);
+//                    initDoubleClickFourScreenPlay();
+//                }
+//            }
+//        } else {
+//            isFirstPlayerRounding = false;
+//            isSecondPlayerRounding = false;
+//            isThridPlayerRounding = false;
+//            isFourthPlayerRounding = false;
+//            singlePlayerIsRounding = false;
+//
+//            Logutil.i("isCurrentSingleScreen--->>" + isCurrentSingleScreen);
+//            Logutil.i("isCurrentFourScreen--->>" + isCurrentFourScreen);
+//        }
         super.setUserVisibleHint(isVisibleToUser);
     }
 
     @Override
     public void onDestroyView() {
-
+        //关闭串口
         if (null != mSerialPortManager) {
             mSerialPortManager.closeSerialPort();
             mSerialPortManager = null;
         }
-
+        //移除handler监听
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
+        //注销广播
         if (broadcast != null) {
             getActivity().unregisterReceiver(broadcast);
         }
+        //关闭串口
+        if (mSerialPortManager != null)
+            mSerialPortManager.closeSerialPort();
         super.onDestroyView();
     }
 
@@ -2886,6 +2932,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
             //去除加载进度条
             handler.sendEmptyMessage(8);
 
+            //判断当前页面是否可见
             if (getActivity() == null)
                 return;
 
@@ -3127,7 +3174,6 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-
                 case 1:
                     //提示网络异常
                     if (isCurrentPageVisible)
@@ -3223,27 +3269,28 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                     ToastUtils.showShort("您双击了列表");
                     break;
                 case 19:
+                    //单屏加载动画提示
                     singleLoadingImg.setVisibility(View.VISIBLE);
                     singleLoadingImg.startAnimation(mLoadingAnim);
                     break;
                 case 20:
-                    //第一个窗口开始轮播
+                    //第一个窗口开始轮巡
                     startFirstPlayerRound();
                     break;
                 case 21:
-                    //第二个窗口开始轮播
+                    //第二个窗口开始轮巡
                     startSecondPlayerRound();
                     break;
                 case 22:
-                    //第三个窗口开始轮播
+                    //第三个窗口开始轮巡
                     startThirdPlayerRound();
                     break;
                 case 23:
-                    //第四个窗口开始轮播
+                    //第四个窗口开始轮巡
                     startFourthPlayerRound();
                     break;
                 case 24:
-                    //摇杆串口控制云台
+                    //处理摇杆控制云台功能
                     String singleInstruct = (String) msg.obj;
                     handlerPTZControl(singleInstruct);
                     break;
