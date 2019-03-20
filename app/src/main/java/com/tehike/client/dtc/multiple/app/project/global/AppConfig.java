@@ -137,7 +137,7 @@ public class AppConfig {
     /**
      * 屏保计时
      */
-    public static int SCREEN_SAVE_TIME = 30;
+    public static int SCREEN_SAVE_TIME = 3000;
 
     /**
      * 更新apk的路径(远程服务器文件夹名)
@@ -172,7 +172,7 @@ public class AppConfig {
     /**
      * dns(第二個默認的Dns)
      */
-    public static String DNS = "119.29.29.29";
+    public static String DNS = "0.0.0.0";
 
     /**
      * 经纬度

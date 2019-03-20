@@ -3,6 +3,7 @@ package com.tehike.client.dtc.multiple.app.project.utils;
 import android.util.Xml;
 
 import com.tehike.client.dtc.multiple.app.project.update.UpDateInfo;
+
 import org.xmlpull.v1.XmlPullParser;
 
 import java.io.BufferedReader;
@@ -96,6 +97,25 @@ public class StringUtils {
         return upDateInfo;
     }
 
+    /**
+     * 读音转换
+     */
+    public static String voiceConVersion(String str) {
+        String newStr = "";
+        if (str.length() == 3) {
+            newStr = str.substring(0, 1) + "佰" + str.substring(1, 2) + "十" + str.substring(2, 3);
+        } else if (str.length() == 2) {
+            if (!str.substring(0, 1).equals("1"))
+                newStr = str.substring(0, 1) + "十" + str.substring(1, 2);
+            else
+                newStr = "十" + str.substring(1, 2);
+        } else if (str.length() == 4) {
+            newStr = str.substring(0, 1) + "仟" + str.substring(1, 2) + "佰" + str.substring(2, 3) + "十" + str.substring(3, 4);
+        }else if (str.length() ==1){
+            newStr = str;
+        }
+        return newStr;
+    }
 
 
 }

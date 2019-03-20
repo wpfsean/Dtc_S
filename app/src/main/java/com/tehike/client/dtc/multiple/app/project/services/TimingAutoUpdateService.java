@@ -106,7 +106,7 @@ public class TimingAutoUpdateService extends Service {
                     updateApk(mUpDateInfo);
 
                 } else {
-                    Logutil.e("请求更新失败");
+                    Logutil.e("请求更新失败-->>"+AppConfig.WEB_HOST+ SysinfoUtils.getSysinfo().getWebresourceServer()+AppConfig.UPDATE_APK_PATH+AppConfig.UPDATE_APK_FILE);
                     WriteLogToFile.info("请求更新失败--->>>"+AppConfig.WEB_HOST+ SysinfoUtils.getSysinfo().getWebresourceServer()+AppConfig.UPDATE_APK_PATH+AppConfig.UPDATE_APK_FILE);
                 }
             } catch (Exception e) {

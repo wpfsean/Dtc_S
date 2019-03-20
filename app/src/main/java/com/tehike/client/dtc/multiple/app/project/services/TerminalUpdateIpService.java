@@ -174,7 +174,7 @@ public class TerminalUpdateIpService extends Service {
 
                 // 要发送的信息
                 String data = "WHOAMI|" + nativeMac.toUpperCase().replace(":", "-") + "|" + nativeIp
-                        + "/" + nativeNetmask + "/" + nativeGateway + "|NV-WPF-zzZ";
+                        + "/" + nativeNetmask + "/" + nativeGateway + "|NV-Dtc_S";
                 Logutil.i("本机向上位机发的消息-->>>" + data);
                 DatagramPacket d = new DatagramPacket(data.getBytes(),
                         data.getBytes().length, InetAddress.getByName(tempIp),
@@ -229,10 +229,9 @@ public class TerminalUpdateIpService extends Service {
             if (serverMac.equals(nativeMac.toUpperCase().replace(":", "-"))) {
                 //设置静态ip
                 if (netWorkType == 1)
-                    App.getSystemManager().ZYsetEthStaticMode(serverIp, serverGateway, serverNetmask, AppConfig.DNS, null);
+                    App.getSystemManager().ZYsetEthStaticMode(serverIp, serverGateway, serverNetmask, AppConfig.DNS, AppConfig.DNS);
                 else
-                    App.getSystemManager().ZYsetWifiStaticMode(serverIp, serverGateway, serverNetmask, AppConfig.DNS, null);
-                Logutil.i("哈哈，已修改了Ip");
+                    App.getSystemManager().ZYsetWifiStaticMode(serverIp, serverGateway, serverNetmask, AppConfig.DNS, AppConfig.DNS);
             }
         }
     }
@@ -252,12 +251,10 @@ public class TerminalUpdateIpService extends Service {
         @Override
         public void run() {
             if (serverMac.equals(nativeMac.toUpperCase().replace(":", "-"))) {
-                //先断开
-                App.getSystemManager().ZYsetEthTurnOff();
-                //再打开
-                App.getSystemManager().ZYsetEthTurnOn();
-                Logutil.w("哈哈，我重启网络了-->>>" + App.getSystemManager().ZYgetEthIp());
-               // App.getSystemManager().ZYRebootSys();
+                if (netWorkType == 1)
+                    Logutil.w("哈哈，我重启网络了-->>>" + App.getSystemManager().ZYgetEthIp());
+                else
+                    Logutil.w("哈哈，我重启网络了-->>>" + App.getSystemManager().ZYgetWifiIp());
             }
         }
     }

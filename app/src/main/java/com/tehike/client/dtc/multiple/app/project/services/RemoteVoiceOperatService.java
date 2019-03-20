@@ -702,7 +702,7 @@ public class RemoteVoiceOperatService extends Service {
     /**
      * 播放鸣枪或警告
      */
-    private void playVoice(final int type) {
+    public static void playVoice(final int type) {
         new Thread(new Runnable() {
             @Override
             public void run() {

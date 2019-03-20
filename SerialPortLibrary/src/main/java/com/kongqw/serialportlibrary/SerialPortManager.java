@@ -42,7 +42,7 @@ public class SerialPortManager extends SerialPort {
      */
     public boolean openSerialPort(File device, int baudRate) {
 
-        Log.i(TAG, "openSerialPort: " + String.format("打开串口 %s  波特率 %s", device.getPath(), baudRate));
+       // Log.i(TAG, "openSerialPort: " + String.format("打开串口 %s  波特率 %s", device.getPath(), baudRate));
 
         // 校验串口权限
         if (!device.canRead() || !device.canWrite()) {
@@ -60,7 +60,7 @@ public class SerialPortManager extends SerialPort {
             mFd = open(device.getAbsolutePath(), baudRate, 0);
             mFileInputStream = new FileInputStream(mFd);
             mFileOutputStream = new FileOutputStream(mFd);
-            Log.i(TAG, "openSerialPort: 串口已经打开 " + mFd);
+        //    Log.i(TAG, "openSerialPort: 串口已经打开 " + mFd);
             if (null != mOnOpenSerialPortListener) {
                 mOnOpenSerialPortListener.onSuccess(device);
             }

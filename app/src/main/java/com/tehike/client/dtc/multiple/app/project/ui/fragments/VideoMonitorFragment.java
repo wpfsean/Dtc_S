@@ -515,7 +515,8 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                     }
                 }).openSerialPort(ygSerialPortDevice.getFile(), 9600);
 
-        Logutil.d("openSerialPort--->>" + openSerialPort);
+
+        Logutil.d("摇杆串口"+ygSerialPortDevice.toString()+"打开状态："+openSerialPort);
     }
 
     /**
@@ -1024,7 +1025,7 @@ public class VideoMonitorFragment extends BaseFragment implements NodePlayerDele
                     }
                     //拿到视频组数据后去适配展示
                     if (videoGroupList != null && videoGroupList.size() > 0) {
-                        Logutil.d("视频组数据--->>>" + videoGroupList.toString());
+                      //  Logutil.d("视频组数据--->>>" + videoGroupList.toString());
                         handler.sendEmptyMessage(4);
                     }
                 } catch (Exception e) {

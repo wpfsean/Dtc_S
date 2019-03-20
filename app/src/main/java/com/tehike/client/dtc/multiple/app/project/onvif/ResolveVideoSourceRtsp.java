@@ -7,6 +7,7 @@ import android.util.Xml;
 
 import com.tehike.client.dtc.multiple.app.project.entity.VideoBean;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -26,9 +27,10 @@ import java.util.Random;
 /**
  * 描述：解析webapi上video资源的Rtsp和ShotPic
  * ===============================
+ *
  * @author wpfse wpfsean@126.com
- * @Create at:2018/12/25 11:56
  * @version V1.0
+ * @Create at:2018/12/25 11:56
  */
 
 public class ResolveVideoSourceRtsp extends Thread {
@@ -129,7 +131,7 @@ public class ResolveVideoSourceRtsp extends Thread {
     GetRtspCallback listern;
 
     //构造方法
-    public ResolveVideoSourceRtsp(  VideoBean videoBean, GetRtspCallback listern) {
+    public ResolveVideoSourceRtsp(VideoBean videoBean, GetRtspCallback listern) {
         this.videoBean = videoBean;
         this.listern = listern;
         createAuthString();
@@ -139,17 +141,19 @@ public class ResolveVideoSourceRtsp extends Thread {
     public void run() {
         String ip = videoBean.getIpaddress();
         String uName = videoBean.getUsername();
-        String uPwd =videoBean.getPassword();
+        String uPwd = videoBean.getPassword();
         //判断待处理的数据是否为空
         if (TextUtils.isEmpty(ip) || TextUtils.isEmpty(uName) || TextUtils.isEmpty(uPwd)) {
-            // Log.e("TAG", "Onvif对象的ip为空");
+            Logutil.e("Onvif解析数据为空"+videoBean.toString());
+            WriteLogToFile.info("Onvif解析数据为空"+videoBean.toString());
             listern.getDeviceInfoResult("", false, videoBean);
             return;
         }
         //判断当前的待处理的数据的ip是否可以ping通
         boolean isPingConnect = isIpReachable(ip);
         if (!isPingConnect) {
-            //  Log.e("TAG", device.getVideoBen().getName()+"\t"+"Onvif对象的ip不能ping通过");
+            Logutil.e(videoBean.getName() + "\t" + "Onvif对象的ip不能ping通过");
+            WriteLogToFile.info("Onvif解析异常--->>>" + videoBean.getName() + "\t" + "Onvif对象的ip不能ping通过");
             listern.getDeviceInfoResult("", false, videoBean);
             return;
         }
@@ -164,22 +168,24 @@ public class ResolveVideoSourceRtsp extends Thread {
 
             //判断是否获取到mediaService
             if (TextUtils.isEmpty(media_Service)) {
-//                Log.e("TAG", "media_Service为空");
+                Logutil.e("media_Service为空");
+                WriteLogToFile.info("media_Service为空");
                 listern.getDeviceInfoResult("", false, videoBean);
                 return;
             }
             //获取profile（带鉴权）
             String getProfileParamater = String.format(GET_PROFILES,
-                   videoBean.getUsername(), mAuthPwd, mNonce, mCreated);
+                    videoBean.getUsername(), mAuthPwd, mNonce, mCreated);
             //请求返回的token参数
             String ProfileResult = postRequest(media_Service, getProfileParamater);
             if (TextUtils.isEmpty(ProfileResult)) {
-//                Log.e("TAG", "ProfileResult为空，获取token参数失败");
+                Logutil.e("ProfileResult为空，获取token参数失败");
+                WriteLogToFile.info("ProfileResult为空，获取token参数失败");
                 listern.getDeviceInfoResult("", false, videoBean);
                 return;
             }
 
-           videoBean.addProfiles(getMediaProfiles(ProfileResult));
+            videoBean.addProfiles(getMediaProfiles(ProfileResult));
 
             //通过channel计算当前请求的是哪个通道
             String channel = videoBean.getChannel();
@@ -205,14 +211,15 @@ public class ResolveVideoSourceRtsp extends Thread {
             String getRtstResult = postRequest(media_Service, getRtspParamater);
             //判断
             if (TextUtils.isEmpty(getRtstResult)) {
-                Log.e("TAG", "getRtstResult为空"+videoBean.getName()+"\t"+videoBean.getChannel() );
+                Logutil.e( "getRtstResult为空" + videoBean.getName() + "\t" + videoBean.getChannel());
                 listern.getDeviceInfoResult("", false, videoBean);
                 return;
             }
             //解析rtsp
             String rtsp = getRtspByXml(getRtstResult);
             if (TextUtils.isEmpty(rtsp)) {
-                Log.e("TAG", "rtsp为空");
+                Logutil.e( "rtsp为空");
+                WriteLogToFile.info(videoBean.getName()+"rtsp为空");
                 listern.getDeviceInfoResult("", false, videoBean);
                 return;
             }
@@ -247,8 +254,9 @@ public class ResolveVideoSourceRtsp extends Thread {
             //最后回调
             listern.getDeviceInfoResult(newUrl, true, videoBean);
         } catch (Exception e) {
+            WriteLogToFile.info("Onvif解析异常-->>" + e.getMessage() + "\n" + videoBean.getName() + "\t" + videoBean.getIpaddress() + "\t" + videoBean.getChannel());
             Log.e("TAG", "Onvif解析异常-->>" + e.getMessage());
-            Logutil.d("Onvif-->>" + videoBean.getName() + "\t" +videoBean.getIpaddress() + "\t" + videoBean.getChannel());
+            Logutil.d("Onvif-->>" + videoBean.getName() + "\t" + videoBean.getIpaddress() + "\t" + videoBean.getChannel());
         }
     }
 
@@ -311,7 +319,7 @@ public class ResolveVideoSourceRtsp extends Thread {
                 receive = receive + new String(data, 0, n);
             }
         } else {
-        //    Log.e("TAG", "ResponseCodeError : " + urlConn.getResponseCode());
+            //    Log.e("TAG", "ResponseCodeError : " + urlConn.getResponseCode());
             return "";
             //throw new Exception("ResponseCodeError : " + urlConn.getResponseCode());
         }

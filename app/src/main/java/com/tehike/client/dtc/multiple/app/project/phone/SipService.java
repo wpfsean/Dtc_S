@@ -3,15 +3,26 @@ package com.tehike.client.dtc.multiple.app.project.phone;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.tehike.client.dtc.multiple.app.project.App;
+import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
+import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
+import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.CryptoUtil;
+import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
+import com.tehike.client.dtc.multiple.app.project.utils.GsonUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
+import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 
 import org.linphone.core.LinphoneAddress;
 import org.linphone.core.LinphoneAuthInfo;
@@ -131,22 +142,26 @@ public class SipService extends Service implements LinphoneCoreListener {
         String state = registrationState.toString();
         if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationNone.toString())) {
             sRegistrationCallback.registrationNone();
-         //   Logutil.i("registrationNone");
+            //   Logutil.i("registrationNone");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationProgress.toString())) {
             //  sRegistrationCallback.registrationProgress();
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationOk.toString())) {
             sRegistrationCallback.registrationOk();
             AppConfig.SIP_STATUS = true;
-           // Logutil.i("Ok");
+            // Logutil.i("Ok");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationCleared.toString())) {
             sRegistrationCallback.registrationCleared();
-          //  Logutil.i("registrationCleared");
+            //  Logutil.i("registrationCleared");
         } else if (sRegistrationCallback != null && state.equals(LinphoneCore.RegistrationState.RegistrationFailed.toString())) {
             sRegistrationCallback.registrationFailed();
-           // Logutil.i("registrationFailed");
+            // Logutil.i("registrationFailed");
             AppConfig.SIP_STATUS = false;
         }
     }
+
+    List<SipBean> allSipList;
+
+    String comingUserName = "";
 
     @Override
     public void callState(final LinphoneCore linphoneCore, final LinphoneCall linphoneCall, LinphoneCall.State state, String s) {
@@ -154,10 +169,8 @@ public class SipService extends Service implements LinphoneCoreListener {
 
             //来电号码
             String inComingNumber = linphoneCall.getRemoteAddress().getUserName();
-//
-//            LinphoneCall[] getCalls = SipManager.getLc().getCalls();
-//            if (getCalls.length == 1){
 
+            //判断当前是否是会议号码
             if (inComingNumber.equals(AppConfig.DUTY_NUMBER)) {
                 try {
                     SipManager.getLc().acceptCall(SipManager.getLc().getCurrentCall());
@@ -165,66 +178,42 @@ public class SipService extends Service implements LinphoneCoreListener {
                     e.printStackTrace();
                 }
             } else {
+                //回调
                 sPhoneCallback.incomingCall(linphoneCall);
+                //发送来电广播
                 App.getApplication().sendBroadcast(new Intent(AppConfig.INCOMING_CALL_ACTION));
+                //结束屏保页面
+                if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+                    ActivityUtils.getTopActivity().finish();
+                }
+
+                try {
+                    //遍历得到哨位Id
+                    allSipList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_SIP).toString()), SipBean.class);
+                    for (int i = 0; i < allSipList.size(); i++) {
+                        SipBean mSipBean = allSipList.get(i);
+                        if (mSipBean != null) {
+                            if (mSipBean.getNumber().equals(inComingNumber)) {
+                                comingUserName = mSipBean.getSentryId();
+                            }
+                        }
+                    }
+                    //播报几号哨来电
+                    if (!TextUtils.isEmpty(comingUserName))
+                        App.startSpeaking(StringUtils.voiceConVersion(comingUserName) + "号哨来电");
+                    else
+                        App.startSpeaking(inComingNumber + "来电");
+
+                    //保存到数据库
+                    ContentValues contentValues1 = new ContentValues();
+                    contentValues1.put("time", TimeUtils.getCurrentTime());
+                    contentValues1.put("event", comingUserName + "号哨来电");
+                    new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
+
+                } catch (Exception e) {
+                  Logutil.e("SipService异常-->>>"+e.getMessage());
+                }
             }
-//            }
-//            if (getCalls.length == 2){
-//                App.getApplication().sendBroadcast(new Intent("secondCall"));
-//            }
-
-
-//
-//            if (inComingNumber.equals(AppConfig.DUTY_NUMBER)) {
-//                //会议
-//                //第一个会议
-//                if (!isConnected){
-//                    allCallList.add(linphoneCall);
-//                    try {
-//                        linphoneCore.acceptCall(allCallList.get(0));
-//                    } catch (LinphoneCoreException e) {
-//                        e.printStackTrace();
-//                    }
-//                    isConnected = true;
-//                }else {
-//                    //第N个会议(暂停第一个，接通第二个)
-//                    allCallList.add(linphoneCall);
-//                    linphoneCore.pauseCall(allCallList.get(0));
-//                    try {
-//                        linphoneCore.acceptCall(allCallList.get(1));
-//                    } catch (LinphoneCoreException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            } else {
-//                //非会议
-//                if (!isConnected){
-//                    allCallList.add(linphoneCall);
-//
-//                    sPhoneCallback.incomingCall(linphoneCall);
-//                    //发送来电广播(用来修改底部的Radio选中状态)
-//                    Intent intent = new Intent();
-//                    intent.setAction(AppConfig.INCOMING_CALL_ACTION);
-//                    App.getApplication().sendBroadcast(intent);
-//                    Logutil.d("接通了第一个电话");
-//                    isConnected = true;
-//                }else {
-//                    allCallList.add(linphoneCall);
-//
-//
-//                    Logutil.d("当前电话数:"+SipManager.getLc().getCalls().length);
-//
-//                    App.getApplication().sendBroadcast(new Intent("secondCall"));
-//
-////                    linphoneCore.pauseCall(allCallList.get(0));
-////                    try {
-////                        linphoneCore.acceptCall(allCallList.get(1));
-////                    } catch (LinphoneCoreException e) {
-////                        e.printStackTrace();
-////                    }
-//
-//                }
-//            }
         }
         if (state == LinphoneCall.State.OutgoingInit && sPhoneCallback != null) {
             sPhoneCallback.outgoingInit();

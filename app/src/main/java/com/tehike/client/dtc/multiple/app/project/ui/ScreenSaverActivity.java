@@ -19,7 +19,7 @@ import java.util.Locale;
 import butterknife.BindView;
 
 /**
- * 描述：屏保界面
+ * 描述：屏保界面（显示日期和时间）
  * ===============================
  *
  * @author wpfse wpfsean@126.com
@@ -47,6 +47,11 @@ public class ScreenSaverActivity extends BaseActivity {
     SimpleDateFormat hoursFormat;
 
     /**
+     * 日期格式
+     */
+    SimpleDateFormat dateFormat;
+
+    /**
      * 显示时间的线程是否正在运行
      */
     boolean threadIsRun = true;
@@ -66,15 +71,13 @@ public class ScreenSaverActivity extends BaseActivity {
      * 初始化时间显示
      */
     private void initializeCurrentTime() {
+        //时分秒格式
         hoursFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        TimingThread timeThread = new TimingThread();
+        //日期格式
+        dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        //开启定时刷新线程
+        TimingRefreshThread timeThread = new TimingRefreshThread();
         new Thread(timeThread).start();
-
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日");
-        String date = dateFormat.format(new Date());
-        displayScreenDateLayout.setText(date+"\t\t\t"+getWeek());
-
     }
 
     /**
@@ -106,7 +109,7 @@ public class ScreenSaverActivity extends BaseActivity {
     /**
      * 每隔1秒刷新一下时间的线程
      */
-    class TimingThread extends Thread {
+    class TimingRefreshThread extends Thread {
         @Override
         public void run() {
             super.run();
@@ -122,9 +125,10 @@ public class ScreenSaverActivity extends BaseActivity {
     }
 
     /**
-     * 显示当前的时间
+     * 显示当前的时期和时间
      */
-    private void disPlayCurrentTime() {
+    private void disPlayDateAndTime() {
+        //显示当前的时分秒
         Date currentDate = new Date();
         if (hoursFormat != null) {
             String hoursStr = hoursFormat.format(currentDate);
@@ -132,13 +136,21 @@ public class ScreenSaverActivity extends BaseActivity {
                 displayScreenTimeLayout.setText(hoursStr);
             }
         }
+        //显示当前的日期
+        String date = dateFormat.format(currentDate);
+        displayScreenDateLayout.setText(date + "\t\t\t" + getWeek());
     }
 
+    /**
+     * 事件分发机制
+     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                //发送取消屏保的通知
                 ScreenSaverActivity.this.sendBroadcast(new Intent(AppConfig.CANCEL_SCREEN_SAVER_ACTION));
+                //finish掉栈顶的acitivity
                 ActivityUtils.getTopActivity().finish();
                 break;
         }
@@ -147,19 +159,26 @@ public class ScreenSaverActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        //重置计时标识
         threadIsRun = false;
+        //发送取消屏保的通知
+        ScreenSaverActivity.this.sendBroadcast(new Intent(AppConfig.CANCEL_SCREEN_SAVER_ACTION));
+        //移除handler监听
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
         super.onDestroy();
     }
 
+    /**
+     * handler监听子线程发送的消息
+     */
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
-                    disPlayCurrentTime();
+                    disPlayDateAndTime();
                     break;
             }
         }

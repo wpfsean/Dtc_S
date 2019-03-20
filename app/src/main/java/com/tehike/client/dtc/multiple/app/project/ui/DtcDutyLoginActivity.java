@@ -248,7 +248,6 @@ public class DtcDutyLoginActivity extends BaseActivity {
 
     @Override
     protected void afterCreate(Bundle savedInstanceState) {
-
         //申请所需要的权限
         checkAllPermissions();
     }
@@ -415,17 +414,12 @@ public class DtcDutyLoginActivity extends BaseActivity {
      */
     @OnClick(R.id.userlogin_button_cancel_layout)
     public void test(View view) {
-
-        String topActivityName = ActivityUtils.getTopActivity().getClass().getName();
-        Logutil.d("Name-->>>"+topActivityName);
-
-
-//        if (con != null) {
-//            con.disconnect();
-//            con = null;
-//            handler.sendEmptyMessage(9);
-//            isClickLoginBtnFlag = false;
-//        }
+        if (con != null) {
+            con.disconnect();
+            con = null;
+            handler.sendEmptyMessage(9);
+            isClickLoginBtnFlag = false;
+        }
     }
 
     /**
@@ -448,21 +442,21 @@ public class DtcDutyLoginActivity extends BaseActivity {
      * 右下角的设置
      */
     @OnClick(R.id.system_set_btn_layout)
-    public void systemSet(View view) {
+    public void centerSetting(View view) {
         //判断网络是否连接正常
         if (!NetworkUtils.isConnected()) {
             showProgressFail("网络异常！");
             return;
         }
         //设置弹窗
-        disPlaySystemSetDialog();
+        disPlaySystemSettingDialog();
     }
 
     /**
      * 弹出设置弹窗
      */
     @SuppressLint("WrongConstant")
-    private void disPlaySystemSetDialog() {
+    private void disPlaySystemSettingDialog() {
         //加载view
         View view = LayoutInflater.from(this).inflate(R.layout.activity_system_setting_layout, null);
         //popuwindow显示
@@ -670,9 +664,9 @@ public class DtcDutyLoginActivity extends BaseActivity {
                     }
                     con.disconnect();
                 } catch (Exception e) {
-                    Logutil.e("登录异常"+e.getMessage());
+                    Logutil.e("登录异常" + e.getMessage());
                     handler.sendEmptyMessage(12);
-                    WriteLogToFile.info("登录异常"+e.getMessage());
+                    WriteLogToFile.info("登录异常" + e.getMessage());
                 }
             }
         }
@@ -682,7 +676,7 @@ public class DtcDutyLoginActivity extends BaseActivity {
      * 处理登录 接口的sysinfo数据
      */
     private void handlerSysinfoData(String result) {
-
+        //判断sysinfo数据是否存在
         if (TextUtils.isEmpty(result)) {
             WriteLogToFile.info(getString(R.string.str_sysinfo_empty));
             return;
@@ -691,8 +685,6 @@ public class DtcDutyLoginActivity extends BaseActivity {
         try {
             JSONObject jsonObject = new JSONObject(result);
             if (jsonObject != null) {
-                // jsonObject.getString("fingerprintServer")
-                //jsonObject.getInt("fingerprintPort")
                 SysInfoBean sysInfoBean = new SysInfoBean(jsonObject.getInt("alertPort"),
                         jsonObject.getString("alertServer"), jsonObject.getString("deviceGuid"),
                         jsonObject.getString("deviceName"), -1,
@@ -836,7 +828,7 @@ public class DtcDutyLoginActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
-
+        //开启sip服务
         if (!SipManager.isInstanceiated()) {
             Linphone.startService(this);
         }
@@ -857,12 +849,12 @@ public class DtcDutyLoginActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-
+        //清除登录动画
         loadingImageViewLayout.clearAnimation();
-
+        //重置对象为null
         if (mLoadingAnim != null)
             mLoadingAnim = null;
-
+        //移除handler监听
         if (handler != null)
             handler.removeCallbacksAndMessages(null);
 

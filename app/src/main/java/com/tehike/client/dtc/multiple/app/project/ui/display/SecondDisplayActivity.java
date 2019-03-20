@@ -2,6 +2,7 @@ package com.tehike.client.dtc.multiple.app.project.ui.display;
 
 import android.app.Presentation;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -267,6 +268,18 @@ public class SecondDisplayActivity extends Presentation {
      */
     @BindView(R.id.display_screen_saver_tv_layout)
     TextView displayScreenSaverTvLayout;
+
+    /**
+     * 报警通话视频加载文字提示
+     */
+    @BindView(R.id.alarm_call_video_loading_tv_layout)
+    TextView alarmCallVideoLoadingTvLayout;
+
+    /**
+     * 报警通话视频加载动画提示
+     */
+    @BindView(R.id.alarm_call_video_loading_icon_layout)
+    ImageView alarmCallVideoLoadingIconLayout;
 
     /**
      * 报警视频源播放器
@@ -661,10 +674,8 @@ public class SecondDisplayActivity extends Presentation {
         if (mProcessedAlarmQueueAdapter == null) {
             mProcessedAlarmQueueAdapter = new ProcessedAlarmQueueAdapter(mlist);
             processedAlarmList.setAdapter(mProcessedAlarmQueueAdapter);
-            mProcessedAlarmQueueAdapter.notifyDataSetChanged();
-        } else {
-            mProcessedAlarmQueueAdapter.notifyDataSetChanged();
         }
+        mProcessedAlarmQueueAdapter.notifyDataSetChanged();
 
 
     }
@@ -1848,19 +1859,30 @@ public class SecondDisplayActivity extends Presentation {
         for (int i = 0; i < allSipList.size(); i++) {
             SipBean mSipBean = allSipList.get(i);
             if (mSipBean.getIpAddress().equals(requestIp)) {
-                requestDeviceName = mSipBean.getName();
+                requestDeviceName = mSipBean.getSentryId();
             }
             if (mSipBean.getId().equals(requestOpenBoxId)) {
                 requestOpenBoxName = mSipBean.getName();
             }
         }
         //  voiceContent = requestDeviceName + "申请打开" + requestOpenBoxName + "的子弹箱！";
-        // App.startSpeaking(requestIp + "设备申请开启弹箱");
+        if (!TextUtils.isEmpty(requestDeviceName))
+            App.startSpeaking(requestDeviceName + "号哨申请开启弹箱");
 
         Logutil.d("requestIp" + requestIp);
         Logutil.d("requestOpenBoxId" + requestOpenBoxId);
         Logutil.d("requestDeviceName" + requestDeviceName);
         Logutil.d("requestOpenBoxName" + requestOpenBoxName);
+
+        //保存事件到数据库
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put("time", TimeUtils.getCurrentTime());
+        if (!TextUtils.isEmpty(requestDeviceName))
+            contentValues1.put("event", requestDeviceName + "号哨申请开启" + requestOpenBoxName + "子弹箱");
+        else
+            contentValues1.put("event", boxbean.getSendIp() + "申请开启" + boxbean.getBoxId() + "子弹箱");
+        new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
+        Logutil.d("数据库写入成功");
 
         //展示供弹申请队列
         if (requestOpenBoxQueueAdapter == null) {
@@ -1944,14 +1966,18 @@ public class SecondDisplayActivity extends Presentation {
                 if (mSipBean.getVideoBean() != null) {
                     if (!TextUtils.isEmpty(mSipBean.getVideoBean().getRtsp())) {
                         rtsp = mSipBean.getVideoBean().getRtsp();
+                    } else {
+                        handler.sendEmptyMessage(22);
                     }
+                } else {
+                    handler.sendEmptyMessage(22);
                 }
             }
         }
         handler.sendEmptyMessage(4);
-
         //选 判断播放地址
         if (TextUtils.isEmpty(rtsp)) {
+            handler.sendEmptyMessage(22);
             Logutil.e("播放通话时的面部 视频为null");
             return;
         }
@@ -1959,6 +1985,7 @@ public class SecondDisplayActivity extends Presentation {
         if (alarmCallPlayer != null) {
             alarmCallPlayer.stop();
         }
+        alarmCallVideoLoadingIconLayout.setAnimation(mLoadingAnim);
         //加载地址
         alarmCallPlayer.setInputUrl(rtsp);
         //播放回调
@@ -1966,6 +1993,13 @@ public class SecondDisplayActivity extends Presentation {
             @Override
             public void onEventCallback(NodePlayer player, int event, String msg) {
                 Logutil.d("event-->>" + event);
+                if (alarmCallPlayer == player) {
+                    if (event == 1001 || event == 1102 || event == 1104) {
+                        handler.sendEmptyMessage(24);
+                    } else {
+                        handler.sendEmptyMessage(23);
+                    }
+                }
             }
         });
         //开始播放
@@ -2520,8 +2554,8 @@ public class SecondDisplayActivity extends Presentation {
                 case 8:
                     //提示报警源视频无法加载
                     loadingTv.setVisibility(View.VISIBLE);
-                    loadingTv.setText(R.string.notconnect);
-                    loadingView.setVisibility(View.VISIBLE);
+                    loadingTv.setText("无法加载报警视频源");
+                    loadingView.setVisibility(View.INVISIBLE);
                     break;
                 case 9:
                     //报警时的通话计时
@@ -2575,6 +2609,21 @@ public class SecondDisplayActivity extends Presentation {
                     break;
                 case 21:
                     displayScreenTv();
+                    break;
+                case 22:
+                    //提示报警通话视频源
+                    alarmCallVideoLoadingTvLayout.setText("无法加载对方通话视频源");
+                    alarmCallVideoLoadingIconLayout.setVisibility(View.INVISIBLE);
+                    break;
+                case 23:
+                    //报警通话视频源播放正常
+                    alarmCallVideoLoadingTvLayout.setVisibility(View.GONE);
+                    alarmCallVideoLoadingIconLayout.setVisibility(View.INVISIBLE);
+                    break;
+                case 24:
+                    //报警通话视频源正在连接
+                    alarmCallVideoLoadingTvLayout.setText("重新连接");
+                    alarmCallVideoLoadingIconLayout.setVisibility(View.VISIBLE);
                     break;
             }
         }

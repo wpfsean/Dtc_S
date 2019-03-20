@@ -202,7 +202,7 @@ public class TimingSendHbService extends Service {
                 datagramPacket = new DatagramPacket(requestBytes, requestBytes.length, InetAddress.getByName(sendIp), sendPort);
                 socketUdp.send(datagramPacket);
                 socketUdp.close();
-                HbLogToFile.info("心跳发送成功-->>"+ Arrays.toString(requestBytes));
+                HbLogToFile.info("心跳发送成功");
             } catch (Exception e) {
                 Logutil.e("发送心跳异常:" + e.getMessage());
                 HbLogToFile.info("发送心跳异常:" + e.getMessage());

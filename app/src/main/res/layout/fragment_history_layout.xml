@@ -1,13 +1,134 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<?xml version="1.0" encoding="utf-8"?><!--历史记录页面-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="我是历史记录页面"
-        android:textColor="@color/white"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:visibility="visible">
 
-</LinearLayout>
+            <!--左部分-->
+            <LinearLayout
+                android:id="@+id/system_set_left_layout"
+                android:layout_width="124dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:background="@mipmap/dtc_list_bg"
+                android:orientation="vertical">
+
+                <!--功能文字提示-->
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="26dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="3dp"
+                    android:gravity="center"
+                    android:text="@string/str_resource_function_list"
+                    android:textColor="#ffe034"
+                    android:textSize="12sp" />
+
+                <!--左侧功能布局-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!--系统信息-->
+                    <LinearLayout
+                        android:id="@+id/history_alarm_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@mipmap/dtc_btn1_bg_selected"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_system" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="报警日志"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <!--时间设置-->
+                    <LinearLayout
+                        android:id="@+id/history_event_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_time" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="事件日志"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--中间部分-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_toLeftOf="@+id/system_set_right_layout"
+                android:layout_toRightOf="@+id/system_set_left_layout"
+                android:background="@mipmap/dtc_middle_bg"
+                android:orientation="vertical">
+
+                <ListView
+                    android:id="@+id/history_alarm_listview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"></ListView>
+
+
+                <ListView
+                    android:id="@+id/history_event_listview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"></ListView>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

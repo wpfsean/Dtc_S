@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.WindowManager;
@@ -28,6 +29,7 @@ import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
 import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipService;
+import com.tehike.client.dtc.multiple.app.project.services.KeyBoardService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenBoxRequestService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiverAlarmService;
 import com.tehike.client.dtc.multiple.app.project.services.RemoteVoiceOperatService;
@@ -59,6 +61,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ServiceUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 import com.tehike.client.dtc.multiple.app.project.voice.TimingCheckVoiceIsLiveService;
 
 import java.text.SimpleDateFormat;
@@ -132,6 +135,11 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
     SimpleDateFormat hoursFormat = null;
 
     /**
+     * 日期格式
+     */
+    SimpleDateFormat yearFormat = null;
+
+    /**
      * 显示时间的线程是否正在运行
      */
     boolean threadIsRun = true;
@@ -151,6 +159,27 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      */
     CpuAndRomBroadcast cpuAndRomBroadcast;
 
+    /**
+     * 副屏对象
+     */
+    SecondDisplayActivity differentDislay;
+
+    /**
+     * 屏幕管理
+     */
+    DisplayManager manager;
+
+    /**
+     * 屏保计时数据
+     */
+    int screenSaverTimingCount = 0;
+
+    /**
+     * 是否正在通话的标识
+     */
+    boolean isCallingFlag = true;
+
+
     @Override
     protected int intiLayout() {
         return R.layout.activity_dtcduty_layout;
@@ -159,9 +188,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void afterCreate(Bundle savedInstanceState) {
-
-        //Log CurrentIp
-        Logutil.e("Ip--->>" + NetworkUtils.getIPAddress(true));
 
         //注册来电监听
         registerComingBroadcast();
@@ -195,29 +221,32 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
 
     }
 
-    SecondDisplayActivity differentDislay;
-    DisplayManager manager;
-
+    /**
+     * 初始化副屏显示
+     */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void initializeSecondaryScreen() {
+        //判断是否有悬浮窗口的权限
         if (AppConfig.ARGEE_OVERLAY_PERMISSION) {
+            //得到屏幕管理对象
             if (manager == null)
                 manager = (DisplayManager) App.getApplication().getSystemService(Context.DISPLAY_SERVICE);
+            //得到当前的屏幕总数
             Display[] displays = manager.getDisplays();
+            //实现副屏
             if (differentDislay == null)
                 differentDislay = new SecondDisplayActivity(this, displays[1]);
+            //设置显示类型
             differentDislay.getWindow().setType(
                     WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+            //显示
             differentDislay.show();
 
+        } else {
+            Logutil.e("无悬浮窗口权限");
+            WriteLogToFile.info("无悬浮窗口权限");
         }
     }
-
-    //屏保计时数据
-    int count = 0;
-
-    //是否正在通话的标识
-    boolean flag = true;
 
     /**
      * 实现接口（接收Fragment传递的数据）
@@ -225,14 +254,14 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
     @Override
     public void SendMessageValue(String strValue) {
         if (strValue.equals("true")) {
-            //如果正在通话（不计时）
-            count = 0;
-            flag = false;
+            //如果正在通话（不计时并重置标识）
+            screenSaverTimingCount = 0;
+            isCallingFlag = false;
         } else if (strValue.equals("false")) {
-            //如果停止通话（开始计时）
-            count = 0;
+            //如果停止通话（开始计时并重置标识）
+            screenSaverTimingCount = 0;
             new Thread(new TimingScreenSaverThread()).start();
-            flag = true;
+            isCallingFlag = true;
         }
     }
 
@@ -250,7 +279,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                     e.printStackTrace();
                 }
                 handler.sendEmptyMessage(9);
-            } while (flag);
+            } while (isCallingFlag);
         }
     }
 
@@ -313,7 +342,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      * 启动必要的服务
      */
     private void startAllService() {
-
         //启动获取SipResource的服务
         if (!ServiceUtil.isServiceRunning(RequestWebApiDataService.class)) {
             ServiceUtil.startService(RequestWebApiDataService.class);
@@ -338,9 +366,11 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         if (!ServiceUtil.isServiceRunning(UpdateSystemTimeService.class)) {
             ServiceUtil.startService(UpdateSystemTimeService.class);
         }
+        //开启声音操作服务
         if (!ServiceUtil.isServiceRunning(ReceiveOpenBoxRequestService.class)) {
             ServiceUtil.startService(ReceiveOpenBoxRequestService.class);
         }
+        //开启定时发送心跳服务
         if (!ServiceUtil.isServiceRunning(TimingSendHbService.class)) {
             ServiceUtil.startService(TimingSendHbService.class);
         }
@@ -386,6 +416,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                 currentNameLayout.setText("哨位名称:" + cc.getDeviceName());
             }
         } catch (Exception e) {
+            WriteLogToFile.info("DtcDutyMainActivity取sysinfor数据异常" + e.getMessage());
             Logutil.e("获取数据异常--->>>" + e.getMessage());
         }
     }
@@ -394,13 +425,11 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      * 初始化显示时间
      */
     private void initializeTime() {
-        //显示当前的年月日
-        Date date = new Date();
-        SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy年MM月dd日");
-        String currntYearDate = yearFormat.format(date);
-        currentDateLayout.setText(currntYearDate);
-
+        //日期格式
+        yearFormat = new SimpleDateFormat("yyyy年MM月dd日");
+        //时分秒格式
         hoursFormat = new SimpleDateFormat("HH:mm:ss");
+        //开启线程刷新时间
         TimingThread timeThread = new TimingThread();
         new Thread(timeThread).start();
     }
@@ -427,12 +456,19 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      * 显示当前的时间
      */
     private void disPlayCurrentTime() {
+        //当前日期
         Date currentDate = new Date();
+        //显示时分秒
         if (hoursFormat != null) {
-            String hoursStr = hoursFormat.format(currentDate);
             if (isVisible) {
+                String hoursStr = hoursFormat.format(currentDate);
                 currentTimeLayout.setText(hoursStr);
             }
+        }
+        //显示当前的日期
+        if (isVisible) {
+            String currntYearDate = yearFormat.format(currentDate);
+            currentDateLayout.setText(currntYearDate);
         }
     }
 
@@ -440,6 +476,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      * 把Sip注册到sip服务器
      */
     private void registerSipToServer(SysInfoBean sysInfoBean) {
+        //判断sysinfor对象是否为空
         if (sysInfoBean == null) {
             handler.sendEmptyMessage(1);
             return;
@@ -563,7 +600,6 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
 
         public ViewPagerAdapter(FragmentManager fm) {
             super(fm);
-
         }
 
         @Override
@@ -575,47 +611,65 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         public int getCount() {
             return allFragmentList == null ? 0 : allFragmentList.size();
         }
+
     }
 
+    /**
+     * 屏保计时
+     */
+    private void screenSaverTiming() {
+        screenSaverTimingCount++;
+        //    Logutil.d("count-->>" + count);
+        if (screenSaverTimingCount == AppConfig.SCREEN_SAVE_TIME) {
+            openActivity(ScreenSaverActivity.class);
+            DtcDutyMainActivity.this.sendBroadcast(new Intent(AppConfig.SCREEN_SAVER_ACTION));
+            isCallingFlag = false;
+            screenSaverTimingCount = 0;
+        }
+    }
 
     @Override
     protected void onRestart() {
         Logutil.d("哈哈。我又可见了");
-        count = 0;
-        flag = true;
+        //重置屏保计时数和标识
+        screenSaverTimingCount = 0;
+        isCallingFlag = true;
+        //重新开启屏保时时线程
         new Thread(new TimingScreenSaverThread()).start();
         super.onRestart();
     }
 
+    /**
+     * 当前页面的事件要发机制
+     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        count = 0;
+        //点击屏幕点击时重置屏保计时为0
+        screenSaverTimingCount = 0;
         return super.dispatchTouchEvent(ev);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Logutil.d("退出");
-
-        count = 0;
-
-        flag = false;
-
+        //重置屏保标识
+        screenSaverTimingCount = 0;
+        isCallingFlag = false;
+        //退出应用
         exitApp();
-
+        //清除sip代理
         Linphone.getLC().clearProxyConfigs();
-
+        Logutil.e("退出");
     }
 
     /**
      * 退出登录(测试)
      */
     private void exitApp() {
-
+        //清除副屏显示
         if (differentDislay != null)
             differentDislay.dismiss();
-
+        //关闭所有的服务
         if (ServiceUtil.isServiceRunning(RemoteVoiceOperatService.class)) {
             ServiceUtil.stopService(RemoteVoiceOperatService.class);
         }
@@ -655,6 +709,9 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         if (ServiceUtil.isServiceRunning(TimingSendHbService.class)) {
             ServiceUtil.stopService(TimingSendHbService.class);
         }
+        if (ServiceUtil.isServiceRunning(KeyBoardService.class)) {
+            ServiceUtil.stopService(KeyBoardService.class);
+        }
         ActivityUtils.removeAllActivity();
 
 
@@ -663,39 +720,31 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onDestroy() {
-
+        //重置屏保计时
+        screenSaverTimingCount = 0;
+        isCallingFlag = false;
+        //重置刷新时间线程标识
         threadIsRun = false;
-
-        //取消广播
+        //注销来电广播
         if (incomingBroadcast != null) {
             unregisterReceiver(incomingBroadcast);
         }
-
+        //注销刷新网络状态广播
         if (mFreshNetworkStatusBroadcast != null) {
             unregisterReceiver(mFreshNetworkStatusBroadcast);
         }
+        //注销刷新cpu和ram的广播
         if (cpuAndRomBroadcast != null) {
             unregisterReceiver(cpuAndRomBroadcast);
         }
-
+        //移除handler监听
         if (handler != null)
             handler.removeCallbacksAndMessages(null);
-
-
-//        if (differentDislay.mReceiveAlarmBroadcast != null) {
-//            this.unregisterReceiver(differentDislay.mReceiveAlarmBroadcast);
-//        }
-//
-//        if (differentDislay.mVideoSourcesBroadcast != null) {
-//            this.unregisterReceiver(differentDislay.mVideoSourcesBroadcast);
-//        }
-
-
-        differentDislay.dismiss();
-
+        //清除副屏
+        if (differentDislay != null)
+            differentDislay.dismiss();
         super.onDestroy();
     }
-
 
     /**
      * Handler处理子线程发送的消息
@@ -719,12 +768,18 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                     disPlayCurrentTime();
                     break;
                 case 5:
-                    currentConntectLayout.setTextColor(0xff6adeff);
-                    currentConntectLayout.setText("网络状态:连接正常");
+                    //显示网络状态正常
+                    if (isVisible) {
+                        currentConntectLayout.setTextColor(0xff6adeff);
+                        currentConntectLayout.setText("网络状态:连接正常");
+                    }
                     break;
                 case 6:
-                    currentConntectLayout.setTextColor(0xffff0000);
-                    currentConntectLayout.setText("网络状态:已断开");
+                    //显示网络状态异常
+                    if (isVisible) {
+                        currentConntectLayout.setTextColor(0xffff0000);
+                        currentConntectLayout.setText("网络状态:已断开");
+                    }
                     break;
                 case 7:
                     //获取cpu相关的信息
@@ -739,16 +794,12 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
                     CustomViewPagerLayout.setCurrentItem(0);
                     break;
                 case 9:
-                    count++;
-                //    Logutil.d("count-->>" + count);
-                    if (count == AppConfig.SCREEN_SAVE_TIME) {
-                        openActivity(ScreenSaverActivity.class);
-                        DtcDutyMainActivity.this.sendBroadcast(new Intent(AppConfig.SCREEN_SAVER_ACTION));
-                        flag = false;
-                        count = 0;
-                    }
+                    //屏保计时
+                    screenSaverTiming();
                     break;
             }
         }
     };
+
+
 }

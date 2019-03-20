@@ -93,9 +93,14 @@
         <service android:name=".services.UpdateSystemSettingService" />
         <!-- 用来定时提交本机信息的服务 -->
         <service android:name=".services.TimingSendNativeInfoService" />
+        <!--修改系统时间服务-->
         <service android:name=".services.UpdateSystemTimeService"/>
+        <!--远程声音操作服务-->
         <service android:name=".services.ReceiveOpenBoxRequestService"/>
+        <!--定时发送心跳服务-->
         <service android:name=".services.TimingSendHbService"/>
+        <!--键盘串口服务-->
+        <service android:name=".services.KeyBoardService"/>
 
         <!--<service android:name=".voice.TimingCheckVoiceIsLiveService"/>-->
 

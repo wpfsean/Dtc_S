@@ -202,12 +202,6 @@ public class ReceiveOpenBoxRequestService extends Service {
         alarmIntent.setAction(AppConfig.BOX_ACTION);
         alarmIntent.putExtra("box", mOpenBoxParamater);
         App.getApplication().sendBroadcast(alarmIntent);
-        //保存事件到数据库
-        ContentValues contentValues1 = new ContentValues();
-        contentValues1.put("time", TimeUtils.getCurrentTime());
-        contentValues1.put("event", deviceName + "申请开启" + mOpenBoxParamater.getBoxId() + "子弹箱");
-        new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
-        Logutil.d("数据库写入成功");
         //清除屏保
         if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
             ActivityUtils.getTopActivity().finish();

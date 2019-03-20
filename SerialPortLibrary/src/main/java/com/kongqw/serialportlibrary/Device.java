@@ -45,4 +45,13 @@ public class Device implements Serializable{
     public void setFile(File path) {
         this.file = file;
     }
+
+    @Override
+    public String toString() {
+        return "Device{" +
+                "name='" + name + '\'' +
+                ", root='" + root + '\'' +
+                ", file=" + file +
+                '}';
+    }
 }
