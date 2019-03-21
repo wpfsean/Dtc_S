@@ -8,6 +8,8 @@ import android.support.annotation.Nullable;
 
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
+import com.tehike.client.dtc.multiple.app.project.ui.fragments.SystemSetFragment;
+import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 
@@ -252,9 +254,15 @@ public class TerminalUpdateIpService extends Service {
         public void run() {
             if (serverMac.equals(nativeMac.toUpperCase().replace(":", "-"))) {
                 if (netWorkType == 1)
-                    Logutil.w("哈哈，我重启网络了-->>>" + App.getSystemManager().ZYgetEthIp());
+                    Logutil.w("重启网络-->>>" + App.getSystemManager().ZYgetEthIp());
                 else
-                    Logutil.w("哈哈，我重启网络了-->>>" + App.getSystemManager().ZYgetWifiIp());
+                    Logutil.w("重启网络-->>>" + App.getSystemManager().ZYgetWifiIp());
+                //关闭所有的Activity
+                ActivityUtils.removeAllActivity();
+                //重启应用
+                Intent intent = App.getApplication().getPackageManager().getLaunchIntentForPackage("com.tehike.client.dtc.multiple.app.project");
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         }
     }

@@ -870,7 +870,8 @@ public class IntercomCallFragment extends BaseFragment {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求不到数据信息");
+                        Logutil.w("请求勤务通信组数据数据信息异常"+result);
+                        WriteLogToFile.info("请求勤务通信组数据数据信息异常"+result);
                         return;
                     }
 

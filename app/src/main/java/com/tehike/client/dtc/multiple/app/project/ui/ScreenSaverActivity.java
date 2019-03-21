@@ -132,13 +132,12 @@ public class ScreenSaverActivity extends BaseActivity {
         Date currentDate = new Date();
         if (hoursFormat != null) {
             String hoursStr = hoursFormat.format(currentDate);
+            String date = dateFormat.format(currentDate);
             if (isVisible) {
                 displayScreenTimeLayout.setText(hoursStr);
+                displayScreenDateLayout.setText(date + "\t\t\t" + getWeek());
             }
         }
-        //显示当前的日期
-        String date = dateFormat.format(currentDate);
-        displayScreenDateLayout.setText(date + "\t\t\t" + getWeek());
     }
 
     /**

@@ -493,13 +493,13 @@ public class BoxFragment extends BaseFragment {
                     handler.sendEmptyMessage(1);
                     return;
                 }
-                Logutil.d("result--->>" + result);
                 //解析sip资源
                 try {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求不到数据信息");
+                        Logutil.w("请求某个弹箱组信息异常"+result);
+                        WriteLogToFile.info("请求某个弹箱组信息异常:"+result);
                         return;
                     }
 

@@ -39,6 +39,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ToastUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -420,7 +421,8 @@ public class NetworkBroadcastFragment extends BaseFragment {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求不到数据信息");
+                        Logutil.w("请求网络广播组数据数据信息异常"+result);
+                        WriteLogToFile.info("请求网络广播组数据数据信息异常"+result);
                         return;
                     }
 

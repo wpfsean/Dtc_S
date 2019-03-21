@@ -67,6 +67,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.ToastUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -415,10 +416,10 @@ public class SecondDisplayActivity extends Presentation {
     /**
      * 状态报警队列的集合
      */
-    LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
+  public static   LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
 
     /**
-     * 状态报警队列的集合
+     * 申请开箱队列的集合
      */
     LinkedList<OpenBoxParamater> requestOpenBoxQueueList = new LinkedList<>();
 
@@ -975,14 +976,13 @@ public class SecondDisplayActivity extends Presentation {
                 if (sentinelResourcesGroupItemList != null && sentinelResourcesGroupItemList.size() > 0) {
                     sentinelResourcesGroupItemList.clear();
                 }
-                Logutil.d("组数据" + result);
-
                 //解析sip资源
                 try {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求不到数据信息");
+                        Logutil.w("请求副屏哨们分组数据数据信息异常"+result);
+                        WriteLogToFile.info("请求副屏哨们分组数据数据信息异常"+result);
                         return;
                     }
 

@@ -846,7 +846,7 @@ public class SystemSetFragment extends BaseFragment {
                     }
                 });
                 int result = App.getSystemManager().ZYsetBackLight(progress);
-                Logutil.d("result--->>" + result);
+                Logutil.d("setDeviceBlackLight--->>" + result);
             }
 
             @Override

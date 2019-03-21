@@ -207,7 +207,7 @@ public class RequestWebApiDataService extends Service {
                     handler.sendEmptyMessage(3);
                 }
             } else {
-                Logutil.e("请求数据异常--->>>" + jsonObject.getString("reason"));
+                Logutil.e("RequestWebApiDataService请求handlerVideoSouces数据异常--->>>" + jsonObject.getString("reason"));
                 WriteLogToFile.info("请求数据异常--->>>" + jsonObject.getString("reason"));
             }
         } catch (Exception e) {
@@ -414,7 +414,7 @@ public class RequestWebApiDataService extends Service {
                     handler.sendEmptyMessage(7);
                 }
             } else {
-                Logutil.e("请求数据异常--->>>" + jsonObject.getString("reason"));
+                Logutil.e("RequestWebApiDataService请求handlerSipSouces数据异常--->>>" + jsonObject.getString("reason"));
                 WriteLogToFile.info("请求数据异常--->>>" + jsonObject.getString("reason"));
             }
         } catch (Exception e) {
