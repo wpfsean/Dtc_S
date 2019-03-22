@@ -1,6 +1,8 @@
 package com.tehike.client.dtc.multiple.app.project.services;
 
+import android.annotation.TargetApi;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -21,12 +23,17 @@ import com.kongqw.serialportlibrary.listener.OnOpenSerialPortListener;
 import com.kongqw.serialportlibrary.listener.OnSerialPortDataListener;
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.R;
+import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
+import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.AlarmVideoSource;
+import com.tehike.client.dtc.multiple.app.project.entity.OpenBoxParamater;
 import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
 import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipUtils;
+import com.tehike.client.dtc.multiple.app.project.thread.HandlerAlarmThread;
+import com.tehike.client.dtc.multiple.app.project.thread.HandlerAmmoBoxThread;
 import com.tehike.client.dtc.multiple.app.project.thread.SendAlarmToServerThread;
 import com.tehike.client.dtc.multiple.app.project.ui.display.SecondDisplayActivity;
 import com.tehike.client.dtc.multiple.app.project.ui.fragments.IntercomCallFragment;
@@ -41,6 +48,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.NetworkUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.RemoteVoiceRequestUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.SharedPreferencesUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.WriteLogToFile;
 
 import java.io.File;
@@ -176,8 +184,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 初始化键盘（测试）
-     * ttyACM2
+     * 初始化键盘（测试ttyACM2）
      */
     private void initKeyBoard() {
         //取出本地保存的串口标识
@@ -219,17 +226,26 @@ public class KeyBoardService extends Service {
                                 //功能取消
                                 functionCancel();
                             } else if (singleCommand.equals("FF205101")) {
-                                App.startSpeaking("勤务上哨");
+                                //App.startSpeaking("勤务上哨");
+                                acceptOpenDoor();
                             } else if (singleCommand.equals("FF205201")) {
-                                App.startSpeaking("勤务下哨");
+                                //App.startSpeaking("勤务下哨");
+                                rejectOpenDoor();
                             } else if (singleCommand.equals("FF203101")) {
-                                App.startSpeaking("上级察勤");
+                                // App.startSpeaking("上级察勤");
+                                accpetOpenAmmoBox();
                             } else if (singleCommand.equals("FF205301")) {
-                                App.startSpeaking("本级察勤");
+                                // App.startSpeaking("本级察勤");
+                                accpetOpenAllAmmoBox();
                             } else if (singleCommand.equals("FF203301")) {
-                                App.startSpeaking("检查子弹");
+                                // App.startSpeaking("检查子弹");
+                                rejectOpenAllAmmoBox();
                             } else if (singleCommand.equals("FF203401")) {
-                                App.startSpeaking("申请供弹");
+                                //App.startSpeaking("申请供弹");
+                                closeCurrentAlarm();
+                            } else if (singleCommand.equals("FF20A101")) {
+                                closeAllAlarm();
+
                             } else if (singleCommand.equals("FF201001")) {
                                 App.startSpeaking("应急报警");
                                 sendAlarmToServer("应急");
@@ -297,16 +313,17 @@ public class KeyBoardService extends Service {
 
                                 Logutil.d(a.toString());
 
-
                             } else if (singleCommand.equals("FF204B01")) {
                                 //呼叫上级
-                                sureMakeCall();
+                                makeCallSuperior();
                             } else if (singleCommand.equals("FF202101")) {
                                 //自主喊话
                                 remoteSpeaking();
                             }
                             //重置当前指令
                             singleCommand = "";
+                            //发送广播刷新副屏的事件列表和已处理的报警列表
+                            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_ACTION));
                         }
                     }
 
@@ -320,12 +337,172 @@ public class KeyBoardService extends Service {
     }
 
     /**
+     * 关闭全部报警
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void closeAllAlarm() {
+        //得到当前报警队列
+        LinkedList<AlarmVideoSource> requestAlarmList = SecondDisplayActivity.alarmQueueList;
+        //判断队列是否有数据
+        if (requestAlarmList != null && requestAlarmList.size() > 0) {
+            //遍历通过子线程发送消息
+            for (AlarmVideoSource alarm : requestAlarmList) {
+                //子线程去处理报警
+                new Thread(new HandlerAlarmThread(alarm.getSenderIp())).start();
+            }
+            //tts播报
+            App.startSpeaking("关闭全部报警");
+            //事件记录
+            eventRecord("本机关闭全部报警");
+            //清空报警队列
+            requestAlarmList.clear();
+            //发送广播刷新报警队列
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_REQUEST_ALARM_ACTION));
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 关闭当前报警
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void closeCurrentAlarm() {
+        //得到当前报警队列
+        LinkedList<AlarmVideoSource> requestAlarmList = SecondDisplayActivity.alarmQueueList;
+        //判断队列是否有数据
+        if (requestAlarmList != null && requestAlarmList.size() > 0) {
+            //tts播报
+            App.startSpeaking("关闭报警");
+            //事件记录
+            eventRecord("本机关闭报警");
+            //子线程去处理报警
+            new Thread(new HandlerAlarmThread(requestAlarmList.get(0).getSenderIp())).start();
+            //移除队列第一个
+            requestAlarmList.remove(0);
+            //发送刷新报警队列的广播
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_REQUEST_ALARM_ACTION));
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 拒绝全部供弹
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void rejectOpenAllAmmoBox() {
+        //得到当前供弹申请队列
+        LinkedList<OpenBoxParamater> requestOpenBoxList = SecondDisplayActivity.requestOpenBoxQueueList;
+        //判断队列是否有数据
+        if (requestOpenBoxList != null && requestOpenBoxList.size() > 0) {
+            //循环的去拒绝
+            for (OpenBoxParamater o : requestOpenBoxList) {
+                //子线程去拒绝
+                new Thread(new HandlerAmmoBoxThread(o, 1)).start();
+            }
+            //tts播报
+            App.startSpeaking("拒绝全部供弹");
+            //日志记录
+            eventRecord("本机拒绝全部供弹");
+            //清空队列
+            requestOpenBoxList.clear();
+            //发送刷新申请队列的适配器
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_REQUEST_OPEN_BOX_ACTION));
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 同意全部供弹
+     */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void accpetOpenAllAmmoBox() {
+        //得到当前供弹申请队列
+        LinkedList<OpenBoxParamater> requestOpenBoxList = SecondDisplayActivity.requestOpenBoxQueueList;
+        //判断队列是否有数据
+        if (requestOpenBoxList != null && requestOpenBoxList.size() > 0) {
+            //循环的去同意
+            for (OpenBoxParamater o : requestOpenBoxList) {
+                //子线程去同意
+                new Thread(new HandlerAmmoBoxThread(o, 0)).start();
+            }
+            //tts播报
+            App.startSpeaking("同意全部供弹");
+            //日志记录
+            eventRecord("本机同意全部供弹");
+            //清空队列
+            requestOpenBoxList.clear();
+            //发送刷新申请队列的适配器
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_REQUEST_OPEN_BOX_ACTION));
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 同意供弹
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private void accpetOpenAmmoBox() {
+        //得到当前供弹申请队列
+        LinkedList<OpenBoxParamater> requestOpenBoxList = SecondDisplayActivity.requestOpenBoxQueueList;
+        //判断队列是否有数据
+        if (requestOpenBoxList != null && requestOpenBoxList.size() > 0) {
+            //tts播报
+            App.startSpeaking("同意供弹");
+            //子纯线程处理队列的第一个
+            new Thread(new HandlerAmmoBoxThread(requestOpenBoxList.get(0), 0)).start();
+            //移除队列的第一个
+            requestOpenBoxList.remove(0);
+            //发送刷新申请队列的适配器
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_REQUEST_OPEN_BOX_ACTION));
+            //日志记录
+            eventRecord("本机同意供弹");
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 同意开门
+     */
+    private void acceptOpenDoor() {
+        if (AppConfig.IS_REQUEST_DOOR) {
+            App.startSpeaking("同意开门");
+            AppConfig.IS_REQUEST_DOOR = false;
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REQUEST_DOOR_CLOSE_DIALOG_ACTION));
+            eventRecord("同意开门");
+            //子线程向服务发送开门请求
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
+     * 拒绝开门
+     */
+    private void rejectOpenDoor() {
+        if (AppConfig.IS_REQUEST_DOOR) {
+            App.startSpeaking("拒绝开门");
+            AppConfig.IS_REQUEST_DOOR = false;
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REQUEST_DOOR_CLOSE_DIALOG_ACTION));
+            eventRecord("拒绝开门");
+            //子线程向服务发送关闭请求
+        } else {
+            App.startSpeaking("无效操作");
+        }
+    }
+
+    /**
      * 功能取消
      */
     private void functionCancel() {
         //判断是否正在自主喊话
         if (isRemoteSpeaking) {
             App.startSpeaking("自主喊话已挂断");
+            eventRecord("自主喊话已挂断");
             isRemoteSpeaking = false;
             try {
                 stopRecord();
@@ -335,6 +512,7 @@ public class KeyBoardService extends Service {
         } else if (isCalling) {
             //判断是否正在通话
             App.startSpeaking("呼叫已挂断");
+            eventRecord("呼叫已挂断");
             isCalling = false;
             SipManager.getLc().terminateAllCalls();
         } else {
@@ -348,7 +526,7 @@ public class KeyBoardService extends Service {
     /**
      * 呼叫上级
      */
-    private void sureMakeCall() {
+    private void makeCallSuperior() {
 
         //判断当前是否正在通话中（挂断）
         if (isCalling) {
@@ -445,6 +623,8 @@ public class KeyBoardService extends Service {
                     }
                 });
                 new Thread(remoteVoiceRequestUtils).start();
+                //事件记录
+                eventRecord("向" + mSipBean.getName() + "发起语音警告");
                 //清空键值集合
                 clearKeyList();
             }
@@ -506,6 +686,8 @@ public class KeyBoardService extends Service {
                     }
                 });
                 new Thread(remoteVoiceRequestUtils).start();
+                //事件记录
+                eventRecord("向" + mSipBean.getName() + "发起鸣枪警告");
                 //清空键值集合
                 clearKeyList();
             }
@@ -551,6 +733,7 @@ public class KeyBoardService extends Service {
                     Logutil.e("RemoteIp is null");
                     return;
                 }
+                eventRecord("对" + mSipBean.getName() + "进行自主喊话");
                 //子线云建立喊话tcp连接
                 RequestSpeakingSocket sendSoundData = new RequestSpeakingSocket(remoteIp);
                 new Thread(sendSoundData).start();
@@ -567,7 +750,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 发送报警
+     * 发送根据类型报警
      */
     private void sendAlarmToServer(final String type) {
         try {
@@ -591,7 +774,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 得到当前的指令集合
+     * 得到当前数字键盘输入的指令集合
      */
     private String returnCurrentKey() {
         String currnetKey = "";
@@ -604,7 +787,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 获取当前的操作对象
+     * 获取当前的操作对象（喊话，警告，鸣枪等功能）
      */
     private SipBean returnCurrentSipBean(String str) {
         SipBean mSipBean = null;
@@ -627,7 +810,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 清除指令集合
+     * 清除数字键盘输入的指令集合
      */
     private void clearKeyList() {
         if (keyList != null) {
@@ -636,7 +819,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * 用于远程喊话请求的子线程
+     * 用于自主喊话请求的子线程（建立Tcp长连接）
      */
     class RequestSpeakingSocket extends Thread {
         //远程喊话对象的Ip
@@ -826,7 +1009,7 @@ public class KeyBoardService extends Service {
     }
 
     /**
-     * G711a声音压缩
+     * G711a对byte字节数据压缩
      */
     private void G711EncodeVoice(byte[] tempBuffer) {
         DatagramPacket dp = null;
@@ -849,11 +1032,54 @@ public class KeyBoardService extends Service {
      * 开启自主喊话
      */
     private void startRemoteSpeaking() {
+        //Log
         Logutil.d("remoterSpeakingPort---->>>" + remoterSpeakingPort);
+        //重置标识
         isRemoteSpeaking = true;
+        //语音提示
         App.startSpeaking("自主喊话已开启");
+        //初始化录音参数
         initializeRecordParamater();
+        //开启录音
         startRecord();
+    }
+
+    /**
+     * 提示警告结果
+     */
+    private void promptWarringResult(String warringResult) {
+        Logutil.d("warringResult--->>" + warringResult);
+        if (warringResult.equals("Done")) {
+            App.startSpeaking("远程警告成功");
+        } else if (warringResult.equals("Reject")) {
+            App.startSpeaking("远程警告被拒绝");
+        } else if (warringResult.equals("Busy")) {
+            App.startSpeaking("对方忙");
+        }
+    }
+
+    /**
+     * 提示鸣枪结果
+     */
+    private void promptGunshootResult(String gunshootResult) {
+        Logutil.d("gunshootResult--->>" + gunshootResult);
+        if (gunshootResult.equals("Done")) {
+            App.startSpeaking("鸣枪警告成功");
+        } else if (gunshootResult.equals("Reject")) {
+            App.startSpeaking("鸣枪警告被拒绝");
+        } else if (gunshootResult.equals("Busy")) {
+            App.startSpeaking("对方忙");
+        }
+    }
+
+    /**
+     * 事件记录
+     */
+    public static void eventRecord(String str) {
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put("time", TimeUtils.getCurrentTime());
+        contentValues1.put("event", str);
+        new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
     }
 
     /**
@@ -872,16 +1098,10 @@ public class KeyBoardService extends Service {
                     Logutil.e("鸣枪警告时操作异常");
                     break;
                 case 3:
+
                     //提示鸣枪警告结果
                     String gunshootResult = (String) msg.obj;
-                    Logutil.d("gunshootResult--->>" + gunshootResult);
-                    if (gunshootResult.equals("Done")) {
-                        App.startSpeaking("鸣枪警告成功");
-                    } else if (gunshootResult.equals("Reject")) {
-                        App.startSpeaking("鸣枪警告被拒绝");
-                    } else if (gunshootResult.equals("Busy")) {
-                        App.startSpeaking("对方忙");
-                    }
+                    promptGunshootResult(gunshootResult);
                     break;
                 case 5:
                     //Log远程警告时操作异常
@@ -890,14 +1110,7 @@ public class KeyBoardService extends Service {
                 case 6:
                     //提示远程警告结果
                     String warringResult = (String) msg.obj;
-                    Logutil.d("warringResult--->>" + warringResult);
-                    if (warringResult.equals("Done")) {
-                        App.startSpeaking("远程警告成功");
-                    } else if (warringResult.equals("Reject")) {
-                        App.startSpeaking("远程警告被拒绝");
-                    } else if (warringResult.equals("Busy")) {
-                        App.startSpeaking("对方忙");
-                    }
+                    promptWarringResult(warringResult);
                     break;
                 case 7:
                     //自主喊话同意

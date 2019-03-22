@@ -24,6 +24,7 @@ import com.tehike.client.dtc.multiple.app.project.execption.ExceptionHandler;
 import com.tehike.client.dtc.multiple.app.project.services.CpuAndRamUtils;
 import com.tehike.client.dtc.multiple.app.project.services.InitSystemSettingService;
 import com.tehike.client.dtc.multiple.app.project.services.KeyBoardService;
+import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenDoorRequestService;
 import com.tehike.client.dtc.multiple.app.project.services.RemoteVoiceOperatService;
 import com.tehike.client.dtc.multiple.app.project.services.RequestWebApiDataService;
 import com.tehike.client.dtc.multiple.app.project.services.TerminalUpdateIpService;
@@ -106,6 +107,9 @@ public class App extends Application {
 
         if (!ServiceUtil.isServiceRunning(KeyBoardService.class)) {
             ServiceUtil.startService(KeyBoardService.class);
+        }
+        if (!ServiceUtil.isServiceRunning(ReceiveOpenDoorRequestService.class)) {
+            ServiceUtil.startService(ReceiveOpenDoorRequestService.class);
         }
 
     }

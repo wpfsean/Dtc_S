@@ -55,6 +55,7 @@ import com.tehike.client.dtc.multiple.app.project.phone.Linphone;
 import com.tehike.client.dtc.multiple.app.project.phone.PhoneCallback;
 import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipService;
+import com.tehike.client.dtc.multiple.app.project.thread.HandlerAmmoBoxThread;
 import com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity;
 import com.tehike.client.dtc.multiple.app.project.ui.views.CustomViewPagerSlide;
 import com.tehike.client.dtc.multiple.app.project.utils.ActivityUtils;
@@ -103,7 +104,7 @@ import cn.nodemedia.NodePlayerDelegate;
 import cn.nodemedia.NodePlayerView;
 
 /**
- * 描述： 副屏页面
+ * 描述：副屏展示页面
  * ===============================
  *
  * @author wpfse wpfsean@126.com
@@ -357,7 +358,6 @@ public class SecondDisplayActivity extends Presentation {
      */
     List<VideoBean> allVideoList;
 
-
     /**
      * 广播（Sip缓存完成）
      */
@@ -416,12 +416,12 @@ public class SecondDisplayActivity extends Presentation {
     /**
      * 状态报警队列的集合
      */
-  public static   LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
+    public static LinkedList<AlarmVideoSource> alarmQueueList = new LinkedList<>();
 
     /**
      * 申请开箱队列的集合
      */
-    LinkedList<OpenBoxParamater> requestOpenBoxQueueList = new LinkedList<>();
+    public static LinkedList<OpenBoxParamater> requestOpenBoxQueueList = new LinkedList<>();
 
     /**
      * 展示报警信息的适配器
@@ -459,6 +459,21 @@ public class SecondDisplayActivity extends Presentation {
     ReceiveCancelScreenSaverBroadcast mReceiveCancelScreenSaverBroadcast;
 
     /**
+     * 广播用于刷新供弹申请队列
+     */
+    ReceiveRefreshRequestOpenAmmoBoxBroadcast mReceiveRefreshRequestOpenAmmoBoxBroadcast;
+
+    /**
+     * 广播刷新报警队列
+     */
+    ReceiveRefreshAlarmQueueBroadcast mReceiveRefreshAlarmQueueBroadcast;
+
+    /**
+     * 刷新已处理的报警列表和事件列表
+     */
+    ReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast mReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast;
+
+    /**
      * 用于标识是否正在屏保
      */
     boolean isScreenSaving = false;
@@ -469,7 +484,7 @@ public class SecondDisplayActivity extends Presentation {
     Timer timer;
 
     /**
-     * 屏保提示文字
+     * 屏保提示文字（后期用接口）
      */
     String screenTvContent[] = {"像狮子一样高傲,像少女一样温柔。",
             "我骄傲孤独怎敌她温言软语你不忍辜负 ,你和她余生共度而我显得突兀就此退出",
@@ -488,6 +503,9 @@ public class SecondDisplayActivity extends Presentation {
             "当我站在瀑布面前，觉得非常难过，应该是两个人站在这里。"
     };
 
+    /**
+     * 副屏构造方法
+     */
     public SecondDisplayActivity(Context outerContext, Display display) {
         super(outerContext, display);
         this.context = outerContext;
@@ -526,6 +544,12 @@ public class SecondDisplayActivity extends Presentation {
         registerReceiveScreenSaverBroadcast();
         // 注册广播用于接收取消屏保通知
         registerCancelReceiveScreenSaverBroadcast();
+        //注册广播用于刷新 供弹队列
+        registerReceiveRefreshOpenBoxBroadcast();
+        //注册广播用于刷新报警队列
+        registerReceiveRefreshAlarmQueueBroadcast();
+        //
+        registerReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast();
     }
 
     /**
@@ -541,6 +565,7 @@ public class SecondDisplayActivity extends Presentation {
      * 初始化View
      */
     private void initView() {
+        //定时器（用于切换屏保文字）
         timer = new Timer();
         //加载动画
         mLoadingAnim = AnimationUtils.loadAnimation(context, R.anim.loading);
@@ -622,6 +647,7 @@ public class SecondDisplayActivity extends Presentation {
                     }
                 } catch (Exception e) {
                     Log.e("TAG", "请求图片异常--" + e.getMessage());
+                    WriteLogToFile.info("请求背景地图异常---->>>" + e.getMessage() + "\n" + s);
                 }
             }
         }).start();
@@ -981,8 +1007,8 @@ public class SecondDisplayActivity extends Presentation {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求副屏哨们分组数据数据信息异常"+result);
-                        WriteLogToFile.info("请求副屏哨们分组数据数据信息异常"+result);
+                        Logutil.w("请求副屏哨们分组数据数据信息异常" + result);
+                        WriteLogToFile.info("请求副屏哨们分组数据数据信息异常" + result);
                         return;
                     }
 
@@ -1581,6 +1607,67 @@ public class SecondDisplayActivity extends Presentation {
     }
 
     /**
+     * 注册接收刷新供弹队列的广播
+     */
+    private void registerReceiveRefreshOpenBoxBroadcast() {
+        mReceiveRefreshRequestOpenAmmoBoxBroadcast = new ReceiveRefreshRequestOpenAmmoBoxBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.REFRESH_REQUEST_OPEN_BOX_ACTION);
+        context.registerReceiver(mReceiveRefreshRequestOpenAmmoBoxBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播接收报警信息
+     */
+    class ReceiveRefreshRequestOpenAmmoBoxBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handler.sendEmptyMessage(25);
+        }
+    }
+
+    /**
+     * 注册接收刷新报警队列的广播
+     */
+    private void registerReceiveRefreshAlarmQueueBroadcast() {
+        mReceiveRefreshAlarmQueueBroadcast = new ReceiveRefreshAlarmQueueBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.REFRESH_REQUEST_ALARM_ACTION);
+        context.registerReceiver(mReceiveRefreshAlarmQueueBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播刷新报警队列
+     */
+    class ReceiveRefreshAlarmQueueBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handler.sendEmptyMessage(26);
+        }
+    }
+
+    /**
+     * 注册接收刷新事件列表和已处理的报警列表
+     */
+    private void registerReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast() {
+        mReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast = new ReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AppConfig.REFRESH_ACTION);
+        context.registerReceiver(mReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast, intentFilter);
+    }
+
+    /**
+     * 广播刷新已处理的报警队列和事件队列
+     */
+    class ReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handler.sendEmptyMessage(27);
+        }
+    }
+
+
+    /**
      * 展示报警队列的适配器
      */
     class AlarmQueueAdapter extends BaseAdapter {
@@ -1828,7 +1915,7 @@ public class SecondDisplayActivity extends Presentation {
             //显示副屏主布局
             secondaryScreenParentLayout.setVisibility(View.VISIBLE);
             //同时把主屏的屏保activty杀列
-            if (ActivityUtils.getTopActivity().getClass().toString().equals("class com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
+            if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
                 ActivityUtils.getTopActivity().finish();
             }
             //取消定时器
@@ -2297,97 +2384,6 @@ public class SecondDisplayActivity extends Presentation {
     }
 
     /**
-     * 向服务器发起供弹请求的子线程
-     */
-    class HandlerAmmoBoxThread extends Thread {
-        OpenBoxParamater mOpenBoxParamater;
-        int action;
-
-        public HandlerAmmoBoxThread(OpenBoxParamater mOpenBoxParamater, int action) {
-            this.mOpenBoxParamater = mOpenBoxParamater;
-            this.action = action;
-        }
-
-        @Override
-        public void run() {
-
-            byte[] sendData = new byte[72];
-            // 数据头
-            byte[] flag = mOpenBoxParamater.getFalg().getBytes();
-            System.arraycopy(flag, 0, sendData, 0, 4);
-            // 版本号
-            byte[] version = new byte[4];
-            version[0] = 0;
-            version[1] = 0;
-            version[2] = 0;
-            version[3] = 1;
-            System.arraycopy(version, 0, sendData, 4, 4);
-            // 动作， 0-请求，1-同意，2-拒绝，3-直接开启
-            sendData[9] = (byte) action;
-            sendData[10] = 0;
-            sendData[11] = 0;
-            sendData[12] = 0;
-
-            // 随机申请 码
-
-            // uiAction = 0, 保存设备端随机生成的申请码
-            byte[] requestCode = new byte[4];
-
-            // uiAction = 0, 保存设备端的SALT
-            byte[] requestSalt = new byte[4];
-            // uiAction = 1, 保存服务端根据申请码计算得到的开锁码
-            byte[] responseCode = new byte[4];
-
-            System.arraycopy(requestCode, 0, sendData, 12, 4);
-            System.arraycopy(requestSalt, 0, sendData, 16, 4);
-            System.arraycopy(responseCode, 0, sendData, 20, 4);
-
-            //测试（有问题）
-            byte[] senderIP = new byte[4];
-            senderIP[0] = 19;
-            senderIP[1] = 0;
-            senderIP[2] = 0;
-            senderIP[3] = 70;
-
-            System.arraycopy(senderIP, 0, sendData, 24, 4);
-
-            byte[] senderID = mOpenBoxParamater.getBoxId().getBytes();
-            System.arraycopy(senderID, 0, sendData, 28, senderID.length);
-            // System.out.println(Arrays.toString(sendData));
-
-            Socket socket = null;
-            OutputStream os = null;
-            try {
-                // 测试
-                socket = new Socket("19.0.0.229", 2000);
-                os = socket.getOutputStream();
-                os.write(sendData);
-                os.flush();
-                System.out.println("发送成功");
-            } catch (IOException e) {
-                String err = e.getMessage();
-                e.printStackTrace();
-            } finally {
-                if (os != null) {
-                    try {
-                        os.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        }
-    }
-
-    /**
      * 注册广播用于接收屏保通知
      */
     private void registerReceiveScreenSaverBroadcast() {
@@ -2406,6 +2402,114 @@ public class SecondDisplayActivity extends Presentation {
             isScreenSaving = true;
             handler.sendEmptyMessage(19);
         }
+    }
+
+    /**
+     * 刷新供弹队列
+     */
+    private void refreshRequestOpenAmmoBoxQueue() {
+        //刷新适配器
+        if (requestOpenBoxQueueAdapter != null) {
+            if (requestOpenBoxQueueList.size() > 0) {
+                requestOpenBoxQueueAdapter.setSelectedItem(0);
+                whichOpenBoxPosition = 0;
+            }
+            requestOpenBoxQueueAdapter.notifyDataSetChanged();
+        }
+        //判断供弹队列和报警队列是否有数据
+        if (alarmQueueList.size() == 0 && requestOpenBoxQueueList.size() == 0) {
+            //隐藏弹窗
+            alarmParentLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * 刷新报警队列
+     */
+    private void refreshAlarmQueue() {
+
+        Logutil.d("AppConfig.IS_CALLING" + AppConfig.IS_CALLING);
+        //如果正在通话中
+        if (AppConfig.IS_CALLING) {
+            //刷新适配器
+            if (mAlarmQueueAdapter != null) {
+                if (alarmQueueList.size() > 0) {
+                    mAlarmQueueAdapter.setSelectedItem(0);
+                    whichAlarmPosition = 0;
+                }
+                mAlarmQueueAdapter.notifyDataSetChanged();
+            }
+            //关闭播放器
+            if (alarmCallPlayer != null)
+                alarmCallPlayer.stop();
+            if (alarmPlayer != null)
+                alarmPlayer.stop();
+            //挂断电话
+            SipManager.getLc().terminateAllCalls();
+            App.startSpeaking("关闭报警");
+        }
+        //判断队列中是否还有未处理的报警
+        if (alarmQueueList.size() > 0) {
+
+            if (mAlarmQueueAdapter != null) {
+                if (alarmQueueList.size() > 0) {
+                    mAlarmQueueAdapter.setSelectedItem(0);
+                    whichAlarmPosition = 0;
+                }
+                mAlarmQueueAdapter.notifyDataSetChanged();
+            }
+            AlarmVideoSource alarm = null;
+            //获取当前的报警对象
+            if (whichAlarmPosition != -1) {
+                alarm = alarmQueueList.get(whichAlarmPosition);
+            }
+
+            //判断当前报警对象是否为空
+            if (alarm != null) {
+                if (!AppConfig.IS_CALLING) {
+                    //遍历查找当前报警对象的Sip号码
+                    for (int i = 0; i < allSipList.size(); i++) {
+                        SipBean mSipBean = allSipList.get(i);
+                        if (mSipBean.getIpAddress().equals(alarm.getSenderIp())) {
+                            alarmSipNumber = mSipBean.getNumber();
+                            sentryName = mSipBean.getName();
+                        }
+                    }
+                    Logutil.d("alarmSipNum--->>" + alarmSipNumber);
+                    if (!TextUtils.isEmpty(alarmSipNumber)) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        App.startSpeaking("正在呼叫" + sentryName);
+                        Linphone.callTo(alarmSipNumber, false);
+                        handler.sendEmptyMessage(10);
+                        timingNumber = -4;
+                    }
+                    //播放报警视频源
+                    playAlarmVideo(alarm);
+                    //播放通话视频源
+                    playAlarmCallVideo(alarm);
+                }
+            }
+        } else {
+            //判断申请供弹队列中是否还有未处理的
+            if (requestOpenBoxQueueList.size() == 0) {
+                alarmParentLayout.setVisibility(View.GONE);
+                threadStop();
+            }
+        }
+    }
+
+    /**
+     * 刷新右侧表列
+     */
+    private void refreshQueue() {
+        //重新加载事件队列
+        initEventData();
+        //重新加载已处理的报警队列
+        initProcessedAlarmData();
     }
 
     /**
@@ -2480,24 +2584,54 @@ public class SecondDisplayActivity extends Presentation {
 
     @Override
     public void onDisplayRemoved() {
-        if (mReceiveAlarmBroadcast != null)
+        //注销接受报警的广播
+        if (mReceiveAlarmBroadcast != null) {
             context.unregisterReceiver(mReceiveAlarmBroadcast);
-        if (mReceiveBoxBroadcast != null)
+        }
+        //注销接受开箱请求的广播
+        if (mReceiveBoxBroadcast != null) {
             context.unregisterReceiver(mReceiveBoxBroadcast);
-        if (mSipSourcesBroadcast != null)
+        }
+        //注销接收sip资源缓存完成的广播
+        if (mSipSourcesBroadcast != null) {
             context.unregisterReceiver(mSipSourcesBroadcast);
-        if (mSipSourcesBroadcast != null)
-            context.unregisterReceiver(mSipSourcesBroadcast);
-        if (mReceiveCancelScreenSaverBroadcast != null)
+        }
+        //注销取消屏保的广播
+        if (mReceiveCancelScreenSaverBroadcast != null) {
             context.unregisterReceiver(mReceiveCancelScreenSaverBroadcast);
-        if (mReceiveScreenSaverBroadcast != null)
+        }
+        //注销接受屏保通知的广播
+        if (mReceiveScreenSaverBroadcast != null) {
             context.unregisterReceiver(mReceiveScreenSaverBroadcast);
+        }
+        //注销刷新申请供弹队列的广播
+        if (mReceiveRefreshRequestOpenAmmoBoxBroadcast != null) {
+            context.unregisterReceiver(mReceiveRefreshRequestOpenAmmoBoxBroadcast);
+        }
+        //注销刷新报警队列的广播
+        if (mReceiveRefreshAlarmQueueBroadcast != null) {
+            context.unregisterReceiver(mReceiveRefreshAlarmQueueBroadcast);
+        }
+        //注销刷新右侧list列表的广播
+        if (mReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast != null) {
+            context.unregisterReceiver(mReceiveRefreshProcessedAlarmQueueAndEventQueueBroadcast);
+        }
+        //申请供弹队列常量销毁
+        if (requestOpenBoxQueueList != null)
+            requestOpenBoxQueueList = null;
+        //报警队列常量销毁
+        if (alarmQueueList != null)
+            alarmQueueList = null;
+        //移除handler监听
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
         super.onDisplayRemoved();
     }
 
+    /**
+     * Handler处理子线程发送的消息
+     */
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -2625,7 +2759,18 @@ public class SecondDisplayActivity extends Presentation {
                     alarmCallVideoLoadingTvLayout.setText("重新连接");
                     alarmCallVideoLoadingIconLayout.setVisibility(View.VISIBLE);
                     break;
+                case 25:
+                    //刷新供弹队列
+                    refreshRequestOpenAmmoBoxQueue();
+                    break;
+                case 26:
+                    refreshAlarmQueue();
+                    break;
+                case 27:
+                    refreshQueue();
+                    break;
             }
         }
     };
+
 }

@@ -31,6 +31,7 @@ import com.tehike.client.dtc.multiple.app.project.entity.SysInfoBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
 import com.tehike.client.dtc.multiple.app.project.services.InitSystemSettingService;
 import com.tehike.client.dtc.multiple.app.project.services.KeyBoardService;
+import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenDoorRequestService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiverAlarmService;
 import com.tehike.client.dtc.multiple.app.project.services.RemoteVoiceOperatService;
 import com.tehike.client.dtc.multiple.app.project.services.RequestWebApiDataService;
@@ -757,6 +758,9 @@ public class SystemSetFragment extends BaseFragment {
         }
         if (ServiceUtil.isServiceRunning(KeyBoardService.class)) {
             ServiceUtil.stopService(KeyBoardService.class);
+        }
+        if (ServiceUtil.isServiceRunning(ReceiveOpenDoorRequestService.class)) {
+            ServiceUtil.stopService(ReceiveOpenDoorRequestService.class);
         }
         //清除所有的activity
         ActivityUtils.removeAllActivity();

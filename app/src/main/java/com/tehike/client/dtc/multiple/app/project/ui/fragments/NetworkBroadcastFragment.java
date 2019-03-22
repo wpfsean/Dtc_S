@@ -270,7 +270,7 @@ public class NetworkBroadcastFragment extends BaseFragment {
     }
 
     /**
-     * 初始化数据
+     * 初始化广播分组数据
      */
     private void initializeWebcastGroupsData() {
         //判断网络
@@ -309,7 +309,7 @@ public class NetworkBroadcastFragment extends BaseFragment {
     }
 
     /**
-     * 处理sip分组数据
+     * 处理广播分组数据
      */
     private void handlerNertworkBroadcastGroupData(String result) {
         //先清空集合防止
@@ -386,8 +386,9 @@ public class NetworkBroadcastFragment extends BaseFragment {
             handler.sendEmptyMessage(2);
             return;
         }
+        //刷新适配器
         if (mWebcastItemAdapter != null) {
-            mWebcastItemAdapter = null;
+            mWebcastItemAdapter.notifyDataSetChanged();
             webcastDataList.clear();
         }
 
@@ -421,8 +422,8 @@ public class NetworkBroadcastFragment extends BaseFragment {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求网络广播组数据数据信息异常"+result);
-                        WriteLogToFile.info("请求网络广播组数据数据信息异常"+result);
+                        Logutil.w("请求网络广播组数据数据信息异常" + result);
+                        WriteLogToFile.info("请求网络广播组数据数据信息异常" + result);
                         return;
                     }
 
@@ -494,30 +495,32 @@ public class NetworkBroadcastFragment extends BaseFragment {
             //加同步锁
             synchronized (this) {
                 try {
-
-                    if (!NetworkUtils.isConnected()) {
-                        Logutil.e("刷新状态时网络异常");
-                        handler.sendEmptyMessage(18);
-                    } else {
-                        //用HttpURLConnection请求
-                        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
-                        con.setRequestMethod("GET");
-                        con.setConnectTimeout(3000);
-                        String authString = userName + ":" + userPwd;
-                        //添加 basic参数
-                        con.setRequestProperty("Authorization", "Basic " + new String(Base64.encode(authString.getBytes(), 0)));
-                        con.connect();
-                        Message message = new Message();
-                        message.what = 7;
-                        if (con.getResponseCode() == 200) {
-                            InputStream in = con.getInputStream();
-                            String result = StringUtils.readTxt(in);
-                            message.obj = result;
+                    //当可见时去请求刷新
+                    if (isVisible() && currentPageVisible) {
+                        if (!NetworkUtils.isConnected()) {
+                            Logutil.e("刷新状态时网络异常");
+                            handler.sendEmptyMessage(18);
                         } else {
-                            message.obj = "";
+                            //用HttpURLConnection请求
+                            HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+                            con.setRequestMethod("GET");
+                            con.setConnectTimeout(3000);
+                            String authString = userName + ":" + userPwd;
+                            //添加 basic参数
+                            con.setRequestProperty("Authorization", "Basic " + new String(Base64.encode(authString.getBytes(), 0)));
+                            con.connect();
+                            Message message = new Message();
+                            message.what = 7;
+                            if (con.getResponseCode() == 200) {
+                                InputStream in = con.getInputStream();
+                                String result = StringUtils.readTxt(in);
+                                message.obj = result;
+                            } else {
+                                message.obj = "";
+                            }
+                            handler.sendMessage(message);
+                            con.disconnect();
                         }
-                        handler.sendMessage(message);
-                        con.disconnect();
                     }
                 } catch (Exception e) {
                     Logutil.e("请求刷新状态数据时的异常--->>" + e.getMessage());
@@ -530,8 +533,6 @@ public class NetworkBroadcastFragment extends BaseFragment {
      * 刷新sip状态
      */
     private void handlerSipStatusData(String sisStatusResult) {
-
-        //  Logutil.i("sisStatusResult--->>>"+sisStatusResult);
         List<SipStatusInfoBean> sipStatusList = new ArrayList<>();
         try {
             if (TextUtils.isEmpty(sisStatusResult)) {
@@ -605,9 +606,10 @@ public class NetworkBroadcastFragment extends BaseFragment {
      */
     private void diplayGridViewAdaperAndRefreshStatus() {
         //gridView显示数据
-        if (mWebcastItemAdapter == null)
+        if (mWebcastItemAdapter == null) {
             mWebcastItemAdapter = new WebcastItemAdapter(getActivity());
-        networkBroadcstItemGridView.setAdapter(mWebcastItemAdapter);
+            networkBroadcstItemGridView.setAdapter(mWebcastItemAdapter);
+        }
         mWebcastItemAdapter.notifyDataSetChanged();
 
         //item点击事件
@@ -1292,6 +1294,53 @@ public class NetworkBroadcastFragment extends BaseFragment {
         });
     }
 
+    /**
+     * 踢人操作
+     */
+    private void kickOffPeople() {
+        itemSelectedList.remove(broadcastItemSelected);
+        if (itemSelectedList.size() > 0) {
+            broadcastItemSelected = 0;
+            mWebcastingAdapter.setSeclection(0);
+            mWebcastingAdapter.notifyDataSetChanged();
+        }
+        if (itemSelectedList.size() == 0) {
+            //显示或隐藏父布局
+            display_all_broadcast_item_parent_layout.setVisibility(View.VISIBLE);
+            display_all_broadcasting_item_parent_layout.setVisibility(View.GONE);
+
+            //计时显示修正
+            displayBroadcastTimeLayout.setText("");
+
+            //修正按钮的状态
+            webcastBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+            webListenBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+            webMeetingBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+
+            //销毁显示正在广播成员 的适配器
+            if (mWebcastingAdapter != null) {
+                mWebcastingAdapter = null;
+            }
+
+            //刷新一下显示所有广播成员的适配器
+            if (mWebcastItemAdapter != null && getActivity() != null) {
+                mWebcastItemAdapter.changeAllItemState();
+                mWebcastItemAdapter.notifyDataSetChanged();
+                if (itemSelectedList != null && !itemSelectedList.isEmpty()) {
+                    itemSelectedList.clear();
+                }
+            }
+            //挂断电话
+            if (callIsConnected) {
+                Linphone.hangUp();
+                callIsConnected = false;
+            }
+            //停止计时
+            threadStop();
+
+        }
+    }
+
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         currentPageVisible = isVisibleToUser;
@@ -1401,47 +1450,7 @@ public class NetworkBroadcastFragment extends BaseFragment {
                     break;
                 case 14:
                     //踢人成功操作
-                    itemSelectedList.remove(broadcastItemSelected);
-                    if (itemSelectedList.size()>0){
-                        broadcastItemSelected = 0;
-                        mWebcastingAdapter.setSeclection(0);
-                        mWebcastingAdapter.notifyDataSetChanged();
-                    }
-                    if (itemSelectedList.size()==0){
-                        //显示或隐藏父布局
-                        display_all_broadcast_item_parent_layout.setVisibility(View.VISIBLE);
-                        display_all_broadcasting_item_parent_layout.setVisibility(View.GONE);
-
-                        //计时显示修正
-                        displayBroadcastTimeLayout.setText("");
-
-                        //修正按钮的状态
-                        webcastBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-                        webListenBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-                        webMeetingBtn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-
-                        //销毁显示正在广播成员 的适配器
-                        if (mWebcastingAdapter != null) {
-                            mWebcastingAdapter = null;
-                        }
-
-                        //刷新一下显示所有广播成员的适配器
-                        if (mWebcastItemAdapter != null && getActivity() != null) {
-                            mWebcastItemAdapter.changeAllItemState();
-                            mWebcastItemAdapter.notifyDataSetChanged();
-                            if (itemSelectedList != null && !itemSelectedList.isEmpty()) {
-                                itemSelectedList.clear();
-                            }
-                        }
-                        //挂断电话
-                        if (callIsConnected) {
-                            Linphone.hangUp();
-                            callIsConnected = false;
-                        }
-                        //停止计时
-                        threadStop();
-
-                    }
+                    kickOffPeople();
                     break;
             }
         }

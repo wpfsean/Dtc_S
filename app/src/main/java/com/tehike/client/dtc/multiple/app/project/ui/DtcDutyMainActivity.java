@@ -31,6 +31,7 @@ import com.tehike.client.dtc.multiple.app.project.phone.SipManager;
 import com.tehike.client.dtc.multiple.app.project.phone.SipService;
 import com.tehike.client.dtc.multiple.app.project.services.KeyBoardService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenBoxRequestService;
+import com.tehike.client.dtc.multiple.app.project.services.ReceiveOpenDoorRequestService;
 import com.tehike.client.dtc.multiple.app.project.services.ReceiverAlarmService;
 import com.tehike.client.dtc.multiple.app.project.services.RemoteVoiceOperatService;
 import com.tehike.client.dtc.multiple.app.project.services.RequestWebApiDataService;
@@ -300,6 +301,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         @Override
         public void onReceive(Context context, Intent intent) {
             double cpu = intent.getDoubleExtra("cpu", 0.0F);
+            AppConfig.DEVICE_CPU = cpu;
 
             String cpuTemp = intent.getStringExtra("cpuTemp");
             String gpuTemp = intent.getStringExtra("gpuTemp");
@@ -711,6 +713,9 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         }
         if (ServiceUtil.isServiceRunning(KeyBoardService.class)) {
             ServiceUtil.stopService(KeyBoardService.class);
+        }
+        if (ServiceUtil.isServiceRunning(ReceiveOpenDoorRequestService.class)) {
+            ServiceUtil.stopService(ReceiveOpenDoorRequestService.class);
         }
         ActivityUtils.removeAllActivity();
 

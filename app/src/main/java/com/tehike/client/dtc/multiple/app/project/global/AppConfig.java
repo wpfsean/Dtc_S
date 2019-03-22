@@ -237,6 +237,11 @@ public class AppConfig {
     public static String ALARM_COLOR = "alarmColor.bin";
 
     /**
+     * 是否有申请开门的标识
+     */
+    public static boolean IS_REQUEST_DOOR = false;
+
+    /**
      * 主页面是否可以滑动
      */
     public static boolean IS_CAN_SLIDE = false;
@@ -288,6 +293,10 @@ public class AppConfig {
      */
     public static String BOX_ACTION = "receivebox";
 
+    /**
+     * 接收关闭申请开门弹窗的广播
+     */
+    public static String REQUEST_DOOR_CLOSE_DIALOG_ACTION = "closeDoor";
 
     /**
      * video资源解析完成广播的Action
@@ -305,5 +314,19 @@ public class AppConfig {
      */
     public static String CANCEL_SCREEN_SAVER_ACTION = "receiveCancelScreenSaverAction";
 
+    /**
+     * 刷新供弹列表的action
+     */
+    public static String REFRESH_REQUEST_OPEN_BOX_ACTION = "refreshOpenBoxAction";
+
+    /**
+     * 刷新报警列表的action
+     */
+    public static String REFRESH_REQUEST_ALARM_ACTION = "refreshAlarmAction";
+
+    /**
+     * 刷新副屏事件列表和已处理的报警列表
+     */
+    public static String REFRESH_ACTION = "refreshAlarmAction";
 
 }

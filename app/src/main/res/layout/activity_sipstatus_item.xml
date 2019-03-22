@@ -52,6 +52,18 @@
                 android:singleLine="false"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
+
+
+            <TextView
+                android:visibility="gone"
+                android:id="@+id/sentry_id_tv_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1号哨"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/white"
+                android:textSize="10sp"/>
         </RelativeLayout>
 
 

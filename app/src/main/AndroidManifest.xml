@@ -101,6 +101,8 @@
         <service android:name=".services.TimingSendHbService"/>
         <!--键盘串口服务-->
         <service android:name=".services.KeyBoardService"/>
+        <!--接收开门申请的服务-->
+        <service android:name=".services.ReceiveOpenDoorRequestService"/>
 
         <!--<service android:name=".voice.TimingCheckVoiceIsLiveService"/>-->
 

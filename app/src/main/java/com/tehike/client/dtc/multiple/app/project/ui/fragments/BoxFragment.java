@@ -302,7 +302,6 @@ public class BoxFragment extends BaseFragment {
      */
     private void initializeBoxGroupData() {
 
-
         //判断网络
         if (!NetworkUtils.isConnected()) {
             handler.sendEmptyMessage(2);
@@ -414,19 +413,25 @@ public class BoxFragment extends BaseFragment {
     class TimingRefreshBoxStatus extends Thread {
         @Override
         public void run() {
-            //地址
-            String boxStatusUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._BOX_DEVICES;
-            //basic请求
-            HttpBasicRequest httpBasicRequest = new HttpBasicRequest(boxStatusUrl, new HttpBasicRequest.GetHttpData() {
-                @Override
-                public void httpData(String result) {
-                    Message message = new Message();
-                    message.what = 8;
-                    message.obj = result;
-                    handler.sendMessage(message);
-                }
-            });
-            new Thread(httpBasicRequest).start();
+            //可见时刷新
+            if (isVisible() && isCurrentFragmentVisivle) {
+                //地址
+                String boxStatusUrl = AppConfig.WEB_HOST + SysinfoUtils.getServerIp() + AppConfig._BOX_DEVICES;
+                //basic请求
+                HttpBasicRequest httpBasicRequest = new HttpBasicRequest(boxStatusUrl, new HttpBasicRequest.GetHttpData() {
+                    @Override
+                    public void httpData(String result) {
+                        Message message = new Message();
+                        message.what = 8;
+                        message.obj = result;
+                        handler.sendMessage(message);
+                    }
+                });
+                new Thread(httpBasicRequest).start();
+                //Logutil.d("可见刷新");
+            } else {
+                // Logutil.d("不可见，不刷新");
+            }
         }
     }
 
@@ -455,7 +460,7 @@ public class BoxFragment extends BaseFragment {
 
             initializeBoxGroupData();
         } catch (Exception e) {
-            WriteLogToFile.info("support box type error --->>>"+e.getMessage());
+            WriteLogToFile.info("support box type error --->>>" + e.getMessage());
             Logutil.e("解析设备类型Exception--->>>" + e.getMessage());
         }
     }
@@ -498,8 +503,8 @@ public class BoxFragment extends BaseFragment {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求某个弹箱组信息异常"+result);
-                        WriteLogToFile.info("请求某个弹箱组信息异常:"+result);
+                        Logutil.w("请求某个弹箱组信息异常" + result);
+                        WriteLogToFile.info("请求某个弹箱组信息异常:" + result);
                         return;
                     }
 
@@ -690,17 +695,24 @@ public class BoxFragment extends BaseFragment {
             notifyDataSetChanged();
         }
 
-        public void updateitem(int index) {
+        //刷新item背景
+        public void refreshItemBg(int index) {
+            //判断view是否空
             if (boxItemGridViewLayout == null) {
                 return;
             }
+            //得到当前的item
             View v = boxItemGridViewLayout.getChildAt(index);
             LinearLayout mainLayout = v.findViewById(R.id.box_status_main_layout);
-            //mainLayout.setBackgroundColor(Color.TRANSPARENT);
-            mainLayout.setBackgroundResource(R.mipmap.dtc_icon_alarm_management_selected);
-
+            //设置背景
+            mainLayout.setBackgroundColor(Color.TRANSPARENT);
+            mainLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_free_normal);
+            //重置标识
+            boxItemSelected = -1;
+            clickTemp = -1;
+            //适配器刷新
             notifyDataSetChanged();
-            Logutil.d("哈哈。我刷新了");
+            Logutil.d("刷新了item");
         }
 
 
@@ -1084,19 +1096,19 @@ public class BoxFragment extends BaseFragment {
      * 关闭弹箱预览
      */
     private void closeBoxVideoPreView() {
+        //弹箱视频停止播放
         if (boxVideoPlayer != null && boxVideoPlayer.isPlaying()) {
             boxVideoPlayer.stop();
         }
+        //隐藏和显示Ui
         boxItemGridViewLayout.setVisibility(View.VISIBLE);
         playVideoParentLayout.setVisibility(View.GONE);
-
         disPlayBoxNameTvLayout.setVisibility(View.GONE);
-
+        //清除动画
         boxVideoLoadingIconLayout.clearAnimation();
         boxVideoLoadingIconLayout.setVisibility(View.GONE);
         boxVideoLoadingTvLayout.setVisibility(View.GONE);
         closePreviewBoxVideoLayout.setVisibility(View.GONE);
-
     }
 
     /**
@@ -1104,10 +1116,12 @@ public class BoxFragment extends BaseFragment {
      */
     @OnClick(R.id.offline_preview_btn_layout)
     public void boxVideoPreview(View view) {
+        //判断是否选中
         if (boxItemSelected == -1) {
             handler.sendEmptyMessage(14);
             return;
         }
+        //获取播放地址和弹箱名称
         String rtsp = "";
         String boxName = "";
         if (boxItemSelected != -1) {
@@ -1140,9 +1154,9 @@ public class BoxFragment extends BaseFragment {
             }
         } else {
             handler.sendEmptyMessage(10);
+
             return;
         }
-
 
         boxItemGridViewLayout.setVisibility(View.GONE);
         playVideoParentLayout.setVisibility(View.VISIBLE);
@@ -1204,6 +1218,7 @@ public class BoxFragment extends BaseFragment {
             }
         });
         boxVideoPlayer.start();
+
     }
 
     /**
@@ -1237,6 +1252,9 @@ public class BoxFragment extends BaseFragment {
                     if (confirm) {
                         dialog.dismiss();
                         requestOpenBox(mBoxBean);
+                        //消除选中后的背景
+                        if (mAllBoxItemAdapter != null)
+                            mAllBoxItemAdapter.refreshItemBg(boxItemSelected);
                     }
                 }
             }).setTitle("重要提示").show();
@@ -1292,6 +1310,9 @@ public class BoxFragment extends BaseFragment {
             handler.sendEmptyMessage(14);
             return;
         }
+        //消除选中后的背景
+        if (mAllBoxItemAdapter != null)
+            mAllBoxItemAdapter.refreshItemBg(boxItemSelected);
 
         if (getActivity() != null && isCurrentFragmentVisivle) {
             showProgressFail("正在开发！！！");
@@ -1312,7 +1333,7 @@ public class BoxFragment extends BaseFragment {
                     //保存事件到数据库
                     ContentValues contentValues1 = new ContentValues();
                     contentValues1.put("time", TimeUtils.getCurrentTime());
-                    contentValues1.put("event", SysinfoUtils.getSysinfo().getDeviceName()+"开启"+mBoxBean.getName()+ "的子弹箱");
+                    contentValues1.put("event", SysinfoUtils.getSysinfo().getDeviceName() + "开启" + mBoxBean.getName() + "的子弹箱");
                     new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
 
                     OpenBoxThread openBoxThread = new OpenBoxThread(3, boxId);
@@ -1535,6 +1556,9 @@ public class BoxFragment extends BaseFragment {
                     //提示无弹箱视频
                     if (getActivity() != null && isCurrentFragmentVisivle) {
                         showProgressFail("无弹箱面部视频!");
+                        //消除选中后的背景
+                        if (mAllBoxItemAdapter != null)
+                            mAllBoxItemAdapter.refreshItemBg(boxItemSelected);
                     }
                     break;
                 case 11:

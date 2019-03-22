@@ -125,7 +125,6 @@ public class IntercomCallFragment extends BaseFragment {
     @BindView(R.id.accept_btn_layout)
     Button acceptCallBtn;
 
-
     /**
      * 展示sip组的展开列表
      */
@@ -451,19 +450,26 @@ public class IntercomCallFragment extends BaseFragment {
         initializeVoiceSeekbar();
 
         //初始化视频资源
-        initializeVideoData();
+        initializeSipData();
 
         registerMakeCallBroadcast();
     }
 
-    private void initializeVideoData() {
+    /**
+     * 初始化加载本地的Sip资源数据
+     */
+    private void initializeSipData() {
         //取出本地缓存的所有Sip资源（如果为空或异常时，就注册广播，用来监听sip数据是否已缓存完成）
+        if (allCacheList != null && allCacheList.size() > 0) {
+            allCacheList.clear();
+        }
         try {
             allCacheList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_SIP).toString()), SipBean.class);
             if (allCacheList == null || allCacheList.isEmpty()) {
+
                 registerSipDataDoneBroadcast();
             } else {
-                initSipCacheData();
+                initNativeRtspData();
             }
         } catch (Exception e) {
             registerSipDataDoneBroadcast();
@@ -481,15 +487,14 @@ public class IntercomCallFragment extends BaseFragment {
     }
 
     /**
-     * 显示cpu和rom使用率的广播
+     * 广播监听sip数据缓存完成
      */
     class SipDataCacheBroadcast extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             allCacheList = GsonUtils.GsonToList(CryptoUtil.decodeBASE64(FileUtil.readFile(AppConfig.SOURCES_SIP).toString()), SipBean.class);
-            initSipCacheData();
+            initNativeRtspData();
         }
-
     }
 
     /**
@@ -503,7 +508,7 @@ public class IntercomCallFragment extends BaseFragment {
     }
 
     /**
-     * 打电话广播
+     * 打电话广播（对应副屏哨们点发送的广播）
      */
     class MakeCallBroadcast extends BroadcastReceiver {
         @Override
@@ -522,8 +527,8 @@ public class IntercomCallFragment extends BaseFragment {
                         customViewPagerLayout.setCurrentItem(0);
                         App.startSpeaking("正在呼叫" + mSipGroupItemInfoBean.getName());
 
-                        if (!isVideoCall){
-                            App.startSpeaking("正在呼叫"+mSipGroupItemInfoBean.getName());
+                        if (!isVideoCall) {
+                            App.startSpeaking("正在呼叫" + mSipGroupItemInfoBean.getName());
                             //视频电话标识
                             isVoiceCall = false;
                             //向外拨打视频电话
@@ -539,8 +544,8 @@ public class IntercomCallFragment extends BaseFragment {
                             currentCallNumLayout.setVisibility(View.VISIBLE);
                             currentCallNumLayout.setText(mSipGroupItemInfoBean.getName());
                             handler.sendEmptyMessage(12);
-                        }else {
-                            App.startSpeaking("正在呼叫"+mSipGroupItemInfoBean.getName());
+                        } else {
+                            App.startSpeaking("正在呼叫" + mSipGroupItemInfoBean.getName());
                             //视频电话标识
                             isVoiceCall = false;
                             //向外拨打视频电话
@@ -564,11 +569,10 @@ public class IntercomCallFragment extends BaseFragment {
         }
     }
 
-
     /**
      * 初始化本地的sip数据
      */
-    private void initSipCacheData() {
+    private void initNativeRtspData() {
 
         //获取本机的rtsp播放地址
         if (allCacheList != null && !allCacheList.isEmpty() && !TextUtils.isEmpty(currentNativeSipNum)) {
@@ -595,9 +599,11 @@ public class IntercomCallFragment extends BaseFragment {
                 }
             }
         }
+        Logutil.d("CurrentSipNumber--->>" + currentNativeSipNum);
+        Logutil.d("nativieRtsp---->>" + nativePlayRtspUrl);
     }
 
-    //接口
+    //接口（用于向activity返回数据）
     CallBackValue callBackValue;
 
     /**
@@ -784,7 +790,7 @@ public class IntercomCallFragment extends BaseFragment {
             }
             handler.sendEmptyMessage(4);
         } catch (Exception e) {
-            WriteLogToFile.info("解析Sip分组数据异常" + e.getMessage()+"--->>>"+result);
+            WriteLogToFile.info("解析Sip分组数据异常" + e.getMessage() + "--->>>" + result);
             Logutil.e("解析Sip分组数据异常" + e.getMessage());
             handler.sendEmptyMessage(1);
         }
@@ -870,8 +876,8 @@ public class IntercomCallFragment extends BaseFragment {
                     JSONObject jsonObject = new JSONObject(result);
 
                     if (!jsonObject.isNull("errorCode")) {
-                        Logutil.w("请求勤务通信组数据数据信息异常"+result);
-                        WriteLogToFile.info("请求勤务通信组数据数据信息异常"+result);
+                        Logutil.w("请求勤务通信组数据数据信息异常" + result);
+                        WriteLogToFile.info("请求勤务通信组数据数据信息异常" + result);
                         return;
                     }
 
@@ -1022,7 +1028,7 @@ public class IntercomCallFragment extends BaseFragment {
             if (sipItemAdapter != null)
                 sipItemAdapter.notifyDataSetChanged();
         } catch (Exception e) {
-            WriteLogToFile.info("解析SIp状态时异常:-->>" + e.getMessage()+"---->>>"+sisStatusResult);
+            WriteLogToFile.info("解析SIp状态时异常:-->>" + e.getMessage() + "---->>>" + sisStatusResult);
             Logutil.e("解析SIp状态时异常:-->>" + e.getMessage());
         }
     }
@@ -1130,6 +1136,28 @@ public class IntercomCallFragment extends BaseFragment {
             clickTemp = position;
         }
 
+
+        //刷新item背景
+        public void refreshItemBg(int index) {
+            //判断view是否空
+            if (sipGroupItemGridView == null) {
+                return;
+            }
+            if (sipItemSelected != -1) {
+                //得到当前的item
+                View v = sipGroupItemGridView.getChildAt(index);
+                FrameLayout mainLayout = v.findViewById(R.id.item_layout);
+                //设置背景
+                mainLayout.setBackgroundColor(Color.TRANSPARENT);
+                mainLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_free_normal);
+                //重置标识
+                sipItemSelected = -1;
+                clickTemp = -1;
+                //适配器刷新
+                notifyDataSetChanged();
+            }
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             ViewHolder viewHolder = null;
@@ -1141,6 +1169,7 @@ public class IntercomCallFragment extends BaseFragment {
                 viewHolder.mainLayout = convertView.findViewById(R.id.sipstatus_main_layout);
                 viewHolder.deviceType = convertView.findViewById(R.id.device_type_layout);
                 viewHolder.StatusIcon = convertView.findViewById(R.id.sip_status_icon_layout);
+                viewHolder.sentryId = convertView.findViewById(R.id.sentry_id_tv_layout);
                 convertView.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
@@ -1168,6 +1197,8 @@ public class IntercomCallFragment extends BaseFragment {
                         viewHolder.deviceType.setText("值班终端");
                     }
                 }
+                viewHolder.sentryId.setVisibility(View.VISIBLE);
+                viewHolder.sentryId.setText(mSipClient.getSentryId() + "号哨");
                 //显示状态
                 int status = mSipClient.getState();
                 switch (status) {
@@ -1195,7 +1226,6 @@ public class IntercomCallFragment extends BaseFragment {
                 if (sipItemList.get(position).getState() == 1 || sipItemList.get(position).getState() == 3) {
                     viewHolder.mRelativeLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_free_selected);
                     // viewHolder.mainLayout.setBackgroundResource(R.drawable.sip_selected_bg);
-
                 }
             } else {
                 viewHolder.mainLayout.setBackgroundColor(Color.TRANSPARENT);
@@ -1218,6 +1248,8 @@ public class IntercomCallFragment extends BaseFragment {
             TextView deviceType;
             //状态图标
             ImageView StatusIcon;
+            //哨位Id
+            TextView sentryId;
 
 
         }
@@ -1319,7 +1351,7 @@ public class IntercomCallFragment extends BaseFragment {
     /**
      * 按键点击事件
      */
-    @OnClick({R.id.swap_call1_btn_layout, R.id.swap_call2_btn_layout, R.id.accept_btn_layout, R.id.intercom_voice_btn_layout, R.id.intercom_video_btn_layout, R.id.sip_hangup_btn_layout, R.id.voice_lose_btn_layout, R.id.call_demolition_btn_layout, R.id.remote_warring_btn_layout, R.id.remote_gunshot_btn_layout, R.id.remote_speak_btn_layout})
+    @OnClick({R.id.swap_call1_btn_layout, R.id.swap_call2_btn_layout, R.id.accept_btn_layout, R.id.intercom_voice_btn_layout, R.id.intercom_video_btn_layout, R.id.sip_hangup_btn_layout, R.id.call_demolition_btn_layout, R.id.remote_warring_btn_layout, R.id.remote_gunshot_btn_layout, R.id.remote_speak_btn_layout, R.id.network_braocast_btn_layout})
     public void onclickEvent(View view) {
         switch (view.getId()) {
             case R.id.swap_call1_btn_layout:
@@ -1344,10 +1376,6 @@ public class IntercomCallFragment extends BaseFragment {
                 //挂电话
                 handupCall();
                 break;
-            case R.id.voice_lose_btn_layout:
-                //音量减
-                mAudioManager.adjustStreamVolume(AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI);
-                break;
             case R.id.call_demolition_btn_layout:
                 //强拆通话
                 forcedCall();
@@ -1363,6 +1391,9 @@ public class IntercomCallFragment extends BaseFragment {
             case R.id.remote_gunshot_btn_layout:
                 remoteGunshotWarring();
                 //远程鸣枪
+                break;
+            case R.id.network_braocast_btn_layout:
+                netWorkBroadcast();
                 break;
         }
     }
@@ -1406,6 +1437,10 @@ public class IntercomCallFragment extends BaseFragment {
             }
         });
         new Thread(remoteVoiceRequestUtils).start();
+
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
     }
 
     /**
@@ -1446,6 +1481,59 @@ public class IntercomCallFragment extends BaseFragment {
             }
         });
         new Thread(remoteVoiceRequestUtils).start();
+
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
+    }
+
+    /**
+     * 网络广播
+     */
+    private void netWorkBroadcast() {
+        //判断远程操作对象是否选中
+        if (sipItemSelected == -1) {
+            showProgressFail("请选择操作对象");
+            return;
+        }
+        //判断网络是否正常
+        if (!NetworkUtils.isConnected()) {
+            handler.sendEmptyMessage(2);
+            return;
+        }
+        //要广播的号码
+        String paramater = sipItemList.get(sipItemSelected).getNumber();
+        //请求广播的地址
+        String requestUrl = AppConfig.WEB_HOST + SysinfoUtils.getSysinfo().getWebresourceServer() + AppConfig._BROADCAST_URL + paramater + "&moderator=" + SysinfoUtils.getSysinfo().getSipUsername();
+
+        HttpBasicRequest httpBasicRequest = new HttpBasicRequest(requestUrl, new HttpBasicRequest.GetHttpData() {
+            @Override
+            public void httpData(String result) {
+                if (TextUtils.isEmpty(result)) {
+                    Logutil.e("广播失败");
+                    return;
+                }
+                Logutil.d("result--->>" + result);
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    if (jsonObject != null) {
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        if (isSuccess) {
+                            Logutil.d("操作成功");
+                        } else {
+                            Logutil.d("操作失败");
+                        }
+                    }
+                } catch (Exception e) {
+                    Logutil.e("HttpBasicRequest is exception-->>" + e.getMessage());
+                }
+            }
+        });
+        new Thread(httpBasicRequest).start();
+
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
     }
 
     /**
@@ -1480,7 +1568,6 @@ public class IntercomCallFragment extends BaseFragment {
         //先去请求喊话的操作(见协议)
         requestSpeakingSocket sendSoundData = new requestSpeakingSocket(remoteIp);
         new Thread(sendSoundData).start();
-
     }
 
     /**
@@ -1539,6 +1626,10 @@ public class IntercomCallFragment extends BaseFragment {
             }
         });
         new Thread(mHttpBasicRequest).start();
+
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
     }
 
     /**
@@ -1613,6 +1704,7 @@ public class IntercomCallFragment extends BaseFragment {
             remoteTvLayout.setVisibility(View.VISIBLE);
             remoteTvLayout.setTextColor(0xff00ff00);
             remoteTvLayout.setText("未加载到对方视频源!");
+            remotePrLayout.setVisibility(View.INVISIBLE);
         } else {
             //判断对方是否有面部视频
             if (sipbean.getVideoBean() == null) {
@@ -1626,6 +1718,7 @@ public class IntercomCallFragment extends BaseFragment {
                 remoteTvLayout.setTextColor(0xff00ff00);
                 remotePrLayout.setVisibility(View.INVISIBLE);
                 remoteTvLayout.setText("未加载到对方的视频源!");
+                remotePrLayout.setVisibility(View.INVISIBLE);
             } else {
                 //判断播放器是否已实例化
                 if (remotePlayer == null) {
@@ -1739,26 +1832,6 @@ public class IntercomCallFragment extends BaseFragment {
                                 }
                             });
                         }
-
-
-//                        if (event == 1001 || event == 1102 || event == 1104) {
-//                            getActivity().runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    nativePrLayout.setVisibility(View.GONE);
-//                                    nativeTvLayout.setVisibility(View.GONE);
-//                                }
-//                            });
-//                        } else {
-//                            getActivity().runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    nativePrLayout.setVisibility(View.INVISIBLE);
-//                                    nativeTvLayout.setVisibility(View.VISIBLE);
-//                                    nativeTvLayout.setText("重新连接...");
-//                                }
-//                            });
-//                        }
                     }
                 }
             });
@@ -2098,10 +2171,16 @@ public class IntercomCallFragment extends BaseFragment {
         close_dialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //弹窗消息
                 dialog.dismiss();
+                //计时归零
                 speakingTime = 0;
                 try {
+                    //停止录音
                     stopRecord();
+                    //刷新选中item背景
+                    if (sipItemAdapter != null)
+                        sipItemAdapter.refreshItemBg(sipItemSelected);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -2120,7 +2199,7 @@ public class IntercomCallFragment extends BaseFragment {
     }
 
     /**
-     * 喊话计时
+     * 喊话计时子线程
      */
     class SpeakingTimeThread extends Thread {
         @Override
@@ -2150,6 +2229,303 @@ public class IntercomCallFragment extends BaseFragment {
         super.setUserVisibleHint(isVisibleToUser);
     }
 
+    /**
+     * 切换通话二
+     */
+    private void swapSecondCall() {
+
+        LinphoneCall[] calls = SipManager.getLc().getCalls();
+        if (calls.length >= 2) {
+            SipManager.getLc().resumeCall(calls[1]);
+            SipManager.getLc().pauseCall(calls[0]);
+            playRemoteVideo();
+            currentCallNumLayout.setText(calls[1].getRemoteAddress().getUserName());
+            swapCall1Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+            swapCall2Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
+
+        } else {
+            SipManager.getLc().resumeCall(SipManager.getLc().getCurrentCall());
+        }
+
+    }
+
+    /**
+     * 切换通话一
+     */
+    private void swapFirstCall() {
+        LinphoneCall[] calls = SipManager.getLc().getCalls();
+        if (calls.length >= 2) {
+            SipManager.getLc().resumeCall(calls[0]);
+            SipManager.getLc().pauseCall(calls[1]);
+            playRemoteVideo();
+            currentCallNumLayout.setText(calls[0].getRemoteAddress().getUserName());
+            swapCall1Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
+            swapCall2Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+
+        } else {
+            SipManager.getLc().resumeCall(SipManager.getLc().getCurrentCall());
+        }
+
+    }
+
+    /**
+     * 挂断电话
+     */
+    private void handupCall() {
+
+        //结束当前向外拨打的语音电话
+        if (isOutCall && isVoiceCall) {
+            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
+        }
+
+        //结束当前向外拨打的视频电话
+        if (isOutCall && !isVoiceCall) {
+            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
+        }
+
+        //结束当前来电的第一个电话
+
+        LinphoneCall[] calls = SipManager.getLc().getCalls();
+        if (calls.length >= 2) {
+            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
+            LinphoneCall[] call = SipManager.getLc().getCalls();
+            if (call.length == 1) {
+                SipManager.getLc().resumeCall(call[0]);
+                playRemoteVideo();
+                currentCallNumLayout.setText(call[0].getRemoteAddress().getUserName());
+                swapCall2Btn.setVisibility(View.GONE);
+                swapCall1Btn.setVisibility(View.GONE);
+            }
+        }
+        if (calls.length == 1) {
+            SipManager.getLc().terminateAllCalls();
+            disPlaySipView();
+            threadStop();
+            phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
+            isCommingCall = false;
+            isVoiceCall = true;
+        }
+    }
+
+    /**
+     * 接听来电
+     */
+    private void acceptIncomingCall() {
+
+        //接第一个电话
+        if (isCommingCall && !isVoiceCall && !firstInCommingCallConteted) {
+            try {
+                SipManager.getLc().acceptCall(SipManager.getLc().getCurrentCall());
+            } catch (LinphoneCoreException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //接第二个电话
+        if (isCommingCall && !isVoiceCall && firstInCommingCallConteted && isCallConnected) {
+            LinphoneCall[] calls = SipManager.getLc().getCalls();
+            if (calls.length >= 2) {
+                try {
+                    SipManager.getLc().acceptCall(calls[1]);
+                    SipManager.getLc().pauseCall(calls[0]);
+                    swapCall1Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
+                    swapCall2Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
+                } catch (LinphoneCoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 向外拨打视频电话
+     */
+    private void makeVideoCall() {
+
+        //重新加载下sip数据防止取重复的数据
+        initializeSipData();
+
+        Logutil.d("nativePlayRtspUrl-->>>" + nativePlayRtspUrl);
+
+        //对象是否选中
+        if (sipItemSelected == -1) {
+            showProgressFail("请选择");
+            return;
+        }
+        //操作对象
+        SipGroupItemInfoBean mSipGroupItemInfoBean = sipItemList.get(sipItemSelected);
+        if (mSipGroupItemInfoBean != null) {
+            //号码
+            String number = mSipGroupItemInfoBean.getNumber();
+            if (TextUtils.isEmpty(number)) {
+                showProgressFail("无号码");
+                return;
+            }
+            //播报
+            App.startSpeaking("正在呼叫" + mSipGroupItemInfoBean.getName());
+            //视频电话标识
+            isVoiceCall = false;
+            //向外拨打视频电话
+            isOutCall = true;
+            //延时
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            handler.sendEmptyMessage(32);
+            //拨号
+            Linphone.callTo(mSipGroupItemInfoBean.getNumber(), false);
+            //显示拨号对象
+            currentCallNumLayout.setVisibility(View.VISIBLE);
+            currentCallNumLayout.setText(mSipGroupItemInfoBean.getName());
+            //显示Ui
+            handler.sendEmptyMessage(12);
+        }
+
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
+    }
+
+    /**
+     * 向外拨打语音电话
+     */
+    private void makeVoiceCall() {
+        //判断当前对象是否选中
+        if (sipItemSelected == -1) {
+            showProgressFail("请选择拨号对象");
+            return;
+        }
+
+        SipGroupItemInfoBean sSipGroupItemInfoBean = sipItemList.get(sipItemSelected);
+        //判断当前操作对象是否为空
+        if (sSipGroupItemInfoBean != null) {
+            //获取当前的拨号号码
+            String number = sSipGroupItemInfoBean.getNumber();
+            if (TextUtils.isEmpty(number)) {
+                showProgressFail("无号码");
+                return;
+            }
+            //tts播报
+            App.startSpeaking("正在呼叫" + sSipGroupItemInfoBean.getName());
+
+            //语音电话标识
+            isVoiceCall = true;
+            //拨号标识
+            isOutCall = true;
+            //延时
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //拨号
+            Linphone.callTo(sSipGroupItemInfoBean.getNumber(), false);
+            //显示向谁拨号
+            currentCallNumLayout.setVisibility(View.VISIBLE);
+            currentCallNumLayout.setText(sSipGroupItemInfoBean.getName());
+            //显示ui
+            handler.sendEmptyMessage(9);
+        }
+        //刷新恢复选中的item背景
+        if (sipItemAdapter != null)
+            sipItemAdapter.refreshItemBg(sipItemSelected);
+    }
+
+
+    /**
+     * 向外拨打的语音电话释放
+     */
+    private void outVoiceCallReleased() {
+        //停止定时
+        threadStop();
+        //显示Sip界面
+        disPlaySipView();
+
+        //背景恢复
+        phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
+
+        isOutCall = false;
+        isVoiceCall = true;
+        acceptCallBtn.setVisibility(View.VISIBLE);
+        swapCall2Btn.setVisibility(View.GONE);
+        swapCall1Btn.setVisibility(View.GONE);
+
+        isCallConnected = false;
+
+    }
+
+    /**
+     * 释放向外拨打的视频电话
+     */
+    private void outVideoCallReleased() {
+
+        threadStop();
+
+        releasePlayer();
+
+        disPlaySipView();
+
+        phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
+
+        isOutCall = false;
+        isVoiceCall = true;
+        swapCall2Btn.setVisibility(View.GONE);
+        swapCall1Btn.setVisibility(View.GONE);
+
+        isCallConnected = false;
+
+    }
+
+    /**
+     * 第一个来电视频电话释放
+     */
+    private void firstInComingCallReleased() {
+
+
+        LinphoneCall[] calls = SipManager.getLc().getCalls();
+
+        Logutil.d("calls-->>" + calls.length);
+        if (calls.length == 0) {
+
+            threadStop();
+
+            releasePlayer();
+
+            disPlaySipView();
+
+            phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
+
+            isCommingCall = false;
+
+            isVoiceCall = true;
+
+            isCallConnected = false;
+
+            firstInCommingCallConteted = false;
+
+            swapCall1Btn.setVisibility(View.GONE);
+            swapCall2Btn.setVisibility(View.GONE);
+
+        } else {
+            if (SipManager.getLc().getCalls().length == 1) {
+                currentCallNumLayout.setText(querySipBeanFromSipNumber(calls[0].getRemoteAddress().getUserName()).getName());
+                playRemoteVideo();
+                swapCall1Btn.setVisibility(View.GONE);
+                swapCall2Btn.setVisibility(View.GONE);
+                firstInCommingCallConteted = false;
+                isCallConnected = false;
+            }
+        }
+//
+// else if (calls.length == 1){
+//          //  currentCallNumLayout.setText(querySipBeanFromSipNumber(SipManager.getLc().getCurrentCall().getRemoteAddress().getUserName()).getName());
+//            playRemoteVideo();
+//            swapCall1Btn.setVisibility(View.GONE);
+//            swapCall2Btn.setVisibility(View.GONE);
+//        }
+    }
 
     @Override
     public void onResume() {
@@ -2285,15 +2661,10 @@ public class IntercomCallFragment extends BaseFragment {
 
     @Override
     public void onDestroyView() {
-
         //停止定时任务
         if (timingPoolTaskService != null && !timingPoolTaskService.isShutdown()) {
             timingPoolTaskService.shutdown();
             timingPoolTaskService = null;
-        }
-        //移除handler监听
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
         }
         //音频管理对象
         if (mAudioManager != null) {
@@ -2301,283 +2672,17 @@ public class IntercomCallFragment extends BaseFragment {
         }
         //停止录音
         stopRecordingFlag = false;
-
+        //注销监听sip缓存完成的广播
         if (mSipDataCacheBroadcast != null)
             getActivity().unregisterReceiver(mSipDataCacheBroadcast);
-
+        //注销监听拨打电话的广播
         if (mMakeCallBroadcast != null)
             getActivity().unregisterReceiver(mMakeCallBroadcast);
-
+        //移除handler监听
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
         super.onDestroyView();
-    }
-
-    private void swapSecondCall() {
-
-        LinphoneCall[] calls = SipManager.getLc().getCalls();
-        if (calls.length >= 2) {
-            SipManager.getLc().resumeCall(calls[1]);
-            SipManager.getLc().pauseCall(calls[0]);
-            playRemoteVideo();
-            currentCallNumLayout.setText(calls[1].getRemoteAddress().getUserName());
-            swapCall1Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-            swapCall2Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
-
-        } else {
-            SipManager.getLc().resumeCall(SipManager.getLc().getCurrentCall());
-        }
-
-    }
-
-    private void swapFirstCall() {
-        LinphoneCall[] calls = SipManager.getLc().getCalls();
-        if (calls.length >= 2) {
-            SipManager.getLc().resumeCall(calls[0]);
-            SipManager.getLc().pauseCall(calls[1]);
-            playRemoteVideo();
-            currentCallNumLayout.setText(calls[0].getRemoteAddress().getUserName());
-            swapCall1Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
-            swapCall2Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-
-        } else {
-            SipManager.getLc().resumeCall(SipManager.getLc().getCurrentCall());
-        }
-
-    }
-
-    /**
-     * 挂断电话
-     */
-    private void handupCall() {
-
-        //结束当前向外拨打的语音电话
-        if (isOutCall && isVoiceCall) {
-            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
-        }
-
-        //结束当前向外拨打的视频电话
-        if (isOutCall && !isVoiceCall) {
-            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
-        }
-
-        //结束当前来电的第一个电话
-
-        LinphoneCall[] calls = SipManager.getLc().getCalls();
-        if (calls.length >= 2) {
-            SipManager.getLc().terminateCall(SipManager.getLc().getCurrentCall());
-            LinphoneCall[] call = SipManager.getLc().getCalls();
-            if (call.length == 1) {
-                SipManager.getLc().resumeCall(call[0]);
-                playRemoteVideo();
-                currentCallNumLayout.setText(call[0].getRemoteAddress().getUserName());
-                swapCall2Btn.setVisibility(View.GONE);
-                swapCall1Btn.setVisibility(View.GONE);
-            }
-        }
-        if (calls.length == 1) {
-            SipManager.getLc().terminateAllCalls();
-            disPlaySipView();
-            threadStop();
-            phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
-            isCommingCall = false;
-            isVoiceCall = true;
-        }
-    }
-
-    /**
-     * 接听来电
-     */
-    private void acceptIncomingCall() {
-
-        //接第一个电话
-        if (isCommingCall && !isVoiceCall && !firstInCommingCallConteted) {
-            try {
-                SipManager.getLc().acceptCall(SipManager.getLc().getCurrentCall());
-            } catch (LinphoneCoreException e) {
-                e.printStackTrace();
-            }
-        }
-
-        //接第二个电话
-        if (isCommingCall && !isVoiceCall && firstInCommingCallConteted && isCallConnected) {
-            LinphoneCall[] calls = SipManager.getLc().getCalls();
-            if (calls.length >= 2) {
-                try {
-                    SipManager.getLc().acceptCall(calls[1]);
-                    SipManager.getLc().pauseCall(calls[0]);
-                    swapCall1Btn.setBackgroundResource(R.drawable.btn_pressed_select_bg);
-                    swapCall2Btn.setBackgroundResource(R.mipmap.dtc_btn2_bg_pressed);
-                } catch (LinphoneCoreException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    /**
-     * 向外拨打视频电话
-     */
-    private void makeVideoCall() {
-        if (sipItemSelected == -1) {
-            showProgressFail("请选择");
-            return;
-        }
-        SipGroupItemInfoBean mSipGroupItemInfoBean = sipItemList.get(sipItemSelected);
-        if (mSipGroupItemInfoBean != null) {
-            String number = mSipGroupItemInfoBean.getNumber();
-            if (TextUtils.isEmpty(number)) {
-                showProgressFail("无号码");
-                return;
-            }
-
-            App.startSpeaking("正在呼叫"+mSipGroupItemInfoBean.getName());
-            //视频电话标识
-            isVoiceCall = false;
-            //向外拨打视频电话
-            isOutCall = true;
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //拨号
-            Linphone.callTo(mSipGroupItemInfoBean.getNumber(), false);
-            currentCallNumLayout.setVisibility(View.VISIBLE);
-            currentCallNumLayout.setText(mSipGroupItemInfoBean.getName());
-            handler.sendEmptyMessage(12);
-        }
-    }
-
-    /**
-     * 向外拨打语音电话
-     */
-    private void makeVoiceCall() {
-        if (sipItemSelected == -1) {
-            showProgressFail("请选择拨号对象");
-            return;
-        }
-        //获取当前的拨号号码
-        SipGroupItemInfoBean sSipGroupItemInfoBean = sipItemList.get(sipItemSelected);
-        if (sSipGroupItemInfoBean != null) {
-            String number = sSipGroupItemInfoBean.getNumber();
-            if (TextUtils.isEmpty(number)) {
-                showProgressFail("无号码");
-                return;
-            }
-
-            App.startSpeaking("正在呼叫"+sSipGroupItemInfoBean.getName());
-
-            //语音电话标识
-            isVoiceCall = true;
-
-            isOutCall = true;
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //拨号
-            Linphone.callTo(sSipGroupItemInfoBean.getNumber(), false);
-            //显示向谁拨号
-            currentCallNumLayout.setVisibility(View.VISIBLE);
-            currentCallNumLayout.setText(sSipGroupItemInfoBean.getName());
-            handler.sendEmptyMessage(9);
-        }
-    }
-
-
-    /**
-     * 向外拨打的语音电话释放
-     */
-    private void outVoiceCallReleased() {
-        //停止定时
-        threadStop();
-        //显示Sip界面
-        disPlaySipView();
-
-        //背景恢复
-        phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
-
-        isOutCall = false;
-        isVoiceCall = true;
-        acceptCallBtn.setVisibility(View.VISIBLE);
-        swapCall2Btn.setVisibility(View.GONE);
-        swapCall1Btn.setVisibility(View.GONE);
-
-        isCallConnected = false;
-
-    }
-
-    /**
-     * 释放向外拨打的视频电话
-     */
-    private void outVideoCallReleased() {
-
-        threadStop();
-
-        releasePlayer();
-
-        disPlaySipView();
-
-        phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
-
-        isOutCall = false;
-        isVoiceCall = true;
-        swapCall2Btn.setVisibility(View.GONE);
-        swapCall1Btn.setVisibility(View.GONE);
-
-        isCallConnected = false;
-
-    }
-
-    /**
-     * 第一个来电视频电话释放
-     */
-    private void firstInComingCallReleased() {
-
-
-        LinphoneCall[] calls = SipManager.getLc().getCalls();
-
-        Logutil.d("calls-->>" + calls.length);
-        if (calls.length == 0) {
-
-            threadStop();
-
-            releasePlayer();
-
-            disPlaySipView();
-
-            phoneParentLayout.setBackgroundResource(R.mipmap.intercom_call_img_bg_voice1);
-
-            isCommingCall = false;
-
-            isVoiceCall = true;
-
-            isCallConnected = false;
-
-            firstInCommingCallConteted = false;
-
-            swapCall1Btn.setVisibility(View.GONE);
-            swapCall2Btn.setVisibility(View.GONE);
-
-        } else {
-            if (SipManager.getLc().getCalls().length == 1) {
-                currentCallNumLayout.setText(querySipBeanFromSipNumber(calls[0].getRemoteAddress().getUserName()).getName());
-                playRemoteVideo();
-                swapCall1Btn.setVisibility(View.GONE);
-                swapCall2Btn.setVisibility(View.GONE);
-                firstInCommingCallConteted = false;
-                isCallConnected = false;
-            }
-        }
-//
-// else if (calls.length == 1){
-//          //  currentCallNumLayout.setText(querySipBeanFromSipNumber(SipManager.getLc().getCurrentCall().getRemoteAddress().getUserName()).getName());
-//            playRemoteVideo();
-//            swapCall1Btn.setVisibility(View.GONE);
-//            swapCall2Btn.setVisibility(View.GONE);
-//        }
     }
 
     /**
@@ -2796,7 +2901,6 @@ public class IntercomCallFragment extends BaseFragment {
                     //显示喊话时间
                     displaySpeakingTime();
                     break;
-
             }
         }
     };

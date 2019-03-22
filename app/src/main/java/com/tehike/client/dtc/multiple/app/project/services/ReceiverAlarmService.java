@@ -193,7 +193,7 @@ public class ReceiverAlarmService extends Service {
         App.getApplication().sendBroadcast(alarmIntent);
         //判断这个报警是否已处理（参考,需要改）
         if (TextUtils.isEmpty(mAlarmVideoSource.getFaceVideoId())) {
-            App.startSpeaking("值班室关闭报警");
+            //App.startSpeaking("值班室关闭报警");
         } else {
             //播报报警
             String speakSomething = mAlarmVideoSource.getFaceVideoName() + "发生" + mAlarmVideoSource.getAlarmType() + "报警";
@@ -211,6 +211,8 @@ public class ReceiverAlarmService extends Service {
             if (ActivityUtils.getTopActivity().getClass().getName().equals("com.tehike.client.dtc.multiple.app.project.ui.ScreenSaverActivity")) {
                 ActivityUtils.getTopActivity().finish();
             }
+            //发送广播刷新副屏的事件列表和已处理的报警列表
+            App.getApplication().sendBroadcast(new Intent(AppConfig.REFRESH_ACTION));
         }
     }
 

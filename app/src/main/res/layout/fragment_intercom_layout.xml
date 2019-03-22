@@ -625,7 +625,7 @@
                         android:text="录音"
                         android:textColor="@color/white" />
 
-                    <!--音量减-->
+                    <!--新通话-->
                     <Button
                         android:id="@+id/voice_lose_btn_layout"
                         android:layout_width="fill_parent"
