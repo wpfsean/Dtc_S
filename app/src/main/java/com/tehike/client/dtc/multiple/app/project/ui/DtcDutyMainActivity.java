@@ -215,7 +215,10 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         initializeData();
 
         //开启屏保计时功能
-        new Thread(new TimingScreenSaverThread()).start();
+        if (AppConfig.IS_ENABLE_SCREEN_SAVE) {
+            isCallingFlag = true;
+            new Thread(new TimingScreenSaverThread()).start();
+        }
 
         //初始化副屏功能
         initializeSecondaryScreen();
@@ -261,8 +264,10 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         } else if (strValue.equals("false")) {
             //如果停止通话（开始计时并重置标识）
             screenSaverTimingCount = 0;
-            new Thread(new TimingScreenSaverThread()).start();
-            isCallingFlag = true;
+            if (AppConfig.IS_ENABLE_SCREEN_SAVE) {
+                new Thread(new TimingScreenSaverThread()).start();
+                isCallingFlag = true;
+            }
         }
     }
 
@@ -635,9 +640,11 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
         Logutil.d("哈哈。我又可见了");
         //重置屏保计时数和标识
         screenSaverTimingCount = 0;
-        isCallingFlag = true;
-        //重新开启屏保时时线程
-        new Thread(new TimingScreenSaverThread()).start();
+        if (AppConfig.IS_ENABLE_SCREEN_SAVE) {
+            isCallingFlag = true;
+            //重新开启屏保时时线程
+            new Thread(new TimingScreenSaverThread()).start();
+        }
         super.onRestart();
     }
 

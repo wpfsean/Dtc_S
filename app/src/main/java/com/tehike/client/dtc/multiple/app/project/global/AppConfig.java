@@ -242,6 +242,11 @@ public class AppConfig {
     public static boolean IS_REQUEST_DOOR = false;
 
     /**
+     * 是否支持屏保功能
+     */
+    public static boolean IS_ENABLE_SCREEN_SAVE = true;
+
+    /**
      * 主页面是否可以滑动
      */
     public static boolean IS_CAN_SLIDE = false;

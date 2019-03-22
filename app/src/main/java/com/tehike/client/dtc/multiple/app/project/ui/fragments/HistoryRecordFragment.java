@@ -100,6 +100,17 @@ public class HistoryRecordFragment extends BaseFragment {
     }
 
     /**
+     * 反转linkedlist
+     */
+    private LinkedList reverseLinkedList(LinkedList linkedList) {
+        LinkedList<Object> newLinkedList = new LinkedList<>();
+        for (Object object : linkedList) {
+            newLinkedList.add(0, object);
+        }
+        return newLinkedList;
+    }
+
+    /**
      * 切换查看事件日志记录
      */
     private void switchEvent() {
@@ -151,6 +162,8 @@ public class HistoryRecordFragment extends BaseFragment {
             } while (c.moveToNext());
         }
 
+        mlist = reverseLinkedList(mlist);
+
         if (mHistortAlarmAdapter == null) {
             mHistortAlarmAdapter = new HistortAlarmAdapter(mlist);
             historyAlarmListViewLayout.setAdapter(mHistortAlarmAdapter);
@@ -182,7 +195,7 @@ public class HistoryRecordFragment extends BaseFragment {
                 eventQueueList.add(mEventSources);
             } while (c.moveToNext());
         }
-        //把事件队列反转一下，最新的放在上面
+        eventQueueList = reverseLinkedList(eventQueueList);
         //适配器展示
         if (mHistoryEventAdapter == null) {
             mHistoryEventAdapter = new HistoryEventAdapter(eventQueueList);

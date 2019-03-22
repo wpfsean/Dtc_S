@@ -14,7 +14,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -243,6 +245,42 @@ public class SystemSetFragment extends BaseFragment {
     SeekBar callingRingSeekbarLayout;
 
     /**
+     * 调节背光亮度的父布局
+     */
+    @BindView(R.id.blacklight_parent_layout)
+    LinearLayout blacklightParentLayout;
+
+    /**
+     * 屏保设置的父布局
+     */
+    @BindView(R.id.screensaver_parent_layout)
+    LinearLayout screensaverParentLayout;
+
+    /**
+     * 设置调节亮度的按键
+     */
+    @BindView(R.id.set_blacklight_parent_btn_layout)
+    Button setBlackLightBtnLayout;
+
+    /**
+     * 设置调节屏保设置的按键
+     */
+    @BindView(R.id.set_screensaver_parent_btn_layout)
+    Button setScreentSaverBtnLayout;
+
+    /**
+     * 选择屏保是否开户的spinner
+     */
+    @BindView(R.id.whether_enable_screen_save_spinner)
+    Spinner whetherEnableScreenSaveSpinnerLayout;
+
+    /**
+     * 屏保时间的spinner
+     */
+    @BindView(R.id.screen_save_time_select_spinner)
+    Spinner screenSaveTimeSpinnerLayout;
+
+    /**
      * 串口管理类
      */
     SerialPortManager mSerialPortManager;
@@ -258,9 +296,40 @@ public class SystemSetFragment extends BaseFragment {
     AudioManager audioManager;
 
     /**
+     * 是否开启屏保的适配器
+     */
+    ArrayAdapter<String> whetherEnableScreenSaveSpinnerAdaper;
+
+    /**
+     * 屏保时间选择的适器
+     */
+    ArrayAdapter<String> screenSaveTimeAdapter;
+
+    /**
      * 刷新网络状态广播
      */
     NetworkStatusBroadcast mFreshNetworkStatusBroadcast;
+
+    /**
+     * 屏保功能
+     */
+    String[] screenSavaFunction = new String[]{"开启屏保", "关闭屏保"};
+
+    /**
+     * 屏保时间
+     */
+    String[] screenSaveTime = new String[]{"30分钟", "1小时", "2小时", "4小时", "8小时", "10小时", "12小时", "24小时"};
+
+    /**
+     * 屏保功能下标
+     */
+    int screenSaveFuntionItemPosition = -1;
+
+    /**
+     * 屏保时间选择下标
+     */
+    int screenSaveTimeItemPosition = -1;
+
 
     @Override
     protected int getLayoutId() {
@@ -278,11 +347,73 @@ public class SystemSetFragment extends BaseFragment {
         Logutil.e("  AppConfig.SCREEN_SAVE_TIME+" + AppConfig.SCREEN_SAVE_TIME + keyboardSelected);
         Logutil.e("  AppConfig.REFRESH_DATA_TIME+" + AppConfig.REFRESH_DATA_TIME + ygdSelected);
 
+        Logutil.e("   AppConfig.IS_ENABLE_SCREEN_SAVE" + AppConfig.IS_ENABLE_SCREEN_SAVE);
+        Logutil.e("  AppConfig.SCREEN_SAVE_TIME" + AppConfig.SCREEN_SAVE_TIME);
+
         audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
 
         registerNetworkChangedBroadcast();
 
         initSystemInfor();
+
+        disPlayScreenSaver();
+    }
+
+    /**
+     * 展示屏保功能
+     */
+    private void disPlayScreenSaver() {
+
+        //是否屏保的spinner选择
+        whetherEnableScreenSaveSpinnerAdaper = new ArrayAdapter<String>(getActivity()
+                , R.layout.dialog_screen_save_enable_item, R.id.screen_save_item_name_layout,
+                screenSavaFunction);
+        whetherEnableScreenSaveSpinnerLayout.setAdapter(whetherEnableScreenSaveSpinnerAdaper);
+
+        int p1 = (int) SharedPreferencesUtils.getObject(App.getApplication(), "screenSaveFuntionItemPosition", -1);
+        if (p1 == -1) {
+            whetherEnableScreenSaveSpinnerLayout.setSelection(0, true);
+        } else {
+            whetherEnableScreenSaveSpinnerLayout.setSelection(p1, true);
+        }
+        whetherEnableScreenSaveSpinnerAdaper.notifyDataSetChanged();
+        //屏保功能选择监听
+        whetherEnableScreenSaveSpinnerLayout.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                screenSaveFuntionItemPosition = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        //屏保时间的选择
+        screenSaveTimeAdapter = new ArrayAdapter<String>(getActivity()
+                , R.layout.dialog_screen_save_select_item, R.id.screen_save_item_name_layout,
+                screenSaveTime);
+        screenSaveTimeSpinnerLayout.setAdapter(screenSaveTimeAdapter);
+        int p2 = (int) SharedPreferencesUtils.getObject(App.getApplication(), "screenSaveTimeItemPosition", -1);
+        if (p2 == -1) {
+            screenSaveTimeSpinnerLayout.setSelection(0, true);
+        } else {
+            screenSaveTimeSpinnerLayout.setSelection(p2, true);
+        }
+        screenSaveTimeAdapter.notifyDataSetChanged();
+        //屏保时间选择监听
+        screenSaveTimeSpinnerLayout.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                screenSaveTimeItemPosition = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     /**
@@ -406,7 +537,6 @@ public class SystemSetFragment extends BaseFragment {
         spinnerAdapter = new SerialPortAdapter(initSerialPortData());
         // 把定义好的Adapter设定到spinner中
         ygSerialPortSpinnerLayout.setAdapter(spinnerAdapter);
-        ygSerialPortSpinnerLayout.setSelection(2, true);
         //取出本地保存的
         String ygSelected = (String) SharedPreferencesUtils.getObject(App.getApplication(), "ygserialport", "");
         if (!TextUtils.isEmpty(ygSelected)) {
@@ -556,9 +686,16 @@ public class SystemSetFragment extends BaseFragment {
     /**
      * 按键的点击事件
      */
-    @OnClick({R.id.system_setting_system_set_btn_layout, R.id.system_setting_time_set_btn_layout, R.id.system_setting_alarm_set_btn_layout, R.id.system_setting_display_set_btn_layout, R.id.system_setting_ring_set_btn_layout, R.id.system_setting_advanced_set_btn_layout, R.id.system_setting_cancel_btn_layout, R.id.system_setting_save_btn_layout, R.id.system_setting_loginout_btn_layout})
+    @OnClick({R.id.set_blacklight_parent_btn_layout, R.id.set_screensaver_parent_btn_layout, R.id.system_setting_system_set_btn_layout, R.id.system_setting_time_set_btn_layout, R.id.system_setting_alarm_set_btn_layout, R.id.system_setting_display_set_btn_layout, R.id.system_setting_ring_set_btn_layout, R.id.system_setting_advanced_set_btn_layout, R.id.system_setting_cancel_btn_layout, R.id.system_setting_save_btn_layout, R.id.system_setting_loginout_btn_layout})
     public void btnClickEvent(View view) {
         switch (view.getId()) {
+            case R.id.set_blacklight_parent_btn_layout:
+
+                displayBlackLightSet();
+                break;
+            case R.id.set_screensaver_parent_btn_layout:
+                displayScreenSaverSet();
+                break;
             case R.id.system_setting_system_set_btn_layout:
                 //系统信息
                 disPlaySystemInforView();
@@ -595,6 +732,26 @@ public class SystemSetFragment extends BaseFragment {
                 appLoginOut();
                 break;
         }
+    }
+
+    /**
+     * 展示屏保设置
+     */
+    private void displayScreenSaverSet() {
+        setBlackLightBtnLayout.setBackgroundResource(R.mipmap.dtc_btn1_label_normal);
+        setScreentSaverBtnLayout.setBackgroundResource(R.mipmap.dtc_btn1_label_selected);
+        blacklightParentLayout.setVisibility(View.GONE);
+        screensaverParentLayout.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 展示背光设置
+     */
+    private void displayBlackLightSet() {
+        setBlackLightBtnLayout.setBackgroundResource(R.mipmap.dtc_btn1_label_selected);
+        setScreentSaverBtnLayout.setBackgroundResource(R.mipmap.dtc_btn1_label_normal);
+        blacklightParentLayout.setVisibility(View.VISIBLE);
+        screensaverParentLayout.setVisibility(View.GONE);
     }
 
     /**
@@ -779,7 +936,8 @@ public class SystemSetFragment extends BaseFragment {
 //        if (mInputMethodManager != null)
 //            mInputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
 
-        setScreenTime();
+        //设置屏保事件
+        setScreenEvent();
 
         setDataRefreshTime();
 
@@ -798,18 +956,55 @@ public class SystemSetFragment extends BaseFragment {
     }
 
     /**
-     * 设置屏保时长
+     * 设置屏保功能操作
      */
-    private void setScreenTime() {
-        //获取屏保时间
-        String screenTime = screenTimeEditLayout.getText().toString();
-        //设置屏保
-        if (!TextUtils.isEmpty(screenTime)) {
-            int time = Integer.parseInt(screenTime);
-            if (time > 0) {
-                AppConfig.SCREEN_SAVE_TIME = time;
+    private void setScreenEvent() {
+        //设置屏保时间
+        if (screenSaveTimeItemPosition != -1) {
+            String time = screenSaveTime[screenSaveTimeItemPosition];
+            SharedPreferencesUtils.putObject(App.getApplication(), "screenSaveTimeItemPosition", screenSaveTimeItemPosition);
+            if (time.equals("30分钟")) {
+                AppConfig.SCREEN_SAVE_TIME = 1 * 60;
+            } else if (time.equals("1小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60;
+            } else if (time.equals("2小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 2;
+            } else if (time.equals("4小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 4;
+            } else if (time.equals("6小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 6;
+            } else if (time.equals("8小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 8;
+            } else if (time.equals("10小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 10;
+            } else if (time.equals("12小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 12;
+            } else if (time.equals("24小时")) {
+                AppConfig.SCREEN_SAVE_TIME = 60 * 60 * 24;
             }
         }
+        //设置屏保是否开启
+        if (screenSaveFuntionItemPosition != -1) {
+            String function = screenSavaFunction[screenSaveFuntionItemPosition];
+            SharedPreferencesUtils.putObject(App.getApplication(), "screenSaveFuntionItemPosition", screenSaveFuntionItemPosition);
+            if (function.equals("关闭屏保")) {
+                AppConfig.IS_ENABLE_SCREEN_SAVE = false;
+            } else if (function.equals("开启屏保")) {
+                AppConfig.IS_ENABLE_SCREEN_SAVE = true;
+            }
+            Logutil.d("function" + function);
+        }
+
+
+//        //获取屏保时间
+//        String screenTime = screenTimeEditLayout.getText().toString();
+//        //设置屏保
+//        if (!TextUtils.isEmpty(screenTime)) {
+//            int time = Integer.parseInt(screenTime);
+//            if (time > 0) {
+//                AppConfig.SCREEN_SAVE_TIME = time;
+//            }
+//        }
     }
 
     /**

@@ -290,9 +290,9 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="match_parent"
                                 android:layout_gravity="center"
+                                android:layout_marginLeft="60dp"
                                 android:gravity="left|center"
                                 android:text="型号"
-                                android:layout_marginLeft="60dp"
                                 android:textColor="@color/white"
                                 android:textSize="12sp" />
 
@@ -364,9 +364,9 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="match_parent"
                                 android:layout_gravity="center"
+                                android:layout_marginLeft="60dp"
                                 android:gravity="left|center"
                                 android:text="硬件"
-                                android:layout_marginLeft="60dp"
                                 android:textColor="@color/white"
                                 android:textSize="12sp" />
 
@@ -438,9 +438,9 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="match_parent"
                                 android:layout_gravity="center"
+                                android:layout_marginLeft="60dp"
                                 android:gravity="left|center"
                                 android:text="本机号码"
-                                android:layout_marginLeft="60dp"
                                 android:textColor="@color/white"
                                 android:textSize="12sp" />
 
@@ -509,7 +509,6 @@
                             android:layout_weight="1">
 
 
-
                         </LinearLayout>
 
                         <LinearLayout
@@ -564,7 +563,6 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1">
-
 
 
                         </LinearLayout>
@@ -623,7 +621,6 @@
                             android:layout_weight="1">
 
 
-
                         </LinearLayout>
 
                         <LinearLayout
@@ -679,7 +676,6 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1">
-
 
 
                         </LinearLayout>
@@ -791,20 +787,174 @@
                     android:orientation="vertical"
                     android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/system_blacklight_valus_tv_layout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="系统背光亮度:"
-                        android:textColor="@color/white"
-                        android:textSize="14sp" />
-
-                    <SeekBar
-                        android:id="@+id/system_blacklight_seekbar_layout"
+                    <!--显示设置中头部滑块父布局-->
+                    <RelativeLayout
                         android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:max="245"
-                        android:min="1" />
+                        android:layout_height="30dp">
+
+                        <Button
+                            android:id="@+id/set_blacklight_parent_btn_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="22dp"
+                            android:layout_above="@+id/slide_line_layout"
+                            android:layout_marginLeft="26dp"
+                            android:background="@mipmap/dtc_btn1_label_selected"
+                            android:text="亮度调节"
+                            android:textColor="@color/white" />
+
+
+                        <Button
+                            android:id="@+id/set_screensaver_parent_btn_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="22dp"
+                            android:layout_above="@+id/slide_line_layout"
+                            android:layout_marginLeft="10dp"
+                            android:layout_toRightOf="@+id/set_blacklight_parent_btn_layout"
+                            android:background="@mipmap/dtc_btn1_label_normal"
+                            android:text="屏保设置"
+                            android:textColor="@color/white" />
+
+                        <ImageView
+                            android:id="@+id/slide_line_layout"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:background="@mipmap/dtc_line_label" />
+                    </RelativeLayout>
+
+                    <!--亮度设置父布局-->
+                    <LinearLayout
+                        android:id="@+id/blacklight_parent_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+
+                        <TextView
+                            android:id="@+id/system_blacklight_valus_tv_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="系统背光亮度:"
+                            android:textColor="@color/white"
+                            android:textSize="14sp" />
+
+                        <SeekBar
+                            android:id="@+id/system_blacklight_seekbar_layout"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:max="245"
+                            android:min="1" />
+                    </LinearLayout>
+
+                    <!--屏保设置父布局-->
+                    <LinearLayout
+                        android:id="@+id/screensaver_parent_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <!--是否开启屏保-->
+                        <FrameLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="36dp"
+                            android:background="#011b41">
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginLeft="24dp"
+                                    android:text="休眠操作"
+                                    android:textColor="@color/white"
+                                    android:textSize="12sp" />
+
+                                <!--是否开启屏保选项-->
+                                <Spinner
+                                    android:id="@+id/whether_enable_screen_save_spinner"
+                                    android:layout_width="110dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_centerVertical="true"
+                                    android:layout_marginRight="22dp"
+                                    android:background="@null"
+                                    android:textColor="@color/white"
+                                    android:textSize="12sp"></Spinner>
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                                <ImageView
+                                    android:layout_width="100dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentBottom="true"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_marginBottom="6dp"
+                                    android:layout_marginRight="22dp"
+                                    android:background="@mipmap/dtc_screen_save_select_line" />
+                            </RelativeLayout>
+
+                        </FrameLayout>
+
+
+                        <!--屏保时间设置-->
+                        <FrameLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="30dp"
+                            android:background="#0c2f62">
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:layout_marginLeft="24dp"
+                                android:text="休眠时间设置"
+                                android:textColor="@color/white"
+                                android:textSize="12sp" />
+
+                            <!--屏保时间 选项-->
+                            <Spinner
+                                android:id="@+id/screen_save_time_select_spinner"
+                                android:layout_width="110dp"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentRight="true"
+                                android:layout_marginRight="22dp"
+                                android:layout_centerVertical="true"
+                                android:background="@null"
+                                android:gravity="center"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"></Spinner>
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent">
+                            <ImageView
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentBottom="true"
+                                android:layout_alignParentRight="true"
+                                android:layout_marginRight="22dp"
+                                android:background="@mipmap/dtc_screen_save_select_line" />
+                            </RelativeLayout>
+
+                        </FrameLayout>
+
+
+                    </LinearLayout>
+
 
                 </LinearLayout>
 
