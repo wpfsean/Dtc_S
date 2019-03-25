@@ -86,15 +86,7 @@ public class CrashLog {
             FileOutputStream fos = new FileOutputStream(cachePath + fileName);
             fos.write(sb.toString().getBytes());
             fos.close();
-
-            Logutil.i("崩溃异常:"+result);
-            //上传错误信息
-//        new HttpUtils("http://19.0.0.20/RecordTheNumForData/a.php?paramater=" + result+"&ip=19.0.0.78", new HttpUtils.GetHttpData() {
-//            @Override
-//            public void httpData(String result) {
-//            }
-//        }).start();
-
+            Logutil.e("崩溃异常:"+result);
         } catch (Exception e) {
         }
     }

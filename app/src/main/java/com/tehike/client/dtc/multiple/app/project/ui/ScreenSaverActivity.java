@@ -133,6 +133,7 @@ public class ScreenSaverActivity extends BaseActivity {
         if (hoursFormat != null) {
             String hoursStr = hoursFormat.format(currentDate);
             String date = dateFormat.format(currentDate);
+            //可见时显示时间日期
             if (isVisible) {
                 displayScreenTimeLayout.setText(hoursStr);
                 displayScreenDateLayout.setText(date + "\t\t\t" + getWeek());

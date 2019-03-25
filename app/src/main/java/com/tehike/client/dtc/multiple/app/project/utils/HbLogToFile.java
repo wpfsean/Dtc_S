@@ -15,11 +15,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * 日志写入
- * <p>
- * <p>
- * Log日志写入文件
+ * 描述：心跳日志记录
+ * ===============================
+ *
+ * @author wpfse wpfsean@126.com
+ * @version V1.0
+ * @Create at:2019/3/25 13:37
  */
+
 public class HbLogToFile {
     /**
      * 开发阶段(打印日志 )

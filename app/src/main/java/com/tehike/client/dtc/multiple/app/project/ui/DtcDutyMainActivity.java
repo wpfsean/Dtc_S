@@ -624,14 +624,23 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
     /**
      * 屏保计时
      */
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void screenSaverTiming() {
         screenSaverTimingCount++;
-        //    Logutil.d("count-->>" + count);
+        //Logutil.d("count-->>" + screenSaverTimingCount);
+        //判断屏保计时
         if (screenSaverTimingCount == AppConfig.SCREEN_SAVE_TIME) {
-            openActivity(ScreenSaverActivity.class);
-            DtcDutyMainActivity.this.sendBroadcast(new Intent(AppConfig.SCREEN_SAVER_ACTION));
-            isCallingFlag = false;
-            screenSaverTimingCount = 0;
+            //判断报警队列和申请开弹队列是否为空
+            if (SecondDisplayActivity.alarmQueueList.size() > 0 || SecondDisplayActivity.requestOpenBoxQueueList.size() > 0) {
+                screenSaverTimingCount = 0;
+            }else {
+                //跳转到屏保界面
+                openActivity(ScreenSaverActivity.class);
+                DtcDutyMainActivity.this.sendBroadcast(new Intent(AppConfig.SCREEN_SAVER_ACTION));
+                //重置屏保标识
+                isCallingFlag = false;
+                screenSaverTimingCount = 0;
+            }
         }
     }
 
@@ -762,6 +771,7 @@ public class DtcDutyMainActivity extends BaseActivity implements RadioGroup.OnCh
      * Handler处理子线程发送的消息
      */
     private Handler handler = new Handler() {
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {

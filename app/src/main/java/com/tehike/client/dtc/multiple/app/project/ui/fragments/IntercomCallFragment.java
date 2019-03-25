@@ -39,6 +39,7 @@ import android.widget.TextView;
 
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.R;
+import com.tehike.client.dtc.multiple.app.project.db.DbRecordHelper;
 import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SipGroupInfoBean;
 import com.tehike.client.dtc.multiple.app.project.entity.SipGroupItemInfoBean;
@@ -1351,7 +1352,7 @@ public class IntercomCallFragment extends BaseFragment {
     /**
      * 按键点击事件
      */
-    @OnClick({R.id.swap_call1_btn_layout, R.id.swap_call2_btn_layout, R.id.accept_btn_layout, R.id.intercom_voice_btn_layout, R.id.intercom_video_btn_layout, R.id.sip_hangup_btn_layout, R.id.call_demolition_btn_layout, R.id.remote_warring_btn_layout, R.id.remote_gunshot_btn_layout, R.id.remote_speak_btn_layout, R.id.network_braocast_btn_layout})
+    @OnClick({R.id.swap_call1_btn_layout, R.id.swap_call2_btn_layout, R.id.accept_btn_layout, R.id.intercom_voice_btn_layout, R.id.intercom_video_btn_layout, R.id.sip_hangup_btn_layout, R.id.call_demolition_btn_layout, R.id.remote_warring_btn_layout, R.id.remote_gunshot_btn_layout, R.id.remote_speak_btn_layout})
     public void onclickEvent(View view) {
         switch (view.getId()) {
             case R.id.swap_call1_btn_layout:
@@ -1391,9 +1392,6 @@ public class IntercomCallFragment extends BaseFragment {
             case R.id.remote_gunshot_btn_layout:
                 remoteGunshotWarring();
                 //远程鸣枪
-                break;
-            case R.id.network_braocast_btn_layout:
-                netWorkBroadcast();
                 break;
         }
     }
@@ -1481,55 +1479,6 @@ public class IntercomCallFragment extends BaseFragment {
             }
         });
         new Thread(remoteVoiceRequestUtils).start();
-
-        //刷新恢复选中的item背景
-        if (sipItemAdapter != null)
-            sipItemAdapter.refreshItemBg(sipItemSelected);
-    }
-
-    /**
-     * 网络广播
-     */
-    private void netWorkBroadcast() {
-        //判断远程操作对象是否选中
-        if (sipItemSelected == -1) {
-            showProgressFail("请选择操作对象");
-            return;
-        }
-        //判断网络是否正常
-        if (!NetworkUtils.isConnected()) {
-            handler.sendEmptyMessage(2);
-            return;
-        }
-        //要广播的号码
-        String paramater = sipItemList.get(sipItemSelected).getNumber();
-        //请求广播的地址
-        String requestUrl = AppConfig.WEB_HOST + SysinfoUtils.getSysinfo().getWebresourceServer() + AppConfig._BROADCAST_URL + paramater + "&moderator=" + SysinfoUtils.getSysinfo().getSipUsername();
-
-        HttpBasicRequest httpBasicRequest = new HttpBasicRequest(requestUrl, new HttpBasicRequest.GetHttpData() {
-            @Override
-            public void httpData(String result) {
-                if (TextUtils.isEmpty(result)) {
-                    Logutil.e("广播失败");
-                    return;
-                }
-                Logutil.d("result--->>" + result);
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    if (jsonObject != null) {
-                        boolean isSuccess = jsonObject.getBoolean("success");
-                        if (isSuccess) {
-                            Logutil.d("操作成功");
-                        } else {
-                            Logutil.d("操作失败");
-                        }
-                    }
-                } catch (Exception e) {
-                    Logutil.e("HttpBasicRequest is exception-->>" + e.getMessage());
-                }
-            }
-        });
-        new Thread(httpBasicRequest).start();
 
         //刷新恢复选中的item背景
         if (sipItemAdapter != null)
@@ -2381,6 +2330,12 @@ public class IntercomCallFragment extends BaseFragment {
             currentCallNumLayout.setText(mSipGroupItemInfoBean.getName());
             //显示Ui
             handler.sendEmptyMessage(12);
+
+            try {
+                DbRecordHelper.phoneCallRecordInsert("去电", number, SysinfoUtils.getSysinfo().getSipUsername());
+            } catch (Exception e) {
+                Logutil.e(Thread.currentThread().getStackTrace()[2].getClassName() + "保存记录异常--->>>" + e.getMessage());
+            }
         }
 
         //刷新恢复选中的item背景
@@ -2427,6 +2382,12 @@ public class IntercomCallFragment extends BaseFragment {
             currentCallNumLayout.setText(sSipGroupItemInfoBean.getName());
             //显示ui
             handler.sendEmptyMessage(9);
+
+            try {
+                DbRecordHelper.phoneCallRecordInsert("去电", number, SysinfoUtils.getSysinfo().getSipUsername());
+            } catch (Exception e) {
+                Logutil.e(Thread.currentThread().getStackTrace()[2].getClassName() + "保存记录异常--->>>" + e.getMessage());
+            }
         }
         //刷新恢复选中的item背景
         if (sipItemAdapter != null)

@@ -20,7 +20,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="位置:"
             android:textColor="@color/white"
             android:textSize="9sp" />
 
@@ -31,7 +30,6 @@
             android:layout_gravity="center"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="中科腾海科技有限公司"
             android:textColor="@color/white"
             android:textSize="9sp" />
 
@@ -46,7 +44,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="警情:"
             android:textColor="@color/white"
             android:textSize="9sp" />
 
@@ -57,7 +54,6 @@
             android:layout_gravity="center"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="脱逃报警"
             android:textColor="@color/white"
             android:textSize="9sp" />
 

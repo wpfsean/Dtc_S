@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import com.tehike.client.dtc.multiple.app.project.App;
 import com.tehike.client.dtc.multiple.app.project.db.DbHelper;
+import com.tehike.client.dtc.multiple.app.project.db.DbRecordHelper;
 import com.tehike.client.dtc.multiple.app.project.db.DbUtils;
 import com.tehike.client.dtc.multiple.app.project.entity.SipBean;
 import com.tehike.client.dtc.multiple.app.project.global.AppConfig;
@@ -22,6 +23,7 @@ import com.tehike.client.dtc.multiple.app.project.utils.FileUtil;
 import com.tehike.client.dtc.multiple.app.project.utils.GsonUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.Logutil;
 import com.tehike.client.dtc.multiple.app.project.utils.StringUtils;
+import com.tehike.client.dtc.multiple.app.project.utils.SysinfoUtils;
 import com.tehike.client.dtc.multiple.app.project.utils.TimeUtils;
 
 import org.linphone.core.LinphoneAddress;
@@ -205,13 +207,18 @@ public class SipService extends Service implements LinphoneCoreListener {
                         App.startSpeaking(inComingNumber + "来电");
 
                     //保存到数据库
-                    ContentValues contentValues1 = new ContentValues();
-                    contentValues1.put("time", TimeUtils.getCurrentTime());
-                    contentValues1.put("event", comingUserName + "号哨来电");
-                    new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
+//                    ContentValues contentValues1 = new ContentValues();
+//                    contentValues1.put("time", TimeUtils.getCurrentTime());
+//                    contentValues1.put("event", comingUserName + "号哨来电");
+//                    new DbUtils(App.getApplication()).insert(DbHelper.EVENT_TAB_NAME, contentValues1);
 
+                    try {
+                        DbRecordHelper.phoneCallRecordInsert("来电", inComingNumber, SysinfoUtils.getSysinfo().getSipUsername());
+                    } catch (Exception e) {
+                        Logutil.e(Thread.currentThread().getStackTrace()[2].getClassName() + "保存记录异常--->>>" + e.getMessage());
+                    }
                 } catch (Exception e) {
-                  Logutil.e("SipService异常-->>>"+e.getMessage());
+                    Logutil.e("SipService异常-->>>" + e.getMessage());
                 }
             }
         }

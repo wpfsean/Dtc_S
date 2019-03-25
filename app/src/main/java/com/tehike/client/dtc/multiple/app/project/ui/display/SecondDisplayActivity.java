@@ -2082,9 +2082,9 @@ public class SecondDisplayActivity extends Presentation {
                 Logutil.d("event-->>" + event);
                 if (alarmCallPlayer == player) {
                     if (event == 1001 || event == 1102 || event == 1104) {
-                        handler.sendEmptyMessage(24);
-                    } else {
                         handler.sendEmptyMessage(23);
+                    } else {
+                        handler.sendEmptyMessage(24);
                     }
                 }
             }

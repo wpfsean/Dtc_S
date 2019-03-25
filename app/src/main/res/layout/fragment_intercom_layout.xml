@@ -131,8 +131,9 @@
                         android:text="可视对讲"
                         android:textColor="@color/white" />
 
+
                     <Button
-                        android:id="@+id/monitor_video_btn_layout"
+                        android:id="@+id/call_demolition_btn_layout"
                         android:layout_width="fill_parent"
                         android:layout_height="30dp"
                         android:layout_below="@+id/intercom_video_btn_layout"
@@ -141,56 +142,16 @@
                         android:layout_marginTop="5dp"
                         android:background="@drawable/btn_pressed_select_bg"
                         android:gravity="center"
-                        android:text="可视监听"
-                        android:textColor="@color/white" />
-
-
-                    <Button
-                        android:id="@+id/call_demolition_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="30dp"
-                        android:layout_below="@+id/monitor_video_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
                         android:text="通话强拆"
                         android:textColor="@color/white" />
 
-                    <Button
-                        android:id="@+id/call_intrusion_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="30dp"
-                        android:layout_below="@+id/call_demolition_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="通话强插"
-                        android:textColor="@color/white" />
-
-
-                    <Button
-                        android:id="@+id/network_braocast_btn_layout"
-                        android:layout_width="fill_parent"
-                        android:layout_height="30dp"
-                        android:layout_below="@+id/call_intrusion_btn_layout"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@drawable/btn_pressed_select_bg"
-                        android:gravity="center"
-                        android:text="网络广播"
-                        android:textColor="@color/white" />
 
 
                     <Button
                         android:id="@+id/remote_warring_btn_layout"
                         android:layout_width="fill_parent"
                         android:layout_height="30dp"
-                        android:layout_below="@+id/network_braocast_btn_layout"
+                        android:layout_below="@+id/call_demolition_btn_layout"
                         android:layout_marginLeft="7dp"
                         android:layout_marginRight="7dp"
                         android:layout_marginTop="5dp"

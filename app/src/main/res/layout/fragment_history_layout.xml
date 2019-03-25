@@ -98,6 +98,35 @@
 
                     </LinearLayout>
 
+                    <!--电话日志设置-->
+                    <LinearLayout
+                        android:id="@+id/history_phonecall_btn_layout"
+                        android:layout_width="113dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/system_set_btn_bg"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="22dp"
+                            android:background="@mipmap/dtc_set_icon_time" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="6dp"
+                            android:gravity="left"
+                            android:text="电话日志"
+                            android:textColor="@color/white"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
 
                 </LinearLayout>
             </LinearLayout>
@@ -121,6 +150,12 @@
 
                 <ListView
                     android:id="@+id/history_event_listview_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"></ListView>
+
+                <ListView
+                    android:id="@+id/history_phonecall_listview_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:visibility="gone"></ListView>

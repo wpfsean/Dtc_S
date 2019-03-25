@@ -197,12 +197,6 @@ public class SystemSetFragment extends BaseFragment {
     TextView networkStatusLayout;
 
     /**
-     * 屏保时长输入框
-     */
-    @BindView(R.id.system_set_screent_saver_time_edit_layout)
-    EditText screenTimeEditLayout;
-
-    /**
      * 数据刷新间隔
      */
     @BindView(R.id.system_set_data_refresh_time_edit_layout)
@@ -544,6 +538,7 @@ public class SystemSetFragment extends BaseFragment {
             setSpinnerDefaultValue(ygSerialPortSpinnerLayout, d.toString());
             spinnerAdapter.notifyDataSetChanged();
         }
+        ygSerialPortSpinnerLayout.setSelection(2, true);
 
         //监听
         ygSerialPortSpinnerLayout.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -996,15 +991,7 @@ public class SystemSetFragment extends BaseFragment {
         }
 
 
-//        //获取屏保时间
-//        String screenTime = screenTimeEditLayout.getText().toString();
-//        //设置屏保
-//        if (!TextUtils.isEmpty(screenTime)) {
-//            int time = Integer.parseInt(screenTime);
-//            if (time > 0) {
-//                AppConfig.SCREEN_SAVE_TIME = time;
-//            }
-//        }
+
     }
 
     /**

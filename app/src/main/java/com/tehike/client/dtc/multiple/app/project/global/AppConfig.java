@@ -137,7 +137,7 @@ public class AppConfig {
     /**
      * 屏保计时
      */
-    public static int SCREEN_SAVE_TIME = 3000;
+    public static int SCREEN_SAVE_TIME = 40;
 
     /**
      * 更新apk的路径(远程服务器文件夹名)
